@@ -43,5 +43,5 @@ async def list_user_roles(request: Request):
 
 
 @management_router.get("/rolePerms", response_class=JSONResponse)
-async def list_role_permissions(request: Request):
+async def list_all_role_permissions(request: Request):
     return db.fetchAll(r'SELECT * from role_permissions')
