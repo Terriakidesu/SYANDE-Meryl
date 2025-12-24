@@ -1,6 +1,6 @@
 import mysql.connector
 
-from typing import Optional
+from typing import Optional, Any
 
 from ..Settings import Settings
 
@@ -19,6 +19,14 @@ class Database:
             password=Settings.secrets.db_password,
             database=Settings.secrets.db_database
         )
+
+    def fetchAll(self, statement: str) -> list[Any]:
+        return self.execute(statement).fetchall()
+
+    def execute(self, statement: str):
+        cursor = self.cursor()
+        cursor.execute(statement)
+        return cursor
 
     @property
     def cursor(self):
