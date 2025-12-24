@@ -17,7 +17,7 @@ async def list_items(request: Request):
 
 
 @inventory_router.get("/{product_id}", response_class=JSONResponse)
-async def list_item(request: Request, product_id: Optional[int] = None):
+async def fetch_item(request: Request, product_id: Optional[int] = None):
 
     if product_id is None:
         return []
