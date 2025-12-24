@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 
 from .models import Secrets
 
-SECRETS_PATH = os.path.join(os.getcwd(), "secrets.env")
+SECRETS_ENV_PATH = os.path.join("secrets.env")
 
 
 class SettingsClass:
@@ -13,7 +13,7 @@ class SettingsClass:
         self.load_secrets()
 
     def load_secrets(self) -> None:
-        load_dotenv(SECRETS_PATH)
+        load_dotenv(SECRETS_ENV_PATH)
 
         db_hostname = os.getenv("db_hostname")
         db_username = os.getenv("db_username")
