@@ -5,8 +5,18 @@ from fastapi import APIRouter, Request, Form
 from fastapi.responses import JSONResponse
 
 from ...includes import Database
-from ...models.inventory import Brand, Category, Product, ProductForm, Size
-from ...exceptions import DatabaseDeleteException, DatabaseInsertionException, DatabaseException
+from ...models.inventory import (
+    Brand,
+    Category,
+    Product,
+    ProductForm,
+    Size
+)
+from ...exceptions import (
+    DatabaseDeleteException,
+    DatabaseInsertionException,
+    DatabaseException
+)
 
 inventory_router = APIRouter(prefix="/api/inventory")
 
