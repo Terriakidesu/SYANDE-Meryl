@@ -28,15 +28,16 @@ class Database:
     def fetchOne(self, statement: str, params: Sequence[MySQLConvertibleType] | Dict[str, MySQLConvertibleType] = ()):
         return self.execute(statement, params).fetchone()
 
-    def insertOne(self, statement: str, params: Sequence[MySQLConvertibleType] | Dict[str, MySQLConvertibleType] = ()):
+    def commitOne(self, statement: str, params: Sequence[MySQLConvertibleType] | Dict[str, MySQLConvertibleType] = ()):
         cursor = self.execute(statement, params=params)
         self.db.commit()
         return cursor.rowcount
-    
-    def insertMany(self, statement:str, params: Sequence[Sequence[MySQLConvertibleType] | Dict[str, MySQLConvertibleType]]):
+
+    def commitMany(self, statement: str, params: Sequence[Sequence[MySQLConvertibleType] | Dict[str, MySQLConvertibleType]]):
         cursor = self.executeMany(statement, params)
         self.db.commit()
         return cursor.rowcount
+
 
     def execute(self, statement: str, params: Sequence[MySQLConvertibleType] | Dict[str, MySQLConvertibleType] = ()):
         cursor = self.cursor(
@@ -44,8 +45,8 @@ class Database:
         )
         cursor.execute(statement, params=params)
         return cursor
-    
-    def executeMany(self,statement: str, seq_params: Sequence[Sequence[MySQLConvertibleType] | Dict[str, MySQLConvertibleType]]):
+
+    def executeMany(self, statement: str, seq_params: Sequence[Sequence[MySQLConvertibleType] | Dict[str, MySQLConvertibleType]]):
         cursor = self.cursor()
         cursor.executemany(statement, seq_params=seq_params)
         return cursor
