@@ -1,6 +1,8 @@
-import mysql.connector
+from collections.abc import Sequence
+from typing import Dict
 
-from typing import Optional, Any
+import mysql.connector
+from mysql.connector.abstracts import MySQLConvertibleType  # type: ignore
 
 from ..Settings import Settings
 
@@ -13,21 +15,30 @@ class Database:
     def connect(self):
         Settings.reload()
 
-        self.db = mysql.connector.connect(
+        self._db = mysql.connector.connect(
             host=Settings.secrets.db_hostname,
             user=Settings.secrets.db_username,
             password=Settings.secrets.db_password,
             database=Settings.secrets.db_database
         )
 
-    def fetchAll(self, statement: str) -> list[Any]:
-        return self.execute(statement).fetchall()
+    def fetchAll(self, statement: str, params: Sequence[MySQLConvertibleType] | Dict[str, MySQLConvertibleType] = ()):
+        return self.execute(statement, params).fetchall()
 
-    def execute(self, statement: str):
-        cursor = self.cursor()
-        cursor.execute(statement)
+    def fetchOne(self, statement: str, params: Sequence[MySQLConvertibleType] | Dict[str, MySQLConvertibleType] = ()):
+        return self.execute(statement, params).fetchone()
+
+    def execute(self, statement: str, params: Sequence[MySQLConvertibleType] | Dict[str, MySQLConvertibleType] = ()):
+        cursor = self.cursor(
+            dictionary=True
+        )
+        cursor.execute(statement, params=params)
         return cursor
 
     @property
     def cursor(self):
         return self.db.cursor
+
+    @property
+    def db(self):
+        return self._db
