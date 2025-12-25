@@ -17,6 +17,7 @@ class Sales_Item(BaseModel):
     sale_item_id: int
     sale_id: int
     variant_id: int
+    markup: int
     quantity: int
     price: float
 
