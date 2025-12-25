@@ -35,7 +35,7 @@ async def add_product(request: Request, product: Annotated[ProductForm, Form()])
         if product.product_name.strip() == "":
             raise DatabaseInsertionException("product_name is empty.")
 
-        rowCount = db.commitOne(
+        db.commitOne(
             r'INSERT INTO products (prodct_name, brand_id, category_id, product_price, first_sale_at) VALUES (%s, %s, %s, %s, %s)',
             (product.product_name, product.brand_id, product.category_id,
              product.product_price, product.first_sale_at)
@@ -64,7 +64,7 @@ async def edit_product(request: Request, product: Annotated[Product, Form()]):
         if product.product_name.strip() == "":
             raise DatabaseInsertionException("brand_name is empty.")
 
-        rowCount = db.commitOne(
+        db.commitOne(
             r'UPDATE products SET product_name = %s, brand_id = %s, category_id = %s, product_price = %s, first_sale_at = %s  WHERE product_id = %s',
             (product.product_name, product.brand_id, product.category_id,
              product.product_price, product.first_sale_at, product.product_id)
@@ -123,7 +123,7 @@ async def add_brand(request: Request, brand_name: str = Form()):
         if brand_name.strip() == "":
             raise DatabaseInsertionException("brand_name is empty.")
 
-        rowCount = db.commitOne(
+        db.commitOne(
             r'INSERT INTO brands (brand_name) VALUES (%s)', (brand_name,))
 
         return {
@@ -149,7 +149,7 @@ async def edit_brand(request: Request, brand: Annotated[Brand, Form()]):
         if brand.brand_name.strip() == "":
             raise DatabaseInsertionException("brand_name is empty.")
 
-        rowCount = db.commitOne(
+        db.commitOne(
             r'UPDATE brands SET brand_name = %s WHERE brand_id = %s', (brand.brand_name, brand.brand_id))
 
         return {
@@ -204,7 +204,7 @@ async def add_category(request: Request, category_name: str = Form()):
         if category_name.strip() == "":
             raise DatabaseInsertionException("category_name is empty.")
 
-        rowCount = db.commitOne(
+        db.commitOne(
             r'INSERT INTO categories (category_name) VALUES (%s)', (category_name,))
 
         return {
@@ -230,7 +230,7 @@ async def edit_category(request: Request, category: Annotated[Category, Form()])
         if category.category_name.strip() == "":
             raise DatabaseInsertionException("category_name is empty.")
 
-        rowCount = db.commitOne(
+        db.commitOne(
             r'UPDATE categories SET category_name = %s WHERE category_id = %s', (category.category_name, category.category_id))
 
         return {
@@ -292,7 +292,7 @@ async def add_size(request: Request, size: float = Form(), sizing_system: str = 
             raise DatabaseInsertionException(
                 "Invalid value for sizing_system.")
 
-        rowCount = db.commitOne(
+        db.commitOne(
             r'INSERT INTO sizes (size, sizing_system) VALUES (%s, %s)', (size, sizing_system))
 
         return {
@@ -322,7 +322,7 @@ async def edit_size(request: Request, size: Annotated[Size, Form()]):
             raise DatabaseInsertionException(
                 "Invalid value for sizing_system.")
 
-        rowCount = db.commitOne(
+        db.commitOne(
             r'UPDATE sizes SET size = %s, sizing_system WHERE size_id = %s', (size.size, size.sizing_system, size.size_id))
 
         return {
