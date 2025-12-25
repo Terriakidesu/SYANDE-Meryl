@@ -85,17 +85,7 @@ async def add_user(request: Request,
             f.write(buffer.read())
 
     else:
-        image = Image.open(Settings.profiles.default)
-
-        if image.mode in ('RGBA', 'P'):
-            image = image.convert("RGB")
-
-        buffer = BytesIO()
-        image.save(buffer, format="JPEG", quality=85)
-        buffer.seek(0)
-
-        with open(download_profile_path, "wb") as f:
-            f.write(buffer.read())
+        shutil.copy(Settings.profiles.default, download_profile_path)
 
     return {
         "success": True,

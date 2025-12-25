@@ -2,5 +2,6 @@
 .vscode/**/*
 **/__pycache__/**/*
 assets/public/profiles/**/*
+assets/public/products/**/*
 
 *.env
