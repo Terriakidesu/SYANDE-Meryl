@@ -1,6 +1,6 @@
 from typing import Optional
 
-from fastapi import APIRouter, Request, Form, Query
+from fastapi import APIRouter, Request, Form, Query, Body
 from fastapi.responses import JSONResponse
 
 from ...includes import Database
@@ -27,9 +27,23 @@ async def add_sale(request: Request,
                    items: str = Form()
                    ):
 
-    # items_tuple = tuple((item,) for item in items)
+    for item in items.split(","):
+        item = item.strip().split(":")
 
-    print(items)
+        variant_id, quantity = [int(it) for it in item]
+
+        if result := db.fetchOne(r'SELECT product_id FROM variants WHERE variant_id = %s', (variant_id,)):
+
+            product_id = result["product_id"]
+
+            if product := db.fetchOne(r'SELECT markup FROM products WHERE product_id = %s', (product_id,)):
+
+                markup = product["markup"]
+
+                # db.commitOne(
+                #     r'INSERT INTO sales_items (sale_id, variant_id, markup, quantity, price)'
+
+                # )
 
 
 @sales_router.get("/{sale_id}", response_class=JSONResponse)
