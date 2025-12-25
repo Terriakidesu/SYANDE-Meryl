@@ -12,11 +12,7 @@ from ...models.inventory import (
     ProductForm,
     Size
 )
-from ...exceptions import (
-    DatabaseDeleteException,
-    DatabaseInsertionException,
-    DatabaseException
-)
+from ...exceptions import DatabaseException
 
 inventory_router = APIRouter(prefix="/api/inventory")
 
@@ -33,7 +29,7 @@ async def add_product(request: Request, product: Annotated[ProductForm, Form()])
     try:
 
         if product.product_name.strip() == "":
-            raise DatabaseInsertionException("product_name is empty.")
+            raise DatabaseException("product_name is empty.")
 
         db.commitOne(
             r'INSERT INTO products (prodct_name, brand_id, category_id, product_price, first_sale_at) VALUES (%s, %s, %s, %s, %s)',
@@ -62,7 +58,7 @@ async def edit_product(request: Request, product: Annotated[Product, Form()]):
             raise DatabaseException("brand_id cannot be negative")
 
         if product.product_name.strip() == "":
-            raise DatabaseInsertionException("brand_name is empty.")
+            raise DatabaseException("brand_name is empty.")
 
         db.commitOne(
             r'UPDATE products SET product_name = %s, brand_id = %s, category_id = %s, product_price = %s, first_sale_at = %s  WHERE product_id = %s',
@@ -90,7 +86,7 @@ async def delete_product(request: Request, product_id: int):
             r'DELETE FROM products WHERE product_id = %s', (product_id,)).rowcount
 
         if rowCount <= 0:
-            raise DatabaseDeleteException("brand_id doesn't exist.")
+            raise DatabaseException("brand_id doesn't exist.")
 
         return {
             "success": True,
@@ -121,7 +117,7 @@ async def add_brand(request: Request, brand_name: str = Form()):
     try:
 
         if brand_name.strip() == "":
-            raise DatabaseInsertionException("brand_name is empty.")
+            raise DatabaseException("brand_name is empty.")
 
         db.commitOne(
             r'INSERT INTO brands (brand_name) VALUES (%s)', (brand_name,))
@@ -147,7 +143,7 @@ async def edit_brand(request: Request, brand: Annotated[Brand, Form()]):
             raise DatabaseException("brand_id cannot be negative")
 
         if brand.brand_name.strip() == "":
-            raise DatabaseInsertionException("brand_name is empty.")
+            raise DatabaseException("brand_name is empty.")
 
         db.commitOne(
             r'UPDATE brands SET brand_name = %s WHERE brand_id = %s', (brand.brand_name, brand.brand_id))
@@ -172,7 +168,7 @@ async def delete_brand(request: Request, brand_id: int):
             r'DELETE FROM brands WHERE brand_id = %s', (brand_id,)).rowcount
 
         if rowCount <= 0:
-            raise DatabaseDeleteException("brand_id doesn't exist.")
+            raise DatabaseException("brand_id doesn't exist.")
 
         return {
             "success": True,
@@ -202,7 +198,7 @@ async def add_category(request: Request, category_name: str = Form()):
     try:
 
         if category_name.strip() == "":
-            raise DatabaseInsertionException("category_name is empty.")
+            raise DatabaseException("category_name is empty.")
 
         db.commitOne(
             r'INSERT INTO categories (category_name) VALUES (%s)', (category_name,))
@@ -228,7 +224,7 @@ async def edit_category(request: Request, category: Annotated[Category, Form()])
             raise DatabaseException("category_id cannot be negative")
 
         if category.category_name.strip() == "":
-            raise DatabaseInsertionException("category_name is empty.")
+            raise DatabaseException("category_name is empty.")
 
         db.commitOne(
             r'UPDATE categories SET category_name = %s WHERE category_id = %s', (category.category_name, category.category_id))
@@ -253,7 +249,7 @@ async def delete_category(request: Request, category_id: int):
             r'DELETE FROM categories WHERE category_id = %s', (category_id,)).rowcount
 
         if rowCount <= 0:
-            raise DatabaseDeleteException("category_id doesn't exist.")
+            raise DatabaseException("category_id doesn't exist.")
 
         return {
             "success": True,
@@ -283,13 +279,13 @@ async def add_size(request: Request, size: float = Form(), sizing_system: str = 
     try:
 
         if size <= 0:
-            raise DatabaseInsertionException("size cannot be negative.")
+            raise DatabaseException("size cannot be negative.")
 
         if sizing_system.strip() == "":
-            raise DatabaseInsertionException("sizing_system cannot be empty.")
+            raise DatabaseException("sizing_system cannot be empty.")
 
         if not sizing_system.upper() in ["UK", "US", "EU"]:
-            raise DatabaseInsertionException(
+            raise DatabaseException(
                 "Invalid value for sizing_system.")
 
         db.commitOne(
@@ -313,13 +309,13 @@ async def edit_size(request: Request, size: Annotated[Size, Form()]):
     try:
 
         if size.size <= 0:
-            raise DatabaseInsertionException("size cannot be negative.")
+            raise DatabaseException("size cannot be negative.")
 
         if size.sizing_system.strip() == "":
-            raise DatabaseInsertionException("sizing_system cannot be empty.")
+            raise DatabaseException("sizing_system cannot be empty.")
 
         if not size.sizing_system.upper() in ["UK", "US", "EU"]:
-            raise DatabaseInsertionException(
+            raise DatabaseException(
                 "Invalid value for sizing_system.")
 
         db.commitOne(
@@ -345,7 +341,7 @@ async def delete_size(request: Request, size_id: int):
             r'DELETE FROM sizes WHERE size_id = %s', (size_id,)).rowcount
 
         if rowCount <= 0:
-            raise DatabaseDeleteException("size_id doesn't exist.")
+            raise DatabaseException("size_id doesn't exist.")
 
         return {
             "success": True,
