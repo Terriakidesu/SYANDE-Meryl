@@ -43,13 +43,15 @@ async def add_product(request: Request, product: Annotated[ProductForm, Form()])
 
         return {
             "success": True,
-            "details": f"Affected {rowCount} row"
+            "message": f"Affected {rowCount} row"
         }
     except Exception as e:
-        return {
+        return JSONResponse({
             "success": False,
-            "Error": f"{e}"
-        }
+            "message": f"{e}"
+        },
+            status_code=400
+        )
 
 
 @inventory_router.post("/products/update", response_class=JSONResponse)
@@ -70,33 +72,37 @@ async def edit_product(request: Request, product: Annotated[Product, Form()]):
 
         return {
             "success": True,
-            "details": f"Affected {rowCount} row"
+            "message": f"Affected {rowCount} row"
         }
     except Exception as e:
-        return {
+        return JSONResponse({
             "success": False,
-            "Error": f"{e}"
-        }
+            "message": f"{e}"
+        },
+            status_code=400
+        )
 
 
 @inventory_router.delete("/products/delete/")
 async def delete_product(request: Request, product_id: int):
     try:
         rowCount = db.commitOne(
-            r'DELETE FROM products WHERE products = %s', (product_id,))
+            r'DELETE FROM products WHERE product_id = %s', (product_id,)).rowcount
 
         if rowCount <= 0:
             raise DatabaseDeleteException("brand_id doesn't exist.")
 
         return {
             "success": True,
-            "details": f"Affected {rowCount} rows"
+            "message": f"Affected {rowCount} rows"
         }
     except Exception as e:
-        return {
+        return JSONResponse({
             "success": False,
-            "Error": f"{e}"
-        }
+            "message": f"{e}"
+        },
+            status_code=400
+        )
 
 
 @inventory_router.get("/products/{product_id}", response_class=JSONResponse)
@@ -122,13 +128,15 @@ async def add_brand(request: Request, brand_name: str = Form()):
 
         return {
             "success": True,
-            "details": f"Affected {rowCount} row"
+            "message": f"Affected {rowCount} row"
         }
     except Exception as e:
-        return {
+        return JSONResponse({
             "success": False,
-            "Error": f"{e}"
-        }
+            "message": f"{e}"
+        },
+            status_code=400
+        )
 
 
 @inventory_router.post("/brands/update", response_class=JSONResponse)
@@ -146,33 +154,37 @@ async def edit_brand(request: Request, brand: Annotated[Brand, Form()]):
 
         return {
             "success": True,
-            "details": f"Affected {rowCount} row"
+            "message": f"Affected {rowCount} row"
         }
     except Exception as e:
-        return {
+        return JSONResponse({
             "success": False,
-            "Error": f"{e}"
-        }
+            "message": f"{e}"
+        },
+            status_code=400
+        )
 
 
 @inventory_router.delete("/brands/delete/")
 async def delete_brand(request: Request, brand_id: int):
     try:
         rowCount = db.commitOne(
-            r'DELETE FROM brands WHERE brand_id = %s', (brand_id,))
+            r'DELETE FROM brands WHERE brand_id = %s', (brand_id,)).rowcount
 
         if rowCount <= 0:
             raise DatabaseDeleteException("brand_id doesn't exist.")
 
         return {
             "success": True,
-            "details": f"Affected {rowCount} rows"
+            "message": f"Affected {rowCount} rows"
         }
     except Exception as e:
-        return {
+        return JSONResponse({
             "success": False,
-            "Error": f"{e}"
-        }
+            "message": f"{e}"
+        },
+            status_code=400
+        )
 
 
 @inventory_router.get("/brands/{brand_id}", response_class=JSONResponse)
@@ -197,13 +209,15 @@ async def add_category(request: Request, category_name: str = Form()):
 
         return {
             "success": True,
-            "details": f"Affected {rowCount} row"
+            "message": f"Affected {rowCount} row"
         }
     except Exception as e:
-        return {
+        return JSONResponse({
             "success": False,
-            "Error": f"{e}"
-        }
+            "message": f"{e}"
+        },
+            status_code=400
+        )
 
 
 @inventory_router.post("/categories/update", response_class=JSONResponse)
@@ -221,33 +235,37 @@ async def edit_category(request: Request, category: Annotated[Category, Form()])
 
         return {
             "success": True,
-            "details": f"Affected {rowCount} row"
+            "message": f"Affected {rowCount} row"
         }
     except Exception as e:
-        return {
+        return JSONResponse({
             "success": False,
-            "Error": f"{e}"
-        }
+            "message": f"{e}"
+        },
+            status_code=400
+        )
 
 
 @inventory_router.delete("/categories/delete/")
 async def delete_category(request: Request, category_id: int):
     try:
         rowCount = db.commitOne(
-            r'DELETE FROM categories WHERE categories = %s', (category_id,))
+            r'DELETE FROM categories WHERE category_id = %s', (category_id,)).rowcount
 
         if rowCount <= 0:
             raise DatabaseDeleteException("category_id doesn't exist.")
 
         return {
             "success": True,
-            "details": f"Affected {rowCount} rows"
+            "message": f"Affected {rowCount} rows"
         }
     except Exception as e:
-        return {
+        return JSONResponse({
             "success": False,
-            "Error": f"{e}"
-        }
+            "message": f"{e}"
+        },
+            status_code=400
+        )
 
 
 @inventory_router.get("/categories/{category_id}", response_class=JSONResponse)
@@ -279,13 +297,15 @@ async def add_size(request: Request, size: float = Form(), sizing_system: str = 
 
         return {
             "success": True,
-            "details": f"Affected {rowCount} row"
+            "message": f"Affected {rowCount} row"
         }
     except Exception as e:
-        return {
+        return JSONResponse({
             "success": False,
-            "Error": f"{e}"
-        }
+            "message": f"{e}"
+        },
+            status_code=400
+        )
 
 
 @inventory_router.post("/sizes/update", response_class=JSONResponse)
@@ -307,33 +327,37 @@ async def edit_size(request: Request, size: Annotated[Size, Form()]):
 
         return {
             "success": True,
-            "details": f"Affected {rowCount} row"
+            "message": f"Affected {rowCount} row"
         }
     except Exception as e:
-        return {
+        return JSONResponse({
             "success": False,
-            "Error": f"{e}"
-        }
+            "message": f"{e}"
+        },
+            status_code=400
+        )
 
 
 @inventory_router.delete("/sizes/delete/")
 async def delete_size(request: Request, size_id: int):
     try:
         rowCount = db.commitOne(
-            r'DELETE FROM sizes WHERE size_id = %s', (size_id,))
+            r'DELETE FROM sizes WHERE size_id = %s', (size_id,)).rowcount
 
         if rowCount <= 0:
             raise DatabaseDeleteException("size_id doesn't exist.")
 
         return {
             "success": True,
-            "details": f"Affected {rowCount} rows"
+            "message": f"Affected {rowCount} rows"
         }
     except Exception as e:
-        return {
+        return JSONResponse({
             "success": False,
-            "Error": f"{e}"
-        }
+            "message": f"{e}"
+        },
+            status_code=400
+        )
 
 
 @inventory_router.get("/sizes/{size_id}", response_class=JSONResponse)
