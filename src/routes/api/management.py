@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 
 from ...includes import Database
 
-management_router = APIRouter(prefix="/api/admin")
+management_router = APIRouter(prefix="/api")
 
 db = Database()
 
