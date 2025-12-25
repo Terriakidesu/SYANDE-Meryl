@@ -4,10 +4,15 @@
     },
     "profiles": {
         "path": "assets/public/profiles",
-        "default": "assets/public/profiles/default/default.png",
+        "default": "assets/public/profiles/default/default.jpeg",
         "size": 1280
     },
     "session": {
         "timeout": 30
+    },
+    "products": {
+        "path": "assets/public/products/",
+        "default": "assets/public/products/default/default.jpeg",
+        "size": 1280
     }
 }
