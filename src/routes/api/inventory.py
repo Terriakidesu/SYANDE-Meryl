@@ -10,7 +10,8 @@ from ...models.inventory import (
     Category,
     Product,
     ProductForm,
-    Size
+    Size,
+    Variant
 )
 from ...exceptions import DatabaseException
 
@@ -319,7 +320,7 @@ async def edit_size(request: Request, size: Annotated[Size, Form()]):
                 "Invalid value for sizing_system.")
 
         db.commitOne(
-            r'UPDATE sizes SET size = %s, sizing_system WHERE size_id = %s', (size.size, size.sizing_system, size.size_id))
+            r'UPDATE sizes SET size = %s, sizing_system = %s WHERE size_id = %s', (size.size, size.sizing_system, size.size_id))
 
         return {
             "success": True,
@@ -359,3 +360,103 @@ async def delete_size(request: Request, size_id: int):
 @inventory_router.get("/sizes/{size_id}", response_class=JSONResponse)
 async def fetch_size(request: Request, size_id: int):
     return db.fetchAll(r'SELECT * FROM sizes WHERE size_id = %s', (size_id,))
+
+
+@inventory_router.get("/variants", response_class=JSONResponse)
+async def list_variants(request: Request):
+    return db.fetchAll(r'SELECT * FROM variants')
+
+
+@inventory_router.post("/variants/add", response_class=JSONResponse)
+async def add_variant(request: Request,
+                      product_id: int = Form(),
+                      size_id: int = Form(),
+                      variant_stock: int = Form()
+                      ):
+    try:
+
+        if product_id is None or product_id < 0:
+            raise DatabaseException("product_id is invalid.")
+
+        if size_id is None or size_id < 0:
+            raise DatabaseException("size_id is invalid.")
+
+        if variant_stock is None or variant_stock < 0:
+            raise DatabaseException("variant_stock is invalid.")
+
+        db.commitOne(
+            r'INSERT INTO sizes (product_id, size_id, variant_stock) VALUES (%s, %s, %s)', (product_id, size_id, variant_stock))
+
+        return {
+            "success": True,
+            "message": f"Successfully Added Variant."
+        }
+    except Exception as e:
+        return JSONResponse({
+            "success": False,
+            "message": f"{e}"
+        },
+            status_code=400
+        )
+
+
+@inventory_router.post("/variants/update", response_class=JSONResponse)
+async def edit_variant(request: Request, variant: Annotated[Variant, Form()]):
+    try:
+
+        if variant.variant_id is None or variant.variant_id < 0:
+            raise DatabaseException("variant_id is invalid.")
+
+        if variant.product_id is None or variant.product_id < 0:
+            raise DatabaseException("product_id is invalid.")
+
+        if variant.size_id is None or variant.size_id < 0:
+            raise DatabaseException("size_id is invalid.")
+
+        if variant.variant_stock is None or variant.variant_stock < 0:
+            raise DatabaseException("variant_stock is invalid.")
+
+        db.commitOne(
+            r'UPDATE sizes SET product_id = %s, size_id = %s, variant_stock = %s WHERE size_id = %s',
+            (variant.product_id, variant.size_id,
+             variant.variant_stock, variant.variant_id)
+        )
+
+        return {
+            "success": True,
+            "message": f"Successfully Updated Variant."
+        }
+    except Exception as e:
+        return JSONResponse({
+            "success": False,
+            "message": f"{e}"
+        },
+            status_code=400
+        )
+
+
+@inventory_router.delete("/sizes/delete/")
+async def delete_variant(request: Request, variant_id: int):
+    try:
+        rowCount = db.commitOne(
+            r'DELETE FROM variants WHERE variant_id = %s', (variant_id,)).rowcount
+
+        if rowCount <= 0:
+            raise DatabaseException("size_id doesn't exist.")
+
+        return {
+            "success": True,
+            "message": f"Successfully Deleted Variant."
+        }
+    except Exception as e:
+        return JSONResponse({
+            "success": False,
+            "message": f"{e}"
+        },
+            status_code=400
+        )
+
+
+@inventory_router.get("/sizes/{size_id}", response_class=JSONResponse)
+async def fetch_variant(request: Request, variant_id: int):
+    return db.fetchAll(r'SELECT * FROM variants WHERE variant_id = %s', (variant_id,))
