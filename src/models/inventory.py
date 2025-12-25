@@ -31,6 +31,7 @@ class Product(BaseModel):
     product_name: str
     brand_id: int
     category_id: int
+    markup: int
     product_price: float
     first_sale_at: datetime
     created_at: datetime
@@ -40,5 +41,6 @@ class ProductForm(BaseModel):
     product_name: str
     brand_id: int
     category_id: int
+    markup: int
     product_price: float
     first_sale_at: datetime

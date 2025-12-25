@@ -33,8 +33,8 @@ async def add_product(request: Request, product: Annotated[ProductForm, Form()])
             raise DatabaseException("product_name is empty.")
 
         db.commitOne(
-            r'INSERT INTO products (prodct_name, brand_id, category_id, product_price, first_sale_at) VALUES (%s, %s, %s, %s, %s)',
-            (product.product_name, product.brand_id, product.category_id,
+            r'INSERT INTO products (prodct_name, brand_id, category_id, markup, product_price, first_sale_at) VALUES (%s, %s, %s, %s, %s, %s)',
+            (product.product_name, product.brand_id, product.category_id, product.markup,
              product.product_price, product.first_sale_at)
         )
 
@@ -62,8 +62,8 @@ async def edit_product(request: Request, product: Annotated[Product, Form()]):
             raise DatabaseException("brand_name is empty.")
 
         db.commitOne(
-            r'UPDATE products SET product_name = %s, brand_id = %s, category_id = %s, product_price = %s, first_sale_at = %s  WHERE product_id = %s',
-            (product.product_name, product.brand_id, product.category_id,
+            r'UPDATE products SET product_name = %s, brand_id = %s, category_id = %s, markup = %s, product_price = %s, first_sale_at = %s  WHERE product_id = %s',
+            (product.product_name, product.brand_id, product.category_id, product.markup,
              product.product_price, product.first_sale_at, product.product_id)
         )
 
