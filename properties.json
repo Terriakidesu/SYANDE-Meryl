@@ -6,5 +6,8 @@
         "path": "assets/public/profiles",
         "default": "assets/public/profiles/default/default.png",
         "size": 1280
+    },
+    "session": {
+        "timeout": 30
     }
 }

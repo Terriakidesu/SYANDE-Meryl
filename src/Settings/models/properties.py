@@ -12,6 +12,11 @@ class Profiles(BaseModel):
     default: str
 
 
+class Session(BaseModel):
+    timeout: int
+
+
 class Properties(BaseModel):
     env: Env
     profiles: Profiles
+    session: Session
