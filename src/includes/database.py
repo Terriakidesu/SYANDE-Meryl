@@ -31,13 +31,12 @@ class Database:
     def commitOne(self, statement: str, params: Sequence[MySQLConvertibleType] | Dict[str, MySQLConvertibleType] = ()):
         cursor = self.execute(statement, params=params)
         self.db.commit()
-        return cursor.rowcount
+        return cursor
 
     def commitMany(self, statement: str, params: Sequence[Sequence[MySQLConvertibleType] | Dict[str, MySQLConvertibleType]]):
         cursor = self.executeMany(statement, params)
         self.db.commit()
-        return cursor.rowcount
-
+        return cursor
 
     def execute(self, statement: str, params: Sequence[MySQLConvertibleType] | Dict[str, MySQLConvertibleType] = ()):
         cursor = self.cursor(
