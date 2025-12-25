@@ -435,7 +435,7 @@ async def edit_variant(request: Request, variant: Annotated[Variant, Form()]):
         )
 
 
-@inventory_router.delete("/sizes/delete/")
+@inventory_router.delete("/variants/delete/")
 async def delete_variant(request: Request, variant_id: int):
     try:
         rowCount = db.commitOne(
@@ -457,6 +457,6 @@ async def delete_variant(request: Request, variant_id: int):
         )
 
 
-@inventory_router.get("/sizes/{size_id}", response_class=JSONResponse)
+@inventory_router.get("/variants/{variant_id}", response_class=JSONResponse)
 async def fetch_variant(request: Request, variant_id: int):
     return db.fetchAll(r'SELECT * FROM variants WHERE variant_id = %s', (variant_id,))
