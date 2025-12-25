@@ -1,9 +1,11 @@
 from typing import Optional
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Form, Query
 from fastapi.responses import JSONResponse
 
 from ...includes import Database
+from ...models.sales import Sale
+from ...models.inventory import Variant
 
 sales_router = APIRouter(prefix="/api/sales")
 
@@ -13,6 +15,21 @@ db = Database()
 @sales_router.get("/", response_class=JSONResponse)
 async def list_sales(request: Request):
     return db.fetchAll(r'SELECT * FROM sales')
+
+
+@sales_router.post("/add", response_class=JSONResponse)
+async def add_sale(request: Request,
+                   user_id: int = Form(),
+                   customer_name: str = Form(),
+                   total_amount: float = Form(),
+                   cash_received: float = Form(),
+                   change_amount: float = Form(),
+                   items: str = Form()
+                   ):
+
+    # items_tuple = tuple((item,) for item in items)
+
+    print(items)
 
 
 @sales_router.get("/{sale_id}", response_class=JSONResponse)
