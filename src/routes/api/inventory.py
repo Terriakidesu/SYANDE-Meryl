@@ -43,7 +43,7 @@ async def add_product(request: Request, product: Annotated[ProductForm, Form()])
 
         return {
             "success": True,
-            "message": f"Affected {rowCount} row"
+            "message": f"Successfully Added Product."
         }
     except Exception as e:
         return JSONResponse({
@@ -72,7 +72,7 @@ async def edit_product(request: Request, product: Annotated[Product, Form()]):
 
         return {
             "success": True,
-            "message": f"Affected {rowCount} row"
+            "message": "Successfully Updated Product."
         }
     except Exception as e:
         return JSONResponse({
@@ -94,7 +94,7 @@ async def delete_product(request: Request, product_id: int):
 
         return {
             "success": True,
-            "message": f"Affected {rowCount} rows"
+            "message": "Successfully Deleted Product."
         }
     except Exception as e:
         return JSONResponse({
@@ -128,7 +128,7 @@ async def add_brand(request: Request, brand_name: str = Form()):
 
         return {
             "success": True,
-            "message": f"Affected {rowCount} row"
+            "message": f"Successfully Added Brand."
         }
     except Exception as e:
         return JSONResponse({
@@ -154,7 +154,7 @@ async def edit_brand(request: Request, brand: Annotated[Brand, Form()]):
 
         return {
             "success": True,
-            "message": f"Affected {rowCount} row"
+            "message": f"Successfully Updated Product."
         }
     except Exception as e:
         return JSONResponse({
@@ -176,7 +176,7 @@ async def delete_brand(request: Request, brand_id: int):
 
         return {
             "success": True,
-            "message": f"Affected {rowCount} rows"
+            "message": f"Successfully Deleted Product."
         }
     except Exception as e:
         return JSONResponse({
@@ -209,7 +209,7 @@ async def add_category(request: Request, category_name: str = Form()):
 
         return {
             "success": True,
-            "message": f"Affected {rowCount} row"
+            "message": f"Successfully Added Category."
         }
     except Exception as e:
         return JSONResponse({
@@ -235,7 +235,7 @@ async def edit_category(request: Request, category: Annotated[Category, Form()])
 
         return {
             "success": True,
-            "message": f"Affected {rowCount} row"
+            "message": f"Successfully Updated Category."
         }
     except Exception as e:
         return JSONResponse({
@@ -257,7 +257,7 @@ async def delete_category(request: Request, category_id: int):
 
         return {
             "success": True,
-            "message": f"Affected {rowCount} rows"
+            "message": f"Successfully Deleted Category."
         }
     except Exception as e:
         return JSONResponse({
@@ -297,7 +297,7 @@ async def add_size(request: Request, size: float = Form(), sizing_system: str = 
 
         return {
             "success": True,
-            "message": f"Affected {rowCount} row"
+            "message": f"Successfully Added Size."
         }
     except Exception as e:
         return JSONResponse({
@@ -327,7 +327,7 @@ async def edit_size(request: Request, size: Annotated[Size, Form()]):
 
         return {
             "success": True,
-            "message": f"Affected {rowCount} row"
+            "message": f"Successfully Updated Size."
         }
     except Exception as e:
         return JSONResponse({
@@ -349,7 +349,7 @@ async def delete_size(request: Request, size_id: int):
 
         return {
             "success": True,
-            "message": f"Affected {rowCount} rows"
+            "message": f"Successfully Deleted Size."
         }
     except Exception as e:
         return JSONResponse({
