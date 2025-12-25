@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from typing import Dict
+from typing import Dict, Any
 
 import mysql.connector
 from mysql.connector.abstracts import MySQLConvertibleType  # type: ignore
@@ -22,11 +22,11 @@ class Database:
             database=Settings.secrets.db_database
         )
 
-    def fetchAll(self, statement: str, params: Sequence[MySQLConvertibleType] | Dict[str, MySQLConvertibleType] = ()):
-        return self.execute(statement, params).fetchall()
+    def fetchAll(self, statement: str, params: Sequence[MySQLConvertibleType] | Dict[str, MySQLConvertibleType] = ()) -> list[Dict[str, Any]]:
+        return self.execute(statement, params).fetchall()  # type: ignore
 
-    def fetchOne(self, statement: str, params: Sequence[MySQLConvertibleType] | Dict[str, MySQLConvertibleType] = ()):
-        return self.execute(statement, params).fetchone()
+    def fetchOne(self, statement: str, params: Sequence[MySQLConvertibleType] | Dict[str, MySQLConvertibleType] = ()) -> Dict[str, Any] | None:
+        return self.execute(statement, params).fetchone()  # type: ignore
 
     def commitOne(self, statement: str, params: Sequence[MySQLConvertibleType] | Dict[str, MySQLConvertibleType] = ()):
         cursor = self.execute(statement, params=params)
