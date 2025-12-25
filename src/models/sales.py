@@ -10,7 +10,7 @@ class Sale(BaseModel):
     total_amount: float
     cash_received: float
     change_amount: float
-    sales_date = datetime
+    sales_date: datetime
 
 
 class Sales_Item(BaseModel):
