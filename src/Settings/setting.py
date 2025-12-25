@@ -1,19 +1,29 @@
 import os
+import json
 
 from dotenv import load_dotenv
 
-from .models import Secrets
-
-SECRETS_ENV_PATH = os.path.join("secrets.env")
+from .models import Secrets, Properties
 
 
 class SettingsClass:
 
     def __init__(self) -> None:
+
+        self.load_properties()
         self.load_secrets()
 
+    def load_properties(self):
+        with open("properties.json", "r") as f:
+            properties_json = json.load(f)
+
+        properties = Properties(**properties_json)
+
+        self.env = properties.env
+        self.profiles = properties.profiles
+
     def load_secrets(self) -> None:
-        load_dotenv(SECRETS_ENV_PATH)
+        load_dotenv(self.env.path)
 
         db_hostname = os.getenv("db_hostname")
         db_username = os.getenv("db_username")
