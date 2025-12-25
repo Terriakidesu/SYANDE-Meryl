@@ -21,7 +21,14 @@ class User(BaseModel):
     last_name: str
     username: str
     password: str
-    craeted_at: datetime
+    created_at: datetime
+
+
+class UserForm(BaseModel):
+    user_id: int
+    first_name: str
+    last_name: str
+    username: str
 
 
 class Phone(BaseModel):
