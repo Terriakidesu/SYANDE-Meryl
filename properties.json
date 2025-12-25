@@ -1,0 +1,10 @@
+{
+    "env": {
+        "path": "secrets.env"
+    },
+    "profiles": {
+        "path": "assets/public/profiles",
+        "default": "assets/public/profiles/default/default.png",
+        "size": 1280
+    }
+}
