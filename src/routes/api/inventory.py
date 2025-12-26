@@ -1,7 +1,12 @@
 
 from typing import Optional, Annotated
 
-from fastapi import APIRouter, Request, Form
+import os
+import shutil
+from io import BytesIO
+from PIL import Image
+
+from fastapi import APIRouter, Request, Form, File, UploadFile
 from fastapi.responses import JSONResponse
 
 from ...includes import Database
@@ -26,21 +31,62 @@ async def list_products(request: Request):
 
 
 @inventory_router.post("/products/add", response_class=JSONResponse)
-async def add_product(request: Request, product: Annotated[ProductForm, Form()]):
+async def add_product(request: Request,
+                      file: UploadFile | None = File(None),
+                      product_name: str = Form(),
+                      brand_id: int = Form(),
+                      category_id: int = Form(),
+                      markup: int = Form(),
+                      product_price: float = Form(),
+                      first_sale_at: str = Form()):
     try:
-
-        if product.product_name.strip() == "":
+        if product_name.strip() == "":
             raise DatabaseException("product_name is empty.")
 
-        db.commitOne(
+        cursor = db.commitOne(
             r'INSERT INTO products (product_name, brand_id, category_id, markup, product_price, first_sale_at) VALUES (%s, %s, %s, %s, %s, %s)',
-            (product.product_name, product.brand_id, product.category_id, product.markup,
-             product.product_price, product.first_sale_at)
+            (product_name, brand_id, category_id, markup, product_price, first_sale_at)
         )
+
+        product_id = cursor.lastrowid
+
+        # Handle image upload
+        if file is not None:
+            if not file.content_type or not file.content_type.startswith("image"):
+                return JSONResponse(
+                    {"success": False, "message": f"Uploaded file ({file.content_type}) is not an image."},
+                    status_code=415
+                )
+
+            # Create product directory
+            from ...Settings import Settings
+            product_dir = os.path.join(Settings.products.path, f"product-{product_id:05d}")
+            os.makedirs(product_dir, exist_ok=True)
+
+            # Process image
+            image = Image.open(file.file)
+            if image.mode in ('RGBA', 'P'):
+                image = image.convert("RGB")
+            image = image.resize((Settings.products.size, Settings.products.size))
+
+            # Save image
+            buffer = BytesIO()
+            image.save(buffer, format="JPEG", quality=Settings.products.quality)
+            buffer.seek(0)
+
+            image_path = os.path.join(product_dir, f"product-{product_id:05d}.jpeg")
+            with open(image_path, "wb") as f:
+                f.write(buffer.read())
+        else:
+            # Copy default image
+            from ...Settings import Settings
+            product_dir = os.path.join(Settings.products.path, f"product-{product_id:05d}")
+            os.makedirs(product_dir, exist_ok=True)
+            shutil.copy(Settings.products.default, os.path.join(product_dir, f"product-{product_id:05d}.jpeg"))
 
         return {
             "success": True,
-            "message": f"Successfully Added Product."
+            "message": "Successfully Added Product."
         }
     except Exception as e:
         return JSONResponse({
