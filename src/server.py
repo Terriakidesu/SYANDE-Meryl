@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request
 
 from .routes.api import (
+    auth_router,
     inventory_router,
     management_router,
     sales_router,
@@ -9,6 +10,7 @@ from .routes.api import (
 
 app = FastAPI()
 
+app.include_router(auth_router)
 app.include_router(management_router)
 app.include_router(inventory_router)
 app.include_router(users_router)
