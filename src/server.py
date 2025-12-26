@@ -10,7 +10,7 @@ from .routes.api import (
     sales_router,
     users_router
 )
-from .Settings import Settings
+from .Settings import Settings, setup_logging
 
 logger = logging.getLogger(__name__)
 
@@ -24,14 +24,7 @@ class LoggingMiddleware(BaseHTTPMiddleware):
 app = FastAPI()
 
 # Setup logging
-logging.basicConfig(
-    level=getattr(logging, Settings.logging.level.upper(), logging.INFO),
-    format=Settings.logging.format,
-    handlers=[
-        logging.StreamHandler(),
-        *(logging.FileHandler(Settings.logging.file) for _ in [None] if Settings.logging.file)
-    ]
-)
+setup_logging()
 
 # Add middlewares
 app.add_middleware(LoggingMiddleware)

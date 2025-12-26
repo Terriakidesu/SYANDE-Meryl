@@ -13,17 +13,23 @@ logger = logging.getLogger(__name__)
 
 def setup_logging():
     """Setup logging configuration."""
+    from datetime import datetime
+    log_file = None
+    if Settings.logging.file:
+        log_dir = Path(Settings.logging.file).parent
+        log_dir.mkdir(parents=True, exist_ok=True)
+        timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        log_file = log_dir / f"app-{timestamp}.log"
+
     logging.basicConfig(
         level=getattr(logging, Settings.logging.level.upper(), logging.INFO),
         format=Settings.logging.format,
         handlers=[
             logging.StreamHandler(),
-            *(logging.FileHandler(Settings.logging.file) for _ in [None] if Settings.logging.file)
+            *(logging.FileHandler(str(log_file)) for _ in [None] if log_file)
         ]
     )
-    if Settings.logging.file:
-        log_dir = Path(Settings.logging.file).parent
-        log_dir.mkdir(parents=True, exist_ok=True)
+    if log_file:
         for handler in logging.getLogger().handlers:
             if isinstance(handler, logging.FileHandler):
                 handler.setLevel(logging.DEBUG)
