@@ -75,7 +75,7 @@ class SettingsClass:
         db_database = os.getenv("DB_DATABASE", "")
 
         # Validate required secrets
-        if not db_username or not db_password or not db_database:
+        if not db_username or not db_database:
             logger.warning(
                 "Some database credentials are missing from environment variables")
 
