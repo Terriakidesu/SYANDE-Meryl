@@ -47,19 +47,13 @@ async def add_sale(request: Request,
 
 
 @sales_router.get("/{sale_id}", response_class=JSONResponse)
-async def fetch_sale(request: Request, sale_id: Optional[int] = None):
+async def fetch_sale(request: Request, sale_id: int):
 
-    if sale_id is None:
-        return []
-
-    return db.fetchAll(r'SELECT * FROM sales WHERE sales_id = %s', (sale_id,))
+    return db.fetchOne(r'SELECT * FROM sales WHERE sale_id = %s', (sale_id,))
 
 
 @sales_router.get("/{sale_id}/items", response_class=JSONResponse)
 async def list_sales_items(request: Request, sale_id: int):
-
-    if sale_id is None:
-        return []
 
     return db.fetchAll(r'SELECT * FROM sales_items WHERE sale_id = %s', (sale_id,))
 
@@ -70,8 +64,5 @@ async def list_returns(request: Request):
 
 
 @sales_router.get("/returns/{return_id}", response_class=JSONResponse)
-async def fetch_return(request: Request, return_id: Optional[int] = None):
-    if return_id is None:
-        return []
-
-    return db.fetchAll(r'SELECT * FROM returns WHERE return_id = %s', (return_id,))
+async def fetch_return(request: Request, return_id: int):
+    return db.fetchOne(r'SELECT * FROM returns WHERE return_id = %s', (return_id,))

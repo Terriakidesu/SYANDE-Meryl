@@ -33,7 +33,7 @@ async def add_product(request: Request, product: Annotated[ProductForm, Form()])
             raise DatabaseException("product_name is empty.")
 
         db.commitOne(
-            r'INSERT INTO products (prodct_name, brand_id, category_id, markup, product_price, first_sale_at) VALUES (%s, %s, %s, %s, %s, %s)',
+            r'INSERT INTO products (product_name, brand_id, category_id, markup, product_price, first_sale_at) VALUES (%s, %s, %s, %s, %s, %s)',
             (product.product_name, product.brand_id, product.category_id, product.markup,
              product.product_price, product.first_sale_at)
         )
@@ -87,7 +87,7 @@ async def delete_product(request: Request, product_id: int):
             r'DELETE FROM products WHERE product_id = %s', (product_id,)).rowcount
 
         if rowCount <= 0:
-            raise DatabaseException("brand_id doesn't exist.")
+            raise DatabaseException("product_id doesn't exist.")
 
         return {
             "success": True,
@@ -128,7 +128,7 @@ async def list_popular(request: Request, limit: int = 10):
 
 
 @inventory_router.get("/products/{product_id}", response_class=JSONResponse)
-async def fetch_product(request: Request, product_id: Optional[int] = None):
+async def fetch_product(request: Request, product_id: int):
 
     return db.fetchOne(r'SELECT * FROM products WHERE product_id = %s', (product_id,))
 
@@ -176,7 +176,7 @@ async def edit_brand(request: Request, brand: Annotated[Brand, Form()]):
 
         return {
             "success": True,
-            "message": f"Successfully Updated Product."
+            "message": f"Successfully Updated Brand."
         }
     except Exception as e:
         return JSONResponse({
@@ -198,7 +198,7 @@ async def delete_brand(request: Request, brand_id: int):
 
         return {
             "success": True,
-            "message": f"Successfully Deleted Product."
+            "message": f"Successfully Deleted Brand."
         }
     except Exception as e:
         return JSONResponse({
@@ -211,7 +211,7 @@ async def delete_brand(request: Request, brand_id: int):
 
 @inventory_router.get("/brands/{brand_id}", response_class=JSONResponse)
 async def fetch_brand(request: Request, brand_id: int):
-    return db.fetchAll(r'SELECT * FROM brands WHERE brand_id = %s', (brand_id,))
+    return db.fetchOne(r'SELECT * FROM brands WHERE brand_id = %s', (brand_id,))
 
 
 @inventory_router.get("/categories", response_class=JSONResponse)
@@ -292,7 +292,7 @@ async def delete_category(request: Request, category_id: int):
 
 @inventory_router.get("/categories/{category_id}", response_class=JSONResponse)
 async def fetch_category(request: Request, category_id: int):
-    return db.fetchAll(r'SELECT * FROM category WHERE category_id = %s', (category_id,))
+    return db.fetchOne(r'SELECT * FROM categories WHERE category_id = %s', (category_id,))
 
 
 @inventory_router.get("/sizes", response_class=JSONResponse)
@@ -304,7 +304,7 @@ async def list_sizes(request: Request):
 async def add_size(request: Request, size: float = Form(), sizing_system: str = Form()):
     try:
 
-        if size <= 0:
+        if size < 0:
             raise DatabaseException("size cannot be negative.")
 
         if sizing_system.strip() == "":
@@ -384,7 +384,7 @@ async def delete_size(request: Request, size_id: int):
 
 @inventory_router.get("/sizes/{size_id}", response_class=JSONResponse)
 async def fetch_size(request: Request, size_id: int):
-    return db.fetchAll(r'SELECT * FROM sizes WHERE size_id = %s', (size_id,))
+    return db.fetchOne(r'SELECT * FROM sizes WHERE size_id = %s', (size_id,))
 
 
 @inventory_router.get("/variants", response_class=JSONResponse)
@@ -410,7 +410,7 @@ async def add_variant(request: Request,
             raise DatabaseException("variant_stock is invalid.")
 
         db.commitOne(
-            r'INSERT INTO sizes (product_id, size_id, variant_stock) VALUES (%s, %s, %s)', (product_id, size_id, variant_stock))
+            r'INSERT INTO variants (product_id, size_id, variant_stock) VALUES (%s, %s, %s)', (product_id, size_id, variant_stock))
 
         return {
             "success": True,
@@ -442,7 +442,7 @@ async def edit_variant(request: Request, variant: Annotated[Variant, Form()]):
             raise DatabaseException("variant_stock is invalid.")
 
         db.commitOne(
-            r'UPDATE sizes SET product_id = %s, size_id = %s, variant_stock = %s WHERE size_id = %s',
+            r'UPDATE variants SET product_id = %s, size_id = %s, variant_stock = %s WHERE variant_id = %s',
             (variant.product_id, variant.size_id,
              variant.variant_stock, variant.variant_id)
         )
@@ -484,4 +484,4 @@ async def delete_variant(request: Request, variant_id: int):
 
 @inventory_router.get("/variants/{variant_id}", response_class=JSONResponse)
 async def fetch_variant(request: Request, variant_id: int):
-    return db.fetchAll(r'SELECT * FROM variants WHERE variant_id = %s', (variant_id,))
+    return db.fetchOne(r'SELECT * FROM variants WHERE variant_id = %s', (variant_id,))
