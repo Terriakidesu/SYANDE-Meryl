@@ -1,4 +1,4 @@
-from typing import Optional, Annotated
+from typing import Optional
 
 from fastapi import APIRouter, Request, Form
 from fastapi.responses import JSONResponse
