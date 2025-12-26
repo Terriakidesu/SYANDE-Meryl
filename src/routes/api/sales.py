@@ -46,10 +46,10 @@ async def add_sale(request: Request,
                     db.commitOne(r'INSERT INTO sales_items (sale_id, variant_id, markup, quantity, price) VALUES (%s, %s, %s, %s, %s)',
                                  (sale_id, variant_id, markup, quantity, price))
 
-        return {
+        return JSONResponse({
             "success": True,
             "message": "Sale added successfully"
-        }
+        }, status_code=201)
     except Exception as e:
         return JSONResponse({
             "success": False,
@@ -138,10 +138,10 @@ async def add_return(request: Request,
         db.commitOne(r'INSERT INTO returns (sale_id, customer_name, return_reason, total_refund) VALUES (%s, %s, %s, %s)',
                      (sale_id, customer_name, return_reason, total_refund))
 
-        return {
+        return JSONResponse({
             "success": True,
             "message": "Return added successfully"
-        }
+        }, status_code=201)
     except Exception as e:
         return JSONResponse({
             "success": False,

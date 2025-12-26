@@ -29,10 +29,10 @@ async def add_role(request: Request, role_name: str = Form()):
 
         db.commitOne(r'INSERT INTO roles (role_name) VALUES (%s)', (role_name,))
 
-        return {
+        return JSONResponse({
             "success": True,
             "message": "Successfully Added Role."
-        }
+        }, status_code=201)
     except Exception as e:
         return JSONResponse({
             "success": False,
@@ -105,10 +105,10 @@ async def add_permission(request: Request, permission_name: str = Form()):
 
         db.commitOne(r'INSERT INTO permissions (permission_name) VALUES (%s)', (permission_name,))
 
-        return {
+        return JSONResponse({
             "success": True,
             "message": "Successfully Added Permission."
-        }
+        }, status_code=201)
     except Exception as e:
         return JSONResponse({
             "success": False,

@@ -84,10 +84,10 @@ async def add_product(request: Request,
             os.makedirs(product_dir, exist_ok=True)
             shutil.copy(Settings.products.default, os.path.join(product_dir, f"product-{product_id:05d}.jpeg"))
 
-        return {
+        return JSONResponse({
             "success": True,
             "message": "Successfully Added Product."
-        }
+        }, status_code=201)
     except Exception as e:
         return JSONResponse({
             "success": False,
@@ -194,10 +194,10 @@ async def add_brand(request: Request, brand_name: str = Form()):
         db.commitOne(
             r'INSERT INTO brands (brand_name) VALUES (%s)', (brand_name,))
 
-        return {
+        return JSONResponse({
             "success": True,
-            "message": f"Successfully Added Brand."
-        }
+            "message": "Successfully Added Brand."
+        }, status_code=201)
     except Exception as e:
         return JSONResponse({
             "success": False,
@@ -275,10 +275,10 @@ async def add_category(request: Request, category_name: str = Form()):
         db.commitOne(
             r'INSERT INTO categories (category_name) VALUES (%s)', (category_name,))
 
-        return {
+        return JSONResponse({
             "success": True,
-            "message": f"Successfully Added Category."
-        }
+            "message": "Successfully Added Category."
+        }, status_code=201)
     except Exception as e:
         return JSONResponse({
             "success": False,
@@ -363,10 +363,10 @@ async def add_size(request: Request, size: float = Form(), sizing_system: str = 
         db.commitOne(
             r'INSERT INTO sizes (size, sizing_system) VALUES (%s, %s)', (size, sizing_system))
 
-        return {
+        return JSONResponse({
             "success": True,
-            "message": f"Successfully Added Size."
-        }
+            "message": "Successfully Added Size."
+        }, status_code=201)
     except Exception as e:
         return JSONResponse({
             "success": False,
@@ -458,10 +458,10 @@ async def add_variant(request: Request,
         db.commitOne(
             r'INSERT INTO variants (product_id, size_id, variant_stock) VALUES (%s, %s, %s)', (product_id, size_id, variant_stock))
 
-        return {
+        return JSONResponse({
             "success": True,
-            "message": f"Successfully Added Variant."
-        }
+            "message": "Successfully Added Variant."
+        }, status_code=201)
     except Exception as e:
         return JSONResponse({
             "success": False,

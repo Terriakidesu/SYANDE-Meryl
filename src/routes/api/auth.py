@@ -35,10 +35,10 @@ async def register(request: Request,
 
         # Note: Profile handling omitted for simplicity
 
-        return {
+        return JSONResponse({
             "success": True,
             "message": "User registered successfully"
-        }
+        }, status_code=201)
     except Exception as e:
         return JSONResponse({
             "success": False,
