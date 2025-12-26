@@ -35,7 +35,8 @@ class SettingsClass:
         """Load properties from properties.json with error handling."""
         properties_path = Path("properties.json")
         if not properties_path.exists():
-            raise FileNotFoundError(f"Properties file not found: {properties_path}")
+            raise FileNotFoundError(
+                f"Properties file not found: {properties_path}")
 
         try:
             with open(properties_path, "r", encoding="utf-8") as f:
@@ -52,7 +53,15 @@ class SettingsClass:
 
         self._properties = properties
         self.env = properties.env
+        self.database = properties.database
+        self.api = properties.api
+        self.logging = properties.logging
+        self.security = properties.security
         self.profiles = properties.profiles
+        self.products = properties.products
+        self.session = properties.session
+        self.cache = properties.cache
+        self.rate_limiting = properties.rate_limiting
         logger.info("Properties loaded successfully")
 
     def load_secrets(self) -> None:
@@ -73,7 +82,8 @@ class SettingsClass:
 
         # Validate required secrets
         if not db_username or not db_password or not db_database:
-            logger.warning("Some database credentials are missing from environment variables")
+            logger.warning(
+                "Some database credentials are missing from environment variables")
 
         try:
             self._secrets = Secrets(
