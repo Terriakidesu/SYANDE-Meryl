@@ -22,6 +22,8 @@ def setup_logging():
         ]
     )
     if Settings.logging.file:
+        log_dir = Path(Settings.logging.file).parent
+        log_dir.mkdir(parents=True, exist_ok=True)
         for handler in logging.getLogger().handlers:
             if isinstance(handler, logging.FileHandler):
                 handler.setLevel(logging.DEBUG)
