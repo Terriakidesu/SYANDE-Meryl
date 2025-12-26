@@ -11,6 +11,22 @@ from .models import Secrets, Properties
 
 logger = logging.getLogger(__name__)
 
+def setup_logging():
+    """Setup logging configuration."""
+    logging.basicConfig(
+        level=getattr(logging, Settings.logging.level.upper(), logging.INFO),
+        format=Settings.logging.format,
+        handlers=[
+            logging.StreamHandler(),
+            *(logging.FileHandler(Settings.logging.file) for _ in [None] if Settings.logging.file)
+        ]
+    )
+    if Settings.logging.file:
+        for handler in logging.getLogger().handlers:
+            if isinstance(handler, logging.FileHandler):
+                handler.setLevel(logging.DEBUG)
+                handler.setFormatter(logging.Formatter(Settings.logging.format))
+
 
 class SettingsClass:
     _instance: Optional['SettingsClass'] = None
@@ -53,6 +69,7 @@ class SettingsClass:
 
         self._properties = properties
         self.env = properties.env
+        self.logging = properties.logging
         self.profiles = properties.profiles
         self.products = properties.products
         self.session = properties.session

@@ -1,5 +1,5 @@
 
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel
 
 
@@ -9,7 +9,12 @@ class EnvironmentSettings(BaseModel):
     debug: bool = False
 
 
-
+class LoggingSettings(BaseModel):
+    level: str = "INFO"
+    format: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    file: Optional[str] = None
+    max_file_size: int = 10485760
+    backup_count: int = 5
 
 
 class ProfileSettings(BaseModel):
@@ -39,6 +44,7 @@ class SessionSettings(BaseModel):
 
 class Properties(BaseModel):
     env: EnvironmentSettings
+    logging: LoggingSettings = LoggingSettings()
     profiles: ProfileSettings
     products: ProductSettings
     session: SessionSettings
