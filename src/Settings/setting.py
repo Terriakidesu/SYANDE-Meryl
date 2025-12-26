@@ -11,12 +11,13 @@ from .models import Secrets, Properties
 
 logger = logging.getLogger(__name__)
 
+
 def setup_logging():
     """Setup logging configuration."""
     from datetime import datetime
     log_file = None
-    if Settings.logging.file:
-        log_dir = Path(Settings.logging.file).parent
+    if Settings.logging.path:
+        log_dir = Path(Settings.logging.path)
         log_dir.mkdir(parents=True, exist_ok=True)
         timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
         log_file = log_dir / f"app-{timestamp}.log"
@@ -33,7 +34,8 @@ def setup_logging():
         for handler in logging.getLogger().handlers:
             if isinstance(handler, logging.FileHandler):
                 handler.setLevel(logging.DEBUG)
-                handler.setFormatter(logging.Formatter(Settings.logging.format))
+                handler.setFormatter(
+                    logging.Formatter(Settings.logging.format))
 
 
 class SettingsClass:
@@ -98,7 +100,8 @@ class SettingsClass:
         db_username = os.getenv("DB_USERNAME", "")
         db_password = os.getenv("DB_PASSWORD", "")
         db_database = os.getenv("DB_DATABASE", "")
-        session_secret_key = os.getenv("SESSION_SECRET_KEY", "your-session-secret-change-in-production")
+        session_secret_key = os.getenv(
+            "SESSION_SECRET_KEY", "your-session-secret-change-in-production")
 
         # Validate required secrets
         if not db_username or not db_database:

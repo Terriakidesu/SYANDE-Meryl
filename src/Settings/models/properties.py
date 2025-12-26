@@ -12,7 +12,7 @@ class EnvironmentSettings(BaseModel):
 class LoggingSettings(BaseModel):
     level: str = "INFO"
     format: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    file: Optional[str] = None
+    path: str = "logs"
     max_file_size: int = 10485760
     backup_count: int = 5
 
@@ -36,7 +36,6 @@ class ProductSettings(BaseModel):
 
 class SessionSettings(BaseModel):
     timeout: int
-    cookie_name: str = "session_id"
     secure: bool = False
     httponly: bool = True
 
