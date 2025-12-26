@@ -102,10 +102,35 @@ async def delete_product(request: Request, product_id: int):
         )
 
 
+@inventory_router.get("/products/popular", response_class=JSONResponse)
+async def list_popular(request: Request):
+
+    return db.fetchAll(r"""
+            SELECT
+                p.product_id,
+                p.product_name,
+                SUM(si.quantity) AS total_quantity,
+                SUM(si.price) AS total_revenue
+            FROM
+                sales_items si
+            JOIN variants v ON
+                si.variant_id = v.variant_id
+            JOIN products p ON
+                v.product_id = p.product_id
+            GROUP BY
+                p.product_id,
+                p.product_name
+            ORDER BY
+                total_quantity
+            DESC
+            LIMIT 10;
+               """)
+
+
 @inventory_router.get("/products/{product_id}", response_class=JSONResponse)
 async def fetch_product(request: Request, product_id: Optional[int] = None):
 
-    return db.fetchOne(r"SELECT * FROM products WHERE product_id = %s", (product_id,))
+    return db.fetchOne(r'SELECT * FROM products WHERE product_id = %s', (product_id,))
 
 
 @inventory_router.get("/brands", response_class=JSONResponse)
