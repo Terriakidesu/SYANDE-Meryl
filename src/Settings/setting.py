@@ -53,15 +53,9 @@ class SettingsClass:
 
         self._properties = properties
         self.env = properties.env
-        self.database = properties.database
-        self.api = properties.api
-        self.logging = properties.logging
-        self.security = properties.security
         self.profiles = properties.profiles
         self.products = properties.products
         self.session = properties.session
-        self.cache = properties.cache
-        self.rate_limiting = properties.rate_limiting
         logger.info("Properties loaded successfully")
 
     def load_secrets(self) -> None:
