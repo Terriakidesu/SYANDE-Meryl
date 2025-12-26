@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 
 from ...includes import Database
 from ...exceptions import DatabaseException
-from ...models.sales import Sale
+from ...models.sales import Sale, Return
 from ...models.inventory import Variant
 
 sales_router = APIRouter(prefix="/api/sales")
@@ -131,9 +131,14 @@ async def list_returns(request: Request):
 
 
 @sales_router.post("/returns/add", response_class=JSONResponse)
-async def add_return(request: Request, sale_id: int = Form(), reason: str = Form()):
+async def add_return(request: Request,
+                     sale_id: int = Form(),
+                     customer_name: str = Form(),
+                     return_reason: str = Form(),
+                     total_refund: float = Form()):
     try:
-        db.commitOne(r'INSERT INTO returns (sale_id, reason) VALUES (%s, %s)', (sale_id, reason))
+        db.commitOne(r'INSERT INTO returns (sale_id, customer_name, return_reason, total_refund) VALUES (%s, %s, %s, %s)',
+                     (sale_id, customer_name, return_reason, total_refund))
 
         return {
             "success": True,
@@ -149,12 +154,18 @@ async def add_return(request: Request, sale_id: int = Form(), reason: str = Form
 
 
 @sales_router.post("/returns/update", response_class=JSONResponse)
-async def update_return(request: Request, return_id: int = Form(), sale_id: int = Form(), reason: str = Form()):
+async def update_return(request: Request,
+                        return_id: int = Form(),
+                        sale_id: int = Form(),
+                        customer_name: str = Form(),
+                        return_reason: str = Form(),
+                        total_refund: float = Form()):
     try:
         if return_id < 0:
             raise DatabaseException("return_id cannot be negative")
 
-        db.commitOne(r'UPDATE returns SET sale_id = %s, reason = %s WHERE return_id = %s', (sale_id, reason, return_id))
+        db.commitOne(r'UPDATE returns SET sale_id = %s, customer_name = %s, return_reason = %s, total_refund = %s WHERE return_id = %s',
+                     (sale_id, customer_name, return_reason, total_refund, return_id))
 
         return {
             "success": True,
