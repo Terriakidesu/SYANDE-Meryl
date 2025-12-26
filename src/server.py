@@ -13,7 +13,7 @@ from .Settings import Settings
 app = FastAPI()
 
 # Add session middleware
-app.add_middleware(SessionMiddleware, secret_key=Settings.secrets.session_secret_key or "fallback-secret")
+app.add_middleware(SessionMiddleware, secret_key=Settings.secrets.session_secret_key)
 
 app.include_router(auth_router)
 app.include_router(management_router)
