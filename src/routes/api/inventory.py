@@ -103,7 +103,7 @@ async def delete_product(request: Request, product_id: int):
 
 
 @inventory_router.get("/products/popular", response_class=JSONResponse)
-async def list_popular(request: Request):
+async def list_popular(request: Request, limit: int = 10):
 
     return db.fetchAll(r"""
             SELECT
@@ -123,8 +123,8 @@ async def list_popular(request: Request):
             ORDER BY
                 total_quantity
             DESC
-            LIMIT 10;
-               """)
+            LIMIT %s;
+               """, (limit,))
 
 
 @inventory_router.get("/products/{product_id}", response_class=JSONResponse)
