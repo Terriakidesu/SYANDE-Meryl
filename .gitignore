@@ -1,6 +1,9 @@
 .venv/**/*
 .vscode/**/*
 **/__pycache__/**/*
+
+logs/**
+
 assets/public/profiles/**/*
 assets/public/products/**/*
 
