@@ -21,7 +21,6 @@ class User(BaseModel):
     last_name: str
     username: str
     password: str
-    created_at: datetime
 
 
 class UserForm(BaseModel):
