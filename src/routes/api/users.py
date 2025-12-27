@@ -307,7 +307,7 @@ async def list_user_role_permissions(request: Request, user_id: int, role_id: in
                     FROM user_roles ur
                     JOIN role_permissions rp ON rp.role_id = ur.role_id
                     JOIN permissions p ON rp.permission_id = p.permission_id
-                     WHERE ur.user_id = %s AND rp.role_id = %s
+                    WHERE ur.user_id = %s AND rp.role_id = %s
                     """, (user_id, role_id))
 
 
@@ -315,9 +315,9 @@ async def list_user_role_permissions(request: Request, user_id: int, role_id: in
 async def fetch_user_role_permission(request: Request, user_id: int, role_id: int, permission_id: int):
 
     return db.fetchOne(r""" 
-                        SELECT p.*
-                        FROM user_roles ur
-                        JOIN role_permissions rp ON rp.role_id = ur.role_id
-                        JOIN permissions p ON rp.permission_id = p.permission_id
-                        WHERE ur.user_id = %s AND rp.role_id = %s AND rp.permission_id = %s
+                    SELECT p.*
+                    FROM user_roles ur
+                    JOIN role_permissions rp ON rp.role_id = ur.role_id
+                    JOIN permissions p ON rp.permission_id = p.permission_id
+                    WHERE ur.user_id = %s AND rp.role_id = %s AND rp.permission_id = %s
                     """, (user_id, role_id, permission_id))
