@@ -99,7 +99,9 @@ async def add_user(request: Request,
 
 @users_router.post("/update", response_class=JSONResponse)
 async def update_user(request: Request, user: Annotated[UserForm, Form()], user_perms: list[str] = Depends(user_permissions)):
-    utils.check_user_permissions(user_perms, "manage_users")
+
+    if user.user_id != request.session["user_id"]:
+        utils.check_user_permissions(user_perms, "manage_users")
 
     try:
 
@@ -138,7 +140,9 @@ async def update_user(request: Request, user: Annotated[UserForm, Form()], user_
 
 @users_router.post("/updatePassword", response_class=JSONResponse)
 async def update_user_password(request: Request, user_id: int = Form(), password: str = Form(), user_perms: list[str] = Depends(user_permissions)):
-    utils.check_user_permissions(user_perms, "manage_users")
+
+    if user_id != request.session["user_id"]:
+        utils.check_user_permissions(user_perms, "manage_users")
 
     try:
 
