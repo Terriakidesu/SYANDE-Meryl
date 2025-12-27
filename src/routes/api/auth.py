@@ -9,7 +9,7 @@ from ...models.users import User
 from ...models.session import Session
 from ... import utils
 
-auth_router = APIRouter(prefix="/api/auth")
+auth_router = APIRouter(prefix="/auth")
 
 db = Database()
 

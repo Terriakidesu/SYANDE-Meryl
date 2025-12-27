@@ -3,7 +3,6 @@ import shutil
 from io import BytesIO
 from typing import Annotated, Optional
 
-import bcrypt
 from fastapi import APIRouter, File, Form, Request, UploadFile
 from fastapi.responses import JSONResponse
 from PIL import Image
@@ -14,7 +13,7 @@ from ...includes import Database
 from ...models.users import UserForm
 from ...Settings import Settings
 
-users_router = APIRouter(prefix="/api/users")
+users_router = APIRouter(prefix="/users")
 
 db = Database()
 

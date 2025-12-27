@@ -19,7 +19,7 @@ def setup_logging():
     if Settings.logging.path:
         log_dir = Path(Settings.logging.path)
         log_dir.mkdir(parents=True, exist_ok=True)
-        timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        timestamp = datetime.now().strftime("%Y%m%d-%H%M")
         log_file = log_dir / f"app-{timestamp}.log"
 
     logging.basicConfig(

@@ -6,7 +6,7 @@ from ...exceptions import DatabaseException
 from ...models.sales import Sale, Return
 from ...models.inventory import Variant
 
-sales_router = APIRouter(prefix="/api/sales")
+sales_router = APIRouter(prefix="/sales")
 
 db = Database()
 

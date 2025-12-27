@@ -6,27 +6,32 @@ import shutil
 from io import BytesIO
 from PIL import Image
 
-from fastapi import APIRouter, Request, Form, File, UploadFile
+from fastapi import APIRouter, Request, Form, File, UploadFile, Depends
 from fastapi.responses import JSONResponse
 
+from ... import utils
+from ...depedencies import is_authenticated, user_permissions
 from ...includes import Database
 from ...models.inventory import (
     Brand,
     Category,
     Product,
-    ProductForm,
     Size,
     Variant
 )
 from ...exceptions import DatabaseException
 
-inventory_router = APIRouter(prefix="/api/inventory")
+inventory_router = APIRouter(prefix="/inventory",
+                             dependencies=[Depends(is_authenticated)])
 
 db = Database()
 
 
 @inventory_router.get("/products", response_class=JSONResponse)
-async def list_products(request: Request):
+async def list_products(request: Request, user_perms: list[str] = Depends(user_permissions)):
+
+    utils.check_user_permissions(user_perms, "view_invetory", "manage_inventory")
+
     return db.fetchAll(r"SELECT * FROM products")
 
 
@@ -45,7 +50,8 @@ async def add_product(request: Request,
 
         cursor = db.commitOne(
             r'INSERT INTO products (product_name, brand_id, category_id, markup, product_price, first_sale_at) VALUES (%s, %s, %s, %s, %s, %s)',
-            (product_name, brand_id, category_id, markup, product_price, first_sale_at)
+            (product_name, brand_id, category_id,
+             markup, product_price, first_sale_at)
         )
 
         product_id = cursor.lastrowid
@@ -54,35 +60,42 @@ async def add_product(request: Request,
         if file is not None:
             if not file.content_type or not file.content_type.startswith("image"):
                 return JSONResponse(
-                    {"success": False, "message": f"Uploaded file ({file.content_type}) is not an image."},
+                    {"success": False,
+                        "message": f"Uploaded file ({file.content_type}) is not an image."},
                     status_code=415
                 )
 
             # Create product directory
             from ...Settings import Settings
-            product_dir = os.path.join(Settings.products.path, f"product-{product_id:05d}")
+            product_dir = os.path.join(
+                Settings.products.path, f"product-{product_id:05d}")
             os.makedirs(product_dir, exist_ok=True)
 
             # Process image
             image = Image.open(file.file)
             if image.mode in ('RGBA', 'P'):
                 image = image.convert("RGB")
-            image = image.resize((Settings.products.size, Settings.products.size))
+            image = image.resize(
+                (Settings.products.size, Settings.products.size))
 
             # Save image
             buffer = BytesIO()
-            image.save(buffer, format="JPEG", quality=Settings.products.quality)
+            image.save(buffer, format="JPEG",
+                       quality=Settings.products.quality)
             buffer.seek(0)
 
-            image_path = os.path.join(product_dir, f"product-{product_id:05d}.jpeg")
+            image_path = os.path.join(
+                product_dir, f"product-{product_id:05d}.jpeg")
             with open(image_path, "wb") as f:
                 f.write(buffer.read())
         else:
             # Copy default image
             from ...Settings import Settings
-            product_dir = os.path.join(Settings.products.path, f"product-{product_id:05d}")
+            product_dir = os.path.join(
+                Settings.products.path, f"product-{product_id:05d}")
             os.makedirs(product_dir, exist_ok=True)
-            shutil.copy(Settings.products.default, os.path.join(product_dir, f"product-{product_id:05d}.jpeg"))
+            shutil.copy(Settings.products.default, os.path.join(
+                product_dir, f"product-{product_id:05d}.jpeg"))
 
         return JSONResponse({
             "success": True,

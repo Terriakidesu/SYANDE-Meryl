@@ -1,18 +1,14 @@
 import logging
 from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from .routes.api import (
-    auth_router,
-    inventory_router,
-    management_router,
-    sales_router,
-    users_router
-)
+from .routes.api import api_router
 from .Settings import Settings, setup_logging
 
 logger = logging.getLogger(__name__)
+
 
 class LoggingMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
@@ -21,6 +17,7 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         logger.info(f"Response: {response.status_code}")
         return response
 
+
 app = FastAPI()
 
 # Setup logging
@@ -28,13 +25,10 @@ setup_logging()
 
 # Add middlewares
 app.add_middleware(LoggingMiddleware)
-app.add_middleware(SessionMiddleware, secret_key=Settings.secrets.session_secret_key)
+app.add_middleware(SessionMiddleware,
+                   secret_key=Settings.secrets.session_secret_key)
 
-app.include_router(auth_router)
-app.include_router(management_router)
-app.include_router(inventory_router)
-app.include_router(users_router)
-app.include_router(sales_router)
+app.include_router(api_router)
 
 
 @app.get("/")
@@ -49,3 +43,16 @@ async def list_endpoints(request: Request):
     ]
 
     return url_list
+
+
+@app.exception_handler(401)
+async def unauthorized_handler(request: Request, exception):
+
+
+    return JSONResponse(
+        {
+            "success": False,
+            "message": f"{exception}"
+        },
+        status_code=401
+    )

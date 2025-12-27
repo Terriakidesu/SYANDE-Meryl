@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 from ...includes import Database
 from ...exceptions import DatabaseException
 
-management_router = APIRouter(prefix="/api")
+management_router = APIRouter(prefix="")
 
 db = Database()
 

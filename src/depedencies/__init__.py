@@ -19,9 +19,7 @@ async def is_authenticated(request: Request):
 
         elapsed_time = now - logged_at
 
-        print(elapsed_time)
-
-        if elapsed_time.total_seconds() >= 60:
+        if elapsed_time.total_seconds() >= (Settings.session.timeout * 60):
 
             request.session.clear()
 
@@ -31,7 +29,7 @@ async def is_authenticated(request: Request):
     raise HTTPException(status_code=401, detail="Unauthorized Access")
 
 
-async def user_permissions(request: Request):
+async def user_permissions(request: Request) -> list[str]:
 
     user_id = request.session.get("user_id")
 
