@@ -48,7 +48,6 @@ async def list_endpoints(request: Request):
 @app.exception_handler(401)
 async def unauthorized_handler(request: Request, exception):
 
-
     return JSONResponse(
         {
             "success": False,
