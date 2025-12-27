@@ -8,13 +8,14 @@ from fastapi.responses import JSONResponse
 from PIL import Image
 
 from ... import utils
-from ...depedencies import user_permissions
+from ...depedencies import user_permissions, is_authenticated
 from ...exceptions import DatabaseException
 from ...includes import Database
 from ...models.users import UserForm
 from ...Settings import Settings
 
-users_router = APIRouter(prefix="/users")
+users_router = APIRouter(prefix="/users",
+                         dependencies=[Depends(is_authenticated)])
 
 db = Database()
 
