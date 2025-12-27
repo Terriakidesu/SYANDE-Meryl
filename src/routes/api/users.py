@@ -302,22 +302,22 @@ async def fetch_user_role(request: Request, user_id: int, role_id):
 @users_router.get("/{user_id}/roles/{role_id}/permissions", response_class=JSONResponse)
 async def list_user_role_permissions(request: Request, user_id: int, role_id: int):
 
-    role = db.fetchOne(
-        r'SELECT * FROM user_roles WHERE user_id = %s AND role_id = %s', (user_id, role_id))
-
-    if role is None:
-        return []
-
-    return db.fetchAll(r'SELECT * FROM role_permissions WHERE role_id', (role_id,))
+    return db.fetchAll(r"""
+                    SELECT p.*
+                    FROM user_roles ur
+                    JOIN role_permissions rp ON rp.role_id = ur.role_id
+                    JOIN permissions p ON rp.permission_id = p.permission_id
+                     WHERE ur.user_id = %s AND rp.role_id = %s
+                    """, (user_id, role_id))
 
 
 @users_router.get("/{user_id}/roles/{role_id}/permissions/{permission_id}", response_class=JSONResponse)
 async def fetch_user_role_permission(request: Request, user_id: int, role_id: int, permission_id: int):
 
-    role = db.fetchOne(
-        r'SELECT * FROM user_roles WHERE user_id = %s AND role_id = %s', (user_id, role_id))
-
-    if role is None:
-        return []
-
-    return db.fetchAll(r'SELECT * FROM role_permissions WHERE role_id = %s AND permission_id = %s', (role_id, permission_id))
+    return db.fetchOne(r""" 
+                        SELECT p.*
+                        FROM user_roles ur
+                        JOIN role_permissions rp ON rp.role_id = ur.role_id
+                        JOIN permissions p ON rp.permission_id = p.permission_id
+                        WHERE ur.user_id = %s AND rp.role_id = %s AND rp.permission_id = %s
+                    """, (user_id, role_id, permission_id))
