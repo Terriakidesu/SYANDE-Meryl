@@ -3,11 +3,12 @@ import shutil
 from io import BytesIO
 from typing import Annotated, Optional
 
-from fastapi import APIRouter, File, Form, Request, UploadFile
+from fastapi import APIRouter, File, Form, Request, UploadFile, Depends
 from fastapi.responses import JSONResponse
 from PIL import Image
 
 from ... import utils
+from ...depedencies import user_permissions
 from ...exceptions import DatabaseException
 from ...includes import Database
 from ...models.users import UserForm
@@ -19,7 +20,9 @@ db = Database()
 
 
 @users_router.get("/", response_class=JSONResponse)
-async def list_users(request: Request):
+async def list_users(request: Request, user_perms: list[str] = Depends(user_permissions)):
+    utils.check_user_permissions(user_perms, "view_users", "manage_users")
+
     return db.fetchAll(r'SELECT * FROM users')
 
 
@@ -31,8 +34,10 @@ async def add_user(request: Request,
                    username: str = Form(),
                    password: str = Form(),
                    phone: str = Form(),
-                   email: str = Form()
+                   email: str = Form(),
+                   user_perms: list[str] = Depends(user_permissions)
                    ):
+    utils.check_user_permissions(user_perms, "manage_users")
 
     if db.fetchOne(r'SELECT * FROM users WHERE username = %s', (username,)):
         raise DatabaseException("Username is already taken")
@@ -93,7 +98,9 @@ async def add_user(request: Request,
 
 
 @users_router.post("/update", response_class=JSONResponse)
-async def update_user(request: Request, user: Annotated[UserForm, Form()]):
+async def update_user(request: Request, user: Annotated[UserForm, Form()], user_perms: list[str] = Depends(user_permissions)):
+    utils.check_user_permissions(user_perms, "manage_users")
+
     try:
 
         if user.user_id < 0:
@@ -130,7 +137,9 @@ async def update_user(request: Request, user: Annotated[UserForm, Form()]):
 
 
 @users_router.post("/updatePassword", response_class=JSONResponse)
-async def update_user_password(request: Request, user_id: int = Form(), password: str = Form()):
+async def update_user_password(request: Request, user_id: int = Form(), password: str = Form(), user_perms: list[str] = Depends(user_permissions)):
+    utils.check_user_permissions(user_perms, "manage_users")
+
     try:
 
         if user_id < 0:
@@ -166,7 +175,8 @@ async def update_user_password(request: Request, user_id: int = Form(), password
 
 
 @users_router.delete("/delete", response_class=JSONResponse)
-async def delete_user(request: Request, user_id: int):
+async def delete_user(request: Request, user_id: int, user_perms: list[str] = Depends(user_permissions)):
+    utils.check_user_permissions(user_perms, "manage_users")
 
     if user_id is None or user_id < 0:
         return JSONResponse(
@@ -206,7 +216,8 @@ async def delete_user(request: Request, user_id: int):
 
 
 @users_router.get("/{user_id}", response_class=JSONResponse)
-async def fetch_user(request: Request, user_id: Optional[int] = None):
+async def fetch_user(request: Request, user_id: Optional[int] = None, user_perms: list[str] = Depends(user_permissions)):
+    utils.check_user_permissions(user_perms, "view_users", "manage_users")
 
     if user_id is None:
         return []
@@ -215,25 +226,29 @@ async def fetch_user(request: Request, user_id: Optional[int] = None):
 
 
 @users_router.get("/{user_id}/phones", response_class=JSONResponse)
-async def list_user_phone(request: Request, user_id: int):
+async def list_user_phone(request: Request, user_id: int, user_perms: list[str] = Depends(user_permissions)):
+    utils.check_user_permissions(user_perms, "view_users", "manage_users")
 
     return db.fetchAll(r'SELECT * FROM phones WHERE user_id = %s', (user_id, ))
 
 
 @users_router.get("/{user_id}/emails", response_class=JSONResponse)
-async def list_user_emails(request: Request, user_id: int):
+async def list_user_emails(request: Request, user_id: int, user_perms: list[str] = Depends(user_permissions)):
+    utils.check_user_permissions(user_perms, "view_users", "manage_users")
 
     return db.fetchAll(r'SELECT * FROM emails WHERE user_id = %s', (user_id, ))
 
 
 @users_router.get("/{user_id}/roles", response_class=JSONResponse)
-async def list_user_roles(request: Request, user_id: int):
+async def list_user_roles(request: Request, user_id: int, user_perms: list[str] = Depends(user_permissions)):
+    utils.check_user_permissions(user_perms, "view_users", "manage_users")
 
     return db.fetchAll(r'SELECT * FROM user_roles WHERE user_id = %s', (user_id, ))
 
 
 @users_router.post("/{user_id}/roles/add", response_class=JSONResponse)
-async def add_user_role(request: Request, user_id: int, role_id: int = Form()):
+async def add_user_role(request: Request, user_id: int, role_id: int = Form(), user_perms: list[str] = Depends(user_permissions)):
+    utils.check_user_permissions(user_perms, "manage_users")
 
     if not db.fetchOne(r'SELECT * FROM users where user_id = %s', (user_id,)):
         return JSONResponse(
@@ -263,7 +278,8 @@ async def add_user_role(request: Request, user_id: int, role_id: int = Form()):
 
 
 @users_router.delete("/{user_id}/roles/delete", response_class=JSONResponse)
-async def delete_user_role(request: Request, user_id: int, role_id: int = Form()):
+async def delete_user_role(request: Request, user_id: int, role_id: int = Form(), user_perms: list[str] = Depends(user_permissions)):
+    utils.check_user_permissions(user_perms, "manage_users")
 
     if not db.fetchOne(r'SELECT * FROM users where user_id = %s', (user_id,)):
         return JSONResponse(
@@ -293,14 +309,16 @@ async def delete_user_role(request: Request, user_id: int, role_id: int = Form()
 
 
 @users_router.get("/{user_id}/roles/{role_id}", response_class=JSONResponse)
-async def fetch_user_role(request: Request, user_id: int, role_id):
+async def fetch_user_role(request: Request, user_id: int, role_id, user_perms: list[str] = Depends(user_permissions)):
+    utils.check_user_permissions(user_perms, "view_users", "manage_users")
 
     return db.fetchOne(
         r'SELECT * FROM user_roles WHERE user_id = %s AND role_id = %s', (user_id, role_id))
 
 
 @users_router.get("/{user_id}/roles/{role_id}/permissions", response_class=JSONResponse)
-async def list_user_role_permissions(request: Request, user_id: int, role_id: int):
+async def list_user_role_permissions(request: Request, user_id: int, role_id: int, user_perms: list[str] = Depends(user_permissions)):
+    utils.check_user_permissions(user_perms, "view_users", "manage_users")
 
     return db.fetchAll(r"""
                     SELECT p.*
@@ -312,9 +330,10 @@ async def list_user_role_permissions(request: Request, user_id: int, role_id: in
 
 
 @users_router.get("/{user_id}/roles/{role_id}/permissions/{permission_id}", response_class=JSONResponse)
-async def fetch_user_role_permission(request: Request, user_id: int, role_id: int, permission_id: int):
+async def fetch_user_role_permission(request: Request, user_id: int, role_id: int, permission_id: int, user_perms: list[str] = Depends(user_permissions)):
+    utils.check_user_permissions(user_perms, "view_users", "manage_users")
 
-    return db.fetchOne(r""" 
+    return db.fetchOne(r"""
                     SELECT p.*
                     FROM user_roles ur
                     JOIN role_permissions rp ON rp.role_id = ur.role_id
