@@ -48,7 +48,8 @@ async def add_shoe(request: Request,
                    user_perms: list[str] = Depends(user_permissions)
                    ):
 
-    utils.check_user_permissions(user_perms, "manage_inventory")
+    utils.check_user_permissions(
+        user_perms, permissions.inventory.manage_inventory)
 
     try:
         if shoe_name.strip() == "":
@@ -119,7 +120,8 @@ async def add_shoe(request: Request,
 @inventory_router.post("/shoes/update", response_class=JSONResponse)
 async def edit_shoe(request: Request, shoe: Annotated[Shoe, Form()], user_perms: list[str] = Depends(user_permissions)):
 
-    utils.check_user_permissions(user_perms, "manage_inventory")
+    utils.check_user_permissions(
+        user_perms, permissions.inventory.manage_inventory)
 
     try:
 
@@ -204,7 +206,7 @@ async def list_popular(request: Request, limit: int = 10, user_perms: list[str] 
 async def fetch_shoe(request: Request, shoe_id: int, user_perms: list[str] = Depends(user_permissions)):
 
     utils.check_user_permissions(
-        user_perms, "view_inventory", "manage_inventory")
+        user_perms, permissions.inventory.view_inventory, permissions.inventory.manage_inventory)
 
     return db.fetchOne(r'SELECT * FROM shoes WHERE shoe_id = %s', (shoe_id,))
 
@@ -213,7 +215,7 @@ async def fetch_shoe(request: Request, shoe_id: int, user_perms: list[str] = Dep
 async def list_brands(request: Request, user_perms: list[str] = Depends(user_permissions)):
 
     utils.check_user_permissions(
-        user_perms, "view_inventory", "manage_inventory")
+        user_perms, permissions.inventory.view_inventory, permissions.inventory.manage_inventory)
 
     return db.fetchAll(r'SELECT * FROM brands')
 
