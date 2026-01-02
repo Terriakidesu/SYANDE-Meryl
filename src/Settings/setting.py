@@ -81,7 +81,7 @@ class SettingsClass:
         self.env = properties.env
         self.logging = properties.logging
         self.profiles = properties.profiles
-        self.shoes = properties.shoes
+        self.products = properties.products
         self.session = properties.session
         logger.info("Properties loaded successfully")
 
