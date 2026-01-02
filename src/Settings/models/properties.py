@@ -25,7 +25,7 @@ class ProfileSettings(BaseModel):
     supported_formats: List[str] = ["JPEG", "PNG"]
 
 
-class ProductSettings(BaseModel):
+class shoesettings(BaseModel):
     path: str
     size: int
     default: str
@@ -45,5 +45,5 @@ class Properties(BaseModel):
     env: EnvironmentSettings
     logging: LoggingSettings = LoggingSettings()
     profiles: ProfileSettings
-    products: ProductSettings
+    shoes: shoesettings
     session: SessionSettings

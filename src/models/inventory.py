@@ -21,26 +21,25 @@ class Size(BaseModel):
 
 class Variant(BaseModel):
     variant_id: int
-    product_id: int
+    shoe_id: int
     size_id: int
     variant_stock: int
 
 
-class Product(BaseModel):
-    product_id: int
-    product_name: str
+class Shoe(BaseModel):
+    shoe_id: int
+    shoe_name: str
     brand_id: int
-    category_id: int
     markup: int
-    product_price: float
+    shoe_price: float
     first_sale_at: datetime
     created_at: datetime
 
 
-class ProductForm(BaseModel):
-    product_name: str
+class shoeForm(BaseModel):
+    shoe_name: str
     brand_id: int
     category_id: int
     markup: int
-    product_price: float
+    shoe_price: float
     first_sale_at: datetime

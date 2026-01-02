@@ -35,13 +35,13 @@ async def add_sale(request: Request,
             item = item.strip().split(":")
             variant_id, quantity = [int(it) for it in item]
 
-            if result := db.fetchOne(r'SELECT product_id FROM variants WHERE variant_id = %s', (variant_id,)):
-                product_id = result["product_id"]
+            if result := db.fetchOne(r'SELECT shoe_id FROM variants WHERE variant_id = %s', (variant_id,)):
+                shoe_id = result["shoe_id"]
 
-                if product := db.fetchOne(r'SELECT product_price, markup FROM products WHERE product_id = %s', (product_id,)):
-                    product_price = product["product_price"]
-                    markup = product["markup"]
-                    price = product_price * (1 + markup / 100) * quantity
+                if shoe := db.fetchOne(r'SELECT shoe_price, markup FROM shoes WHERE shoe_id = %s', (shoe_id,)):
+                    shoe_price = shoe["shoe_price"]
+                    markup = shoe["markup"]
+                    price = shoe_price * (1 + markup / 100) * quantity
 
                     db.commitOne(r'INSERT INTO sales_items (sale_id, variant_id, markup, quantity, price) VALUES (%s, %s, %s, %s, %s)',
                                  (sale_id, variant_id, markup, quantity, price))

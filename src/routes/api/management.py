@@ -41,7 +41,8 @@ async def add_role(request: Request, role_name: str = Form(), permission_ids: Op
                         perm_id = int(pid)
                         permission_list.append(perm_id)
                     except ValueError:
-                        raise DatabaseException(f"Invalid permission ID: {pid}")
+                        raise DatabaseException(
+                            f"Invalid permission ID: {pid}")
 
             # Check if permissions exist
             if permission_list:
@@ -50,14 +51,17 @@ async def add_role(request: Request, role_name: str = Form(), permission_ids: Op
                     f'SELECT permission_id FROM permissions WHERE permission_id IN ({placeholders})',
                     tuple(permission_list)
                 )
-                existing_perm_ids = {p['permission_id'] for p in existing_perms}
+                existing_perm_ids = {p['permission_id']
+                                     for p in existing_perms}
 
                 if len(existing_perm_ids) != len(permission_list):
                     missing = set(permission_list) - existing_perm_ids
-                    raise DatabaseException(f"Permissions do not exist: {list(missing)}")
+                    raise DatabaseException(
+                        f"Permissions do not exist: {list(missing)}")
 
                 # Insert role_permissions efficiently
-                permissions = tuple((role_id, perm_id) for perm_id in permission_list)
+                permissions = tuple((role_id, perm_id)
+                                    for perm_id in permission_list)
                 db.commitMany(
                     r'INSERT INTO role_permissions (role_id, permission_id) VALUES (%s, %s)', permissions)
 
