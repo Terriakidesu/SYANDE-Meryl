@@ -20,17 +20,48 @@ class Inventory:
 
     manage_inventory = "manage_inventory"
     view_inventory = "view_inventory"
-
     manage_brands = "manage_brands"
     view_brands = "view_brands"
-
     manage_categories = "manage_categories"
-    view_categories = "manage_categories"
-
+    view_categories = "view_categories"
     manage_sizes = "manage_sizes"
     view_sizes = "view_sizes"
-
     manage_stocks = "manage_stocks"
+
+    @property
+    def get_inventory_permissions(self):
+        return (
+            self.manage_inventory,
+            self.view_inventory,
+            self.manage_brands,
+            self.view_brands,
+            self.manage_categories,
+            self.view_categories,
+            self.manage_sizes,
+            self.view_sizes,
+            self.manage_stocks
+        )
+
+    @property
+    def get_manage_brands_permissions(self):
+        return (
+            self.manage_brands,
+            self.view_brands
+        )
+
+    @property
+    def get_manage_sizes_permissions(self):
+        return (
+            self.manage_sizes,
+            self.view_sizes
+        )
+
+    @property
+    def get_manage_categories_permissions(self):
+        return (
+            self.manage_categories,
+            self.view_categories
+        )
 
 
 @dataclass
@@ -46,6 +77,13 @@ class Users:
     manage_users = "manage_users"
     view_users = "view_users"
 
+    @property
+    def get_user_permissions(self):
+        return (
+            self.manage_users,
+            self.view_users
+        )
+
 
 @dataclass
 class Sales:
@@ -59,6 +97,13 @@ class Sales:
 
     manage_sales = "manage_sales"
     view_sales = "view_sales"
+
+    @property
+    def get_sales_permissions(self):
+        return (
+            self.manage_sales,
+            self.view_sales
+        )
 
 
 @dataclass
@@ -88,8 +133,15 @@ class Management:
 
     manage_roles = "manage_roles"
     manage_role_permissions = "manage_roles_permissions"
-
     request_reports = "request_reports"
+
+    @property
+    def get_management_permissions(self):
+        return (
+            self.manage_roles,
+            self.manage_role_permissions,
+            self.request_reports
+        )
 
 
 @dataclass
