@@ -1,6 +1,10 @@
 import bcrypt
-
 from fastapi import HTTPException
+
+from .permissions import PermissionsClass
+
+
+Permissions = PermissionsClass
 
 
 def hash_password(password: str):

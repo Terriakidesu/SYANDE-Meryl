@@ -149,7 +149,7 @@ class Management:
 
 
 @dataclass
-class Permissions:
+class PermissionsClass:
     """
     Dataclass representing all permission categories in the system.
 
