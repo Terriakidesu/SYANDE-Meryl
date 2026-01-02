@@ -30,42 +30,9 @@ class Inventory:
     view_categories = "view_categories"
     manage_sizes = "manage_sizes"
     view_sizes = "view_sizes"
+    manage_variants = "manage_variants"
+    view_variants = "view_variants"
     manage_stocks = "manage_stocks"
-
-    @property
-    def get_inventory_permissions(self):
-        return (
-            self.manage_inventory,
-            self.view_inventory,
-            self.manage_brands,
-            self.view_brands,
-            self.manage_categories,
-            self.view_categories,
-            self.manage_sizes,
-            self.view_sizes,
-            self.manage_stocks
-        )
-
-    @property
-    def get_manage_brands_permissions(self):
-        return (
-            self.manage_brands,
-            self.view_brands
-        )
-
-    @property
-    def get_manage_sizes_permissions(self):
-        return (
-            self.manage_sizes,
-            self.view_sizes
-        )
-
-    @property
-    def get_manage_categories_permissions(self):
-        return (
-            self.manage_categories,
-            self.view_categories
-        )
 
 
 @dataclass
@@ -168,3 +135,6 @@ class PermissionsClass:
     users: Users = Users()
     pos: POS = POS()
     management: Management = Management()
+
+
+Permissions = PermissionsClass()

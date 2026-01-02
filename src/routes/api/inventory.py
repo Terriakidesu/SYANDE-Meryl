@@ -10,6 +10,7 @@ from fastapi import APIRouter, Request, Form, File, UploadFile, Depends
 from fastapi.responses import JSONResponse
 
 from ... import utils
+from ...utils import Permissions
 from ...depedencies import is_authenticated, user_permissions
 from ...includes import Database
 from ...models.inventory import (
@@ -31,7 +32,12 @@ db = Database()
 async def list_shoes(request: Request, user_perms: list[str] = Depends(user_permissions)):
 
     utils.check_user_permissions(
-        user_perms, "view_invetory", "manage_inventory")
+        user_perms,
+        Permissions.inventory.manage_inventory,
+        Permissions.inventory.view_inventory,
+        Permissions.inventory.view_shoes,
+        Permissions.inventory.view_shoes
+    )
 
     return db.fetchAll(r"SELECT * FROM shoes")
 
@@ -49,7 +55,10 @@ async def add_shoe(request: Request,
                    ):
 
     utils.check_user_permissions(
-        user_perms, permissions.inventory.manage_inventory)
+        user_perms,
+        Permissions.inventory.manage_inventory,
+        Permissions.inventory.manage_shoes
+    )
 
     try:
         if shoe_name.strip() == "":
@@ -121,7 +130,10 @@ async def add_shoe(request: Request,
 async def edit_shoe(request: Request, shoe: Annotated[Shoe, Form()], user_perms: list[str] = Depends(user_permissions)):
 
     utils.check_user_permissions(
-        user_perms, permissions.inventory.manage_inventory)
+        user_perms,
+        Permissions.inventory.manage_inventory,
+        Permissions.inventory.manage_shoes
+    )
 
     try:
 
@@ -153,7 +165,11 @@ async def edit_shoe(request: Request, shoe: Annotated[Shoe, Form()], user_perms:
 @inventory_router.delete("/shoes/delete/")
 async def delete_shoe(request: Request, shoe_id: int, user_perms: list[str] = Depends(user_permissions)):
 
-    utils.check_user_permissions(user_perms, "manage_inventory")
+    utils.check_user_permissions(
+        user_perms,
+        Permissions.inventory.manage_inventory,
+        Permissions.inventory.manage_shoes
+    )
 
     try:
         rowCount = db.commitOne(
@@ -178,7 +194,12 @@ async def delete_shoe(request: Request, shoe_id: int, user_perms: list[str] = De
 @inventory_router.get("/shoes/popular", response_class=JSONResponse)
 async def list_popular(request: Request, limit: int = 10, user_perms: list[str] = Depends(user_permissions)):
 
-    utils.check_user_permissions(user_perms, "manage_inventory")
+    utils.check_user_permissions(
+        user_perms,
+        Permissions.inventory.manage_inventory,
+        Permissions.inventory.view_inventory,
+        Permissions.inventory.view_shoes
+    )
 
     return db.fetchAll(r"""
             SELECT
@@ -206,7 +227,11 @@ async def list_popular(request: Request, limit: int = 10, user_perms: list[str] 
 async def fetch_shoe(request: Request, shoe_id: int, user_perms: list[str] = Depends(user_permissions)):
 
     utils.check_user_permissions(
-        user_perms, permissions.inventory.view_inventory, permissions.inventory.manage_inventory)
+        user_perms,
+        Permissions.inventory.manage_inventory,
+        Permissions.inventory.view_inventory,
+        Permissions.inventory.view_shoes
+    )
 
     return db.fetchOne(r'SELECT * FROM shoes WHERE shoe_id = %s', (shoe_id,))
 
@@ -215,14 +240,24 @@ async def fetch_shoe(request: Request, shoe_id: int, user_perms: list[str] = Dep
 async def list_brands(request: Request, user_perms: list[str] = Depends(user_permissions)):
 
     utils.check_user_permissions(
-        user_perms, permissions.inventory.view_inventory, permissions.inventory.manage_inventory)
+        user_perms,
+        Permissions.inventory.manage_inventory,
+        Permissions.inventory.view_inventory,
+        Permissions.inventory.manage_brands,
+        Permissions.inventory.view_brands,
+    )
 
     return db.fetchAll(r'SELECT * FROM brands')
 
 
 @inventory_router.post("/brands/add", response_class=JSONResponse)
 async def add_brand(request: Request, brand_name: str = Form(), user_perms: list[str] = Depends(user_permissions)):
-    utils.check_user_permissions(user_perms, "manage_inventory")
+
+    utils.check_user_permissions(
+        user_perms,
+        Permissions.inventory.manage_inventory,
+        Permissions.inventory.manage_brands,
+    )
 
     try:
 
@@ -247,7 +282,12 @@ async def add_brand(request: Request, brand_name: str = Form(), user_perms: list
 
 @inventory_router.post("/brands/update", response_class=JSONResponse)
 async def edit_brand(request: Request, brand: Annotated[Brand, Form()], user_perms: list[str] = Depends(user_permissions)):
-    utils.check_user_permissions(user_perms, "manage_inventory")
+
+    utils.check_user_permissions(
+        user_perms,
+        Permissions.inventory.manage_inventory,
+        Permissions.inventory.manage_brands,
+    )
 
     try:
 
@@ -275,7 +315,12 @@ async def edit_brand(request: Request, brand: Annotated[Brand, Form()], user_per
 
 @inventory_router.delete("/brands/delete/")
 async def delete_brand(request: Request, brand_id: int, user_perms: list[str] = Depends(user_permissions)):
-    utils.check_user_permissions(user_perms, "manage_inventory")
+
+    utils.check_user_permissions(
+        user_perms,
+        Permissions.inventory.manage_inventory,
+        Permissions.inventory.manage_brands,
+    )
 
     try:
         rowCount = db.commitOne(
@@ -300,7 +345,12 @@ async def delete_brand(request: Request, brand_id: int, user_perms: list[str] = 
 @inventory_router.get("/brands/{brand_id}", response_class=JSONResponse)
 async def fetch_brand(request: Request, brand_id: int, user_perms: list[str] = Depends(user_permissions)):
     utils.check_user_permissions(
-        user_perms, "view_inventory", "manage_inventory")
+        user_perms,
+        Permissions.inventory.manage_inventory,
+        Permissions.inventory.view_inventory,
+        Permissions.inventory.manage_brands,
+        Permissions.inventory.view_brands
+    )
 
     return db.fetchOne(r'SELECT * FROM brands WHERE brand_id = %s', (brand_id,))
 
@@ -308,14 +358,23 @@ async def fetch_brand(request: Request, brand_id: int, user_perms: list[str] = D
 @inventory_router.get("/categories", response_class=JSONResponse)
 async def list_categories(request: Request, user_perms: list[str] = Depends(user_permissions)):
     utils.check_user_permissions(
-        user_perms, "view_inventory", "manage_inventory")
+        user_perms,
+        Permissions.inventory.manage_inventory,
+        Permissions.inventory.view_inventory,
+        Permissions.inventory.manage_categories,
+        Permissions.inventory.view_categories
+    )
 
     return db.fetchAll(r'SELECT * FROM categories')
 
 
 @inventory_router.post("/categories/add", response_class=JSONResponse)
 async def add_category(request: Request, category_name: str = Form(), user_perms: list[str] = Depends(user_permissions)):
-    utils.check_user_permissions(user_perms, "manage_inventory")
+    utils.check_user_permissions(
+        user_perms,
+        Permissions.inventory.manage_inventory,
+        Permissions.inventory.manage_categories,
+    )
 
     try:
 
@@ -340,8 +399,11 @@ async def add_category(request: Request, category_name: str = Form(), user_perms
 
 @inventory_router.post("/categories/update", response_class=JSONResponse)
 async def edit_category(request: Request, category: Annotated[Category, Form()], user_perms: list[str] = Depends(user_permissions)):
-    utils.check_user_permissions(user_perms, "manage_inventory")
-
+    utils.check_user_permissions(
+        user_perms,
+        Permissions.inventory.manage_inventory,
+        Permissions.inventory.manage_categories,
+    )
     try:
 
         if category.category_id < 0:
@@ -368,7 +430,11 @@ async def edit_category(request: Request, category: Annotated[Category, Form()],
 
 @inventory_router.delete("/categories/delete/")
 async def delete_category(request: Request, category_id: int, user_perms: list[str] = Depends(user_permissions)):
-    utils.check_user_permissions(user_perms, "manage_inventory")
+    utils.check_user_permissions(
+        user_perms,
+        Permissions.inventory.manage_inventory,
+        Permissions.inventory.manage_categories,
+    )
 
     try:
         rowCount = db.commitOne(
@@ -393,7 +459,12 @@ async def delete_category(request: Request, category_id: int, user_perms: list[s
 @inventory_router.get("/categories/{category_id}", response_class=JSONResponse)
 async def fetch_category(request: Request, category_id: int, user_perms: list[str] = Depends(user_permissions)):
     utils.check_user_permissions(
-        user_perms, "view_inventory", "manage_inventory")
+        user_perms,
+        Permissions.inventory.manage_inventory,
+        Permissions.inventory.view_inventory,
+        Permissions.inventory.manage_categories,
+        Permissions.inventory.view_categories
+    )
 
     return db.fetchOne(r'SELECT * FROM categories WHERE category_id = %s', (category_id,))
 
@@ -401,14 +472,23 @@ async def fetch_category(request: Request, category_id: int, user_perms: list[st
 @inventory_router.get("/sizes", response_class=JSONResponse)
 async def list_sizes(request: Request, user_perms: list[str] = Depends(user_permissions)):
     utils.check_user_permissions(
-        user_perms, "view_inventory", "manage_inventory")
+        user_perms,
+        Permissions.inventory.manage_inventory,
+        Permissions.inventory.view_inventory,
+        Permissions.inventory.manage_sizes,
+        Permissions.inventory.view_sizes
+    )
 
     return db.fetchAll(r'SELECT * FROM sizes')
 
 
 @inventory_router.post("/sizes/add", response_class=JSONResponse)
 async def add_size(request: Request, size: float = Form(), sizing_system: str = Form(), user_perms: list[str] = Depends(user_permissions)):
-    utils.check_user_permissions(user_perms, "manage_inventory")
+    utils.check_user_permissions(
+        user_perms,
+        Permissions.inventory.manage_inventory,
+        Permissions.inventory.manage_sizes,
+    )
 
     try:
 
@@ -440,7 +520,11 @@ async def add_size(request: Request, size: float = Form(), sizing_system: str = 
 
 @inventory_router.post("/sizes/update", response_class=JSONResponse)
 async def edit_size(request: Request, size: Annotated[Size, Form()], user_perms: list[str] = Depends(user_permissions)):
-    utils.check_user_permissions(user_perms, "manage_inventory")
+    utils.check_user_permissions(
+        user_perms,
+        Permissions.inventory.manage_inventory,
+        Permissions.inventory.manage_sizes,
+    )
 
     try:
 
@@ -472,7 +556,11 @@ async def edit_size(request: Request, size: Annotated[Size, Form()], user_perms:
 
 @inventory_router.delete("/sizes/delete/")
 async def delete_size(request: Request, size_id: int, user_perms: list[str] = Depends(user_permissions)):
-    utils.check_user_permissions(user_perms, "manage_inventory")
+    utils.check_user_permissions(
+        user_perms,
+        Permissions.inventory.manage_inventory,
+        Permissions.inventory.manage_sizes,
+    )
 
     try:
         rowCount = db.commitOne(
@@ -497,7 +585,12 @@ async def delete_size(request: Request, size_id: int, user_perms: list[str] = De
 @inventory_router.get("/sizes/{size_id}", response_class=JSONResponse)
 async def fetch_size(request: Request, size_id: int, user_perms: list[str] = Depends(user_permissions)):
     utils.check_user_permissions(
-        user_perms, "view_inventory", "manage_inventory")
+        user_perms,
+        Permissions.inventory.manage_inventory,
+        Permissions.inventory.view_inventory,
+        Permissions.inventory.manage_sizes,
+        Permissions.inventory.view_sizes
+    )
 
     return db.fetchOne(r'SELECT * FROM sizes WHERE size_id = %s', (size_id,))
 
@@ -505,7 +598,12 @@ async def fetch_size(request: Request, size_id: int, user_perms: list[str] = Dep
 @inventory_router.get("/variants", response_class=JSONResponse)
 async def list_variants(request: Request, user_perms: list[str] = Depends(user_permissions)):
     utils.check_user_permissions(
-        user_perms, "view_inventory", "manage_inventory")
+        user_perms,
+        Permissions.inventory.manage_inventory,
+        Permissions.inventory.view_inventory,
+        Permissions.inventory.manage_variants,
+        Permissions.inventory.view_variants
+    )
 
     return db.fetchAll(r'SELECT * FROM variants')
 
@@ -517,7 +615,12 @@ async def add_variant(request: Request,
                       variant_stock: int = Form(),
                       user_perms: list[str] = Depends(user_permissions)
                       ):
-    utils.check_user_permissions(user_perms, "manage_inventory")
+
+    utils.check_user_permissions(
+        user_perms,
+        Permissions.inventory.manage_inventory,
+        Permissions.inventory.manage_variants,
+    )
 
     try:
 
@@ -548,8 +651,11 @@ async def add_variant(request: Request,
 
 @inventory_router.post("/variants/update", response_class=JSONResponse)
 async def edit_variant(request: Request, variant: Annotated[Variant, Form()], user_perms: list[str] = Depends(user_permissions)):
-    utils.check_user_permissions(user_perms, "manage_inventory")
-
+    utils.check_user_permissions(
+        user_perms,
+        Permissions.inventory.manage_inventory,
+        Permissions.inventory.manage_variants,
+    )
     try:
 
         if variant.variant_id is None or variant.variant_id < 0:
@@ -585,7 +691,11 @@ async def edit_variant(request: Request, variant: Annotated[Variant, Form()], us
 
 @inventory_router.delete("/variants/delete/")
 async def delete_variant(request: Request, variant_id: int, user_perms: list[str] = Depends(user_permissions)):
-    utils.check_user_permissions(user_perms, "manage_inventory")
+    utils.check_user_permissions(
+        user_perms,
+        Permissions.inventory.manage_inventory,
+        Permissions.inventory.manage_variants,
+    )
 
     try:
         rowCount = db.commitOne(
@@ -610,6 +720,11 @@ async def delete_variant(request: Request, variant_id: int, user_perms: list[str
 @inventory_router.get("/variants/{variant_id}", response_class=JSONResponse)
 async def fetch_variant(request: Request, variant_id: int, user_perms: list[str] = Depends(user_permissions)):
     utils.check_user_permissions(
-        user_perms, "view_inventory", "manage_inventory")
+        user_perms,
+        Permissions.inventory.manage_inventory,
+        Permissions.inventory.view_inventory,
+        Permissions.inventory.manage_variants,
+        Permissions.inventory.view_variants
+    )
 
     return db.fetchOne(r'SELECT * FROM variants WHERE variant_id = %s', (variant_id,))
