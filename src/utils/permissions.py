@@ -9,6 +9,8 @@ class Inventory:
     Attributes:
         manage_inventory (str): Permission to manage inventory items
         view_inventory (str): Permission to view inventory items
+        manage_brands (str): Permission to manage shoes
+        view_brands (str): Permission to view shoes
         manage_brands (str): Permission to manage product brands
         view_brands (str): Permission to view product brands
         manage_categories (str): Permission to manage product categories
@@ -20,6 +22,8 @@ class Inventory:
 
     manage_inventory = "manage_inventory"
     view_inventory = "view_inventory"
+    manage_shoes = "manage_shoes"
+    view_shoes = "view_shoes"
     manage_brands = "manage_brands"
     view_brands = "view_brands"
     manage_categories = "manage_categories"
