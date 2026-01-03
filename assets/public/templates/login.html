@@ -84,7 +84,7 @@
 </head>
 
 <body class="d-flex justify-content-center align-items-center vh-100">
-    <div id="card-container" class="container-fluid h-100 px-6 px-md-5">
+    <div id="card-container" class="container-fluid h-100 px-md-5 mx-md-5">
         <div class="row h-100 align-items-center bg-body-tertiary">
 
             <!-- Image Column -->
@@ -164,7 +164,7 @@
 
         document.getElementById('togglePassword').addEventListener('click', function () {
             const passwordInput = document.getElementById('password');
-            const icon = this.querySelector('i');
+            const icon = this.children[0];
 
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
@@ -183,7 +183,6 @@
 
             const formData = new FormData(e.target);
 
-
             fetch(e.target.action,
                 {
                     method: "POST",
@@ -194,6 +193,8 @@
             }).then(data => {
                 console.log(data)
             });
+
+
 
 
         });
