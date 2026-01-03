@@ -1,6 +1,8 @@
 import logging
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 
@@ -27,13 +29,56 @@ setup_logging()
 app.add_middleware(LoggingMiddleware)
 app.add_middleware(SessionMiddleware,
                    secret_key=Settings.secrets.session_secret_key)
-
 app.include_router(api_router)
 
 
+app.mount("/static", StaticFiles(directory="assets/public/static"), name="static")
+templates = Jinja2Templates(directory="assets/public/templates")
+
+
 @app.get("/")
-async def home():
-    return "Hello"
+async def home(request: Request):
+
+    if not request.session.get("authenticated"):
+        return RedirectResponse("/login")
+
+    return templates.TemplateResponse(request, "index.html")
+
+
+@app.get("/login")
+async def login(request: Request):
+
+    if request.session.get("authenticated"):
+        return RedirectResponse("/")
+
+    return templates.TemplateResponse(request, "login.html")
+
+
+@app.get("/register")
+async def register(request: Request):
+
+    if request.session.get("authenticated"):
+        return RedirectResponse("/")
+
+    return templates.TemplateResponse(request, "register.html")
+
+@app.get("/verify_otp")
+async def verify_otp(request: Request):
+
+    if request.session.get("authenticated"):
+        return RedirectResponse("/")
+
+    # Check if there's an active OTP session
+    if not request.session.get("otp"):
+        return RedirectResponse("/login")
+
+    return templates.TemplateResponse(request, "verify_otp.html")
+
+
+@app.get("/clearSession")
+async def clear_session(request: Request):
+
+    request.session.clear()
 
 
 @app.get("/endpoints")
