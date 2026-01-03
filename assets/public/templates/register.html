@@ -163,7 +163,7 @@
                             Create an Account
                         </h2>
                         <div class="container-fluid">
-                            <div class="row progress-container">
+                            <div class="row progress-container" id="progress-container">
                                 <div class="col progress-label progress-label-done progress-label-active">
                                     Details
                                 </div>
@@ -338,6 +338,7 @@
                     }).then(data => {
 
                         do_resend_timer();
+                        update_tabs("OTP");
 
                         if (data.success) {
                             let otp_form = document.querySelector("form#otp-form");
@@ -401,8 +402,9 @@
             let otp_form = document.querySelector("form#otp-form");
             let register_form = document.querySelector("form#register-form");
 
-            otp_form.querySelector("#email-span").textContent = "johndoe@email.com";
+            update_tabs("Details");
 
+            otp_form.querySelector("#email-span").textContent = "johndoe@email.com";
             otp_form.animate(
                 [
                     { opacity: 1 },
@@ -415,6 +417,8 @@
             ).addEventListener("finish", function () {
                 otp_form.style.display = "none";
                 register_form.style.display = "block";
+                
+
             });
         });
 
@@ -471,6 +475,48 @@
                 },
                 1000,
             );
+        }
+
+        function update_tabs(tab_name) {
+            let progress_container = document.querySelector("div#progress-container");
+            let tabs = progress_container.querySelectorAll("div.progress-label");
+            let x = 0;
+
+            switch (tab_name) {
+                case "Details":
+                    x = 0;
+                    break;
+                case "OTP":
+                    x = 1;
+                    break;
+                case "Done":
+                    x = 2;
+                    break;
+                default:
+                    return;
+            }
+
+            for (let i = 0; i < tabs.length; i++) {
+                let tab = tabs[i];
+
+                if (tab.classList.contains("progress-label-done")) {
+                    tab.classList.remove("progress-label-done");
+                }
+
+                if (tab.classList.contains("progress-label-active")) {
+                    tab.classList.remove("progress-label-active");
+                }
+
+                if (i <= x) {
+                    tab.classList.add("progress-label-done");
+                }
+
+                if (i == x) {
+                    tab.classList.add("progress-label-active");
+                }
+
+            }
+
         }
     </script>
 </body>
