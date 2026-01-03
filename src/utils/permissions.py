@@ -48,13 +48,6 @@ class Users:
     manage_users = "manage_users"
     view_users = "view_users"
 
-    @property
-    def get_user_permissions(self):
-        return (
-            self.manage_users,
-            self.view_users
-        )
-
 
 @dataclass
 class Sales:
@@ -68,13 +61,6 @@ class Sales:
 
     manage_sales = "manage_sales"
     view_sales = "view_sales"
-
-    @property
-    def get_sales_permissions(self):
-        return (
-            self.manage_sales,
-            self.view_sales
-        )
 
 
 @dataclass
@@ -106,16 +92,7 @@ class Management:
     manage_role_permissions = "manage_roles_permissions"
     request_reports = "request_reports"
 
-    @property
-    def get_management_permissions(self):
-        return (
-            self.manage_roles,
-            self.manage_role_permissions,
-            self.request_reports
-        )
 
-
-@dataclass
 class PermissionsClass:
     """
     Dataclass representing all permission categories in the system.

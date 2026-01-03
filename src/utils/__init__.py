@@ -1,8 +1,9 @@
+import random
+
 import bcrypt
 from fastapi import HTTPException
 
 from .permissions import Permissions
-
 
 
 def hash_password(password: str):
@@ -28,3 +29,12 @@ def check_user_permissions(user_permissions: list[str], *permissions: str):
             return True
 
     raise HTTPException(401, "Unauthorized Access - No valid permission")
+
+
+def generate_otp():
+
+    otp = ""
+    for _ in range(6):
+        otp += f"{random.randint(0, 9)}"
+
+    return otp
