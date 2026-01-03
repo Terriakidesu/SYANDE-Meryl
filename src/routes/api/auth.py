@@ -192,8 +192,6 @@ async def request_otp(request: Request, email: str = Form(), request_new: Annota
         request.session["otp_timestamp"] = datetime.now().timestamp()
         request.session["otp_cooldown_timestamp"] = datetime.now().timestamp()
 
-        print(request.session)
-
         send_otp_email(email, otp)
 
         return JSONResponse({
