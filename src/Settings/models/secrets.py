@@ -8,3 +8,5 @@ class Secrets(BaseModel):
     db_database:Optional[str]
 
     session_secret_key: str
+
+    resend_api_key: str

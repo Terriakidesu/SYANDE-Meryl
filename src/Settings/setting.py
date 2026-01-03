@@ -102,6 +102,7 @@ class SettingsClass:
         db_database = os.getenv("DB_DATABASE", "")
         session_secret_key = os.getenv(
             "SESSION_SECRET_KEY", "your-session-secret-change-in-production")
+        resend_api_key = os.getenv("RESEND_API_KEY", "")
 
         # Validate required secrets
         if not db_username or not db_database:
@@ -114,7 +115,8 @@ class SettingsClass:
                 db_username=db_username,
                 db_password=db_password,
                 db_database=db_database,
-                session_secret_key=session_secret_key
+                session_secret_key=session_secret_key,
+                resend_api_key=resend_api_key
             )
         except ValidationError as e:
             logger.error(f"Invalid secrets configuration: {e}")
