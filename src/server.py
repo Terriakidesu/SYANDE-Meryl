@@ -62,6 +62,7 @@ async def register(request: Request):
 
     return templates.TemplateResponse(request, "register.html")
 
+
 @app.get("/verify_otp")
 async def verify_otp(request: Request):
 
@@ -79,6 +80,8 @@ async def verify_otp(request: Request):
 async def clear_session(request: Request):
 
     request.session.clear()
+
+    return RedirectResponse("/")
 
 
 @app.get("/endpoints")
