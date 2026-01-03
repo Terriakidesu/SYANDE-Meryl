@@ -1,3 +1,4 @@
+from typing import Annotated, Optional
 from datetime import datetime
 
 from fastapi import APIRouter, Request, Form
@@ -133,9 +134,7 @@ async def logout(request: Request):
 
 
 @auth_router.post("/request_otp")
-async def request_otp(request: Request, email: str = Form()):
-
-    print(email)
+async def request_otp(request: Request, email: str = Form(), request_new: Annotated[bool, Form()] = False):
 
     if request.session.get("authenticated"):
         return JSONResponse({
@@ -154,7 +153,8 @@ async def request_otp(request: Request, email: str = Form()):
         )
 
     # Check if OTP is still valid (not expired)
-    if request.session.get("otp"):
+    if request.session.get("otp") and not request_new:
+
         otp_timestamp = request.session.get("otp_timestamp")
         if otp_timestamp:
             otp_timestamp = datetime.fromtimestamp(otp_timestamp)
@@ -226,7 +226,7 @@ async def verify_otp(request: Request, otp: str = Form()):
     if otp is None:
         return JSONResponse({
             "success": False,
-            "message": "OTP is invalid."
+            "message": "OTP is empty."
         },
             status_code=406
         )
@@ -282,6 +282,40 @@ async def verify_otp(request: Request, otp: str = Form()):
     return JSONResponse({
         "success": False,
         "message": "OTP is invalid."
+    },
+        status_code=200
+    )
+
+
+@auth_router.post("/verify_email")
+async def verify_email(request: Request, email: str = Form()):
+    if request.session.get("authenticated"):
+        return JSONResponse({
+            "success": False,
+            "message": "User is logged in"
+        },
+            status_code=406
+        )
+
+    if email is None:
+        return JSONResponse({
+            "success": False,
+            "message": "email is empty."
+        },
+            status_code=406
+        )
+
+    if _ := db.fetchOne(r"SELECT * FROM emails where email = %s", (email,)):
+        return JSONResponse({
+            "success": False,
+            "message": "email is already in use."
+        },
+            status_code=406
+        )
+
+    return JSONResponse({
+        "success": True,
+        "message": "email is not in use."
     },
         status_code=200
     )
