@@ -48,6 +48,8 @@ async def register(request: Request,
 
         # Note: Profile handling omitted for simplicity
 
+        request.session.pop("otp_verified", None)
+
         return JSONResponse({
             "success": True,
             "message": "User registered successfully"
