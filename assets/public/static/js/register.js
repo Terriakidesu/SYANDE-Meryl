@@ -15,6 +15,11 @@
 let resendInterval = undefined;
 const DEFAULT_RESEND_TIMEOUT = 30000; // 30 seconds in milliseconds
 
+// Password validation constants
+const PASSWORD_MIN_LENGTH = 8;
+const ALLOWED_SPECIAL_CHARS = '!@#$%^&*';
+const PASSWORD_REGEX = new RegExp(`^[a-zA-Z0-9${ALLOWED_SPECIAL_CHARS.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}]+$`);
+
 /**
  * DOM Element Cache
  * Centralized element references for better maintainability
@@ -36,7 +41,18 @@ const elements = {
 
     // OTP display elements
     otpEmailSpan: () => document.querySelector('#email-span'),
-    resendTimerSpan: () => elements.resendCodeButton.querySelector('span')
+    resendTimerSpan: () => elements.resendCodeButton.querySelector('span'),
+
+    // Password elements
+    passwordInput: () => document.getElementById('password'),
+    passwordRequirements: {
+        length: () => document.getElementById('req-length'),
+        uppercase: () => document.getElementById('req-uppercase'),
+        lowercase: () => document.getElementById('req-lowercase'),
+        number: () => document.getElementById('req-number'),
+        special: () => document.getElementById('req-special'),
+        validChars: () => document.getElementById('req-valid-chars')
+    }
 };
 
 /**
@@ -347,6 +363,89 @@ async function animateFormTransition(fromForm, toForm, isBackNavigation = false)
 }
 
 /**
+ * Validate password requirements
+ * @param {string} password - Password to validate
+ * @returns {Object} Validation results for each requirement
+ */
+function validatePassword(password) {
+    if (!password) {
+        return {
+            length: false,
+            uppercase: false,
+            lowercase: false,
+            number: false,
+            special: false,
+            validChars: true
+        };
+    }
+
+    return {
+        length: password.length >= PASSWORD_MIN_LENGTH,
+        uppercase: /[A-Z]/.test(password),
+        lowercase: /[a-z]/.test(password),
+        number: /[0-9]/.test(password),
+        special: new RegExp(`[${ALLOWED_SPECIAL_CHARS.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}]`).test(password),
+        validChars: PASSWORD_REGEX.test(password)
+    };
+}
+
+/**
+ * Update password requirement indicators based on validation
+ * @param {Object} validation - Validation results from validatePassword
+ */
+function updatePasswordRequirements(validation) {
+    const requirements = elements.passwordRequirements;
+
+    // Update each requirement indicator
+    Object.entries(validation).forEach(([requirement, isValid]) => {
+        const element = requirements[requirement]();
+        if (element) {
+            element.classList.remove('valid', 'invalid');
+
+            if (isValid) {
+                element.classList.add('valid');
+            } else if (requirement !== 'validChars' || !isValid) {
+                element.classList.add('invalid');
+            }
+        }
+    });
+}
+
+/**
+ * Setup realtime password validation
+ */
+function setupPasswordValidation() {
+    const passwordInput = elements.passwordInput();
+    if (!passwordInput) return;
+
+    // Add input event listener for realtime validation
+    passwordInput.addEventListener('input', function() {
+        const password = this.value;
+        const validation = validatePassword(password);
+        updatePasswordRequirements(validation);
+    });
+
+    // Add blur event listener to validate when field loses focus
+    passwordInput.addEventListener('blur', function() {
+        const password = this.value;
+        const validation = validatePassword(password);
+
+        // Only show invalid state if field has been touched
+        if (password.length > 0) {
+            updatePasswordRequirements(validation);
+
+            // Validate overall password strength
+            const isPasswordValid = Object.values(validation).every(Boolean);
+            if (!isPasswordValid) {
+                this.setCustomValidity('Password does not meet requirements');
+            } else {
+                this.setCustomValidity('');
+            }
+        }
+    });
+}
+
+/**
  * Initialize all event listeners and functionality
  */
 function initializeRegistration() {
@@ -356,6 +455,7 @@ function initializeRegistration() {
     setupRegisterForm();
     setupNavigation();
     setupResendCode();
+    setupPasswordValidation();
 }
 
 // Start the registration process when DOM is loaded
