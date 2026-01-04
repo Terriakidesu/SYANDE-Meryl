@@ -1,7 +1,7 @@
 import logging
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse, FileResponse
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -32,6 +32,8 @@ app.add_middleware(LoggingMiddleware)
 app.add_middleware(SessionMiddleware,
                    secret_key=Settings.secrets.session_secret_key)
 app.include_router(api_router)
+app.include_router(pos_router)
+app.include_router(manage_router)
 
 
 app.mount("/static", StaticFiles(directory="assets/public/static"), name="static")
@@ -65,17 +67,9 @@ async def register(request: Request):
     return templates.TemplateResponse(request, "register.html")
 
 
-@app.get("/verify_otp")
-async def verify_otp(request: Request):
-
-    if request.session.get("authenticated"):
-        return RedirectResponse("/")
-
-    # Check if there's an active OTP session
-    if not request.session.get("otp"):
-        return RedirectResponse("/login")
-
-    return templates.TemplateResponse(request, "verify_otp.html")
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    return FileResponse("favicon.ico")
 
 
 @app.get("/clearSession")
