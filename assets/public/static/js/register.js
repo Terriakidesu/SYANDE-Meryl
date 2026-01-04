@@ -198,6 +198,8 @@ function setupRegisterForm() {
 
             if (data.success) {
 
+                window.location = "/"; // redirect to root
+
             } else {
                 throw new Error('Registration failed');
             }
