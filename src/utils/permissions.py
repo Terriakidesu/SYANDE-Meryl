@@ -86,11 +86,13 @@ class Management:
         manage_roles (str): Permission to manage user roles
         manage_role_permissions (str): Permission to manage role permissions
         request_reports (str): Permission to request system reports
+        admin_all (str): Administrator permissions
     """
 
     manage_roles = "manage_roles"
     manage_role_permissions = "manage_roles_permissions"
     request_reports = "request_reports"
+    admin_all = "admin_all"
 
 
 class PermissionsClass:
