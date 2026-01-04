@@ -17,4 +17,4 @@ templates = Jinja2Templates("assets/public/templates/pos")
 async def POS(request: Request, user_perms: Annotated[list[str], Depends(user_permissions)]):
     utils.check_user_permissions(user_perms, Permissions.pos.use_pos)
 
-    return templates.TemplateResponse("pos.html", request=request)
+    return templates.TemplateResponse(request, "pos.html",)

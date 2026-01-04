@@ -31,6 +31,7 @@ setup_logging()
 app.add_middleware(LoggingMiddleware)
 app.add_middleware(SessionMiddleware,
                    secret_key=Settings.secrets.session_secret_key)
+
 app.include_router(api_router)
 app.include_router(pos_router)
 app.include_router(manage_router)
