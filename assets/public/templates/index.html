@@ -4,11 +4,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Meryl - Home</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+        crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+        integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/js/all.min.js"
+        integrity="sha512-6BTOlkauINO65nLhXhthZMtepgJSghyimIalb+crKRPhvhmsCdnIuGcVbR5/aQY2A+260iC1OPy1oCdB6pSSwQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <link rel="stylesheet" href="/static/css/common.css">
+    <style>
+        .menu-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: none;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .menu-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .menu-card .card-body {
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        .menu-card .icon-wrapper {
+            margin-bottom: 1.5rem;
+        }
+
+        .menu-card .card-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.75rem;
+        }
+
+        .menu-card .card-text {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .menu-card hr {
+            margin: 1rem auto;
+            width: 60%;
+            border-top: 2px solid #e0e0e0;
+        }
+    </style>
 </head>
 
-<body>
+<body style="min-height: 100lvh; background-color: var(--main-color);">
+    <div class="container justify-content-center">
 
+        <div class="row justify-content-between">
+            <div class="col mb-3">
+                <a href="/">
+                    <img class="img-fluid object-fit-contain" src="/static/svg/Meryl Logo - White.svg"
+                        alt="Meryl Shoes Logo" style="max-width: 300px; height: auto;">
+                </a>
+            </div>
+
+            <div class="col mt-3 mb-3 d-flex justify-content-end">
+                <a class="link-light text-decoration-none" href="/logout">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    Logout
+                </a>
+            </div>
+        </div>
+
+        <div class="row g-4 justify-content-center mt-4">
+
+            <!--Menu Cards-->
+
+            <div class="col-12 col-md-6 col-lg-5 col-xl-4">
+                <a href="/pos" class="text-decoration-none">
+                    <div class="card menu-card">
+                        <div class="card-body">
+                            <div class="icon-wrapper">
+                                <i class="fas fa-cash-register fa-4x" style="color: var(--main-color);"></i>
+                            </div>
+                            <h5 class="card-title">POS</h5>
+                            <hr>
+                            <p class="card-text">Point of Sale System</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-5 col-xl-4">
+                <a href="/manage" class="text-decoration-none">
+                    <div class="card menu-card">
+                        <div class="card-body">
+                            <div class="icon-wrapper">
+                                <i class="fas fa-chart-line fa-4x" style="color: var(--main-color);"></i>
+                            </div>
+                            <h5 class="card-title">Manage</h5>
+                            <hr>
+                            <p class="card-text">Management System</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+        </div>
+
+    </div>
 </body>
 
 </html>

@@ -7,6 +7,8 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from .routes.api import api_router
+from .routes.pos import pos_router
+from .routes.manage import manage_router
 from .Settings import Settings, setup_logging
 
 logger = logging.getLogger(__name__)
