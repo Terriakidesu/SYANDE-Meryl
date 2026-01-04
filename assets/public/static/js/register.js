@@ -197,8 +197,7 @@ function setupRegisterForm() {
             const data = await response.json();
 
             if (data.success) {
-                console.log('Registration successful:', data);
-                // TODO: Handle successful registration (redirect, etc.)
+
             } else {
                 throw new Error('Registration failed');
             }
@@ -419,14 +418,14 @@ function setupPasswordValidation() {
     if (!passwordInput) return;
 
     // Add input event listener for realtime validation
-    passwordInput.addEventListener('input', function() {
+    passwordInput.addEventListener('input', function () {
         const password = this.value;
         const validation = validatePassword(password);
         updatePasswordRequirements(validation);
     });
 
     // Add blur event listener to validate when field loses focus
-    passwordInput.addEventListener('blur', function() {
+    passwordInput.addEventListener('blur', function () {
         const password = this.value;
         const validation = validatePassword(password);
 
