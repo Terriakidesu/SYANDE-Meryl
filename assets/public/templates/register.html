@@ -19,22 +19,12 @@
         integrity="sha512-6BTOlkauINO65nLhXhthZMtepgJSghyimIalb+crKRPhvhmsCdnIuGcVbR5/aQY2A+260iC1OPy1oCdB6pSSwQ=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
+    <link rel="stylesheet" href="/static/css/common.css">
+    <script src="/static/js/register.js" defer></script>
+
     <style>
         body {
-            background: url("/static/images/martin-martz-rMRT4hF-Fsg-unsplash.jpg");
-            background-position: center;
-            background-size: cover;
             min-height: 100vh;
-        }
-
-        body::after {
-            content: "";
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            backdrop-filter: blur(3px) brightness(50%);
         }
 
         #card-container {
@@ -42,37 +32,35 @@
             z-index: 1;
         }
 
-        .image-container {
+        #image-container {
             position: relative;
         }
 
-        .image-overlay {
+        #image-container::before {
+            content: "";
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            background-color: var(--main-color);
+            transform: translateX(-99%);
         }
 
-
         .form-control:focus {
-            border-color: #6c757d;
-            box-shadow: 0 0 0 0.25rem rgba(108, 117, 125, 0.25);
+            border-color: var(--main-color);
+            box-shadow: 0 0 0 0.25rem rgba(var(--main-color-rgb), 0.25);
         }
 
         .btn-primary {
-            background-color: #6c757d;
-            border-color: #6c757d;
+            background-color: var(--main-color);
+            border-color: var(--main-color);
             transition: all 0.3s ease;
         }
 
         .btn-primary:hover {
-            background-color: #5a6268;
-            border-color: #545b62;
+            background-color: var(--main-color-light);
+            border-color: var(--main-color-light);
             transform: translateY(-1px);
         }
 
@@ -102,12 +90,12 @@
         }
 
         .progress-label-active {
-            color: var(--bs-success);
+            color: var(--main-color);
             background-color: var(--bs-gray-100);
         }
 
         .progress-label-done::after {
-            background-color: var(--bs-success);
+            background-color: var(--main-color);
         }
 
         .progress-container {
@@ -126,10 +114,6 @@
         }
 
 
-        .progress-color {
-            background-color: rgb(54, 238, 70);
-        }
-
         input[type=number]::-webkit-outer-spin-button,
         input[type=number]::-webkit-inner-spin-button {
             -webkit-appearance: none;
@@ -145,13 +129,14 @@
 
 </head>
 
-<body class="d-flex justify-content-center align-items-center vh-100">
+<body class="d-flex justify-content-center align-items-center vh-100 bg-body-tertiary">
     <div id="card-container" class="container-fluid h-100 px-md-5 mx-md-5">
         <div class="row h-100 align-items-center justify-content-center bg-body-tertiary">
 
-            <div class="col-md-5 h-100 d-none d-md-block p-0">
-                <img src="/static/images/riyan-ong-j1PxAa2U-T4-unsplash.jpg" alt="Aesthetic background image"
-                    class="w-100 h-100 object-fit-cover rounded-4">
+            <div id="image-container" class="col-md-5 h-100 d-none d-md-block p-0"
+                style="background-color: var(--main-color);">
+                <img src="/static/svg/Meryl Logo - White.svg" alt="Aesthetic background image"
+                    class="w-100 h-100 object-fit-contain" style="transform: scale(0.75) translateX(-7%);">
             </div>
 
             <!-- Form Column -->
@@ -165,13 +150,13 @@
                         <div class="container-fluid">
                             <div class="row progress-container" id="progress-container">
                                 <div class="col progress-label progress-label-done progress-label-active">
-                                    Details
+                                    Personal Details
                                 </div>
                                 <div class="col progress-label">
                                     Verify OTP
                                 </div>
                                 <div class="col progress-label">
-                                    Done
+                                    Account
                                 </div>
                             </div>
                         </div>
@@ -179,7 +164,7 @@
                 </div>
 
                 <div class="w-100">
-                    <form id="register-form" method="POST" action="/api/auth/request_otp" class="row w-100"
+                    <form id="email-form" method="POST" action="/api/auth/request_otp" class="row w-100"
                         style="padding: 0rem 6rem">
                         <div class="mx-auto" style="padding: 0rem 3rem;">
                             <div class="row">
@@ -209,25 +194,12 @@
                                 </div>
                             </div>
 
-                            <div class="mb-3">
-                                <label for="password" class="form-label fw-medium">Password</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">
-                                        <i class="fas fa-lock text-muted"></i>
-                                    </span>
-                                    <input type="password" name="password" id="password" class="form-control"
-                                        placeholder="Enter your password" required>
-                                    <button class="btn btn-outline-secondary" type="button" id="togglePassword">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                </div>
-                            </div>
 
 
                             <div class="d-grid mb-4">
                                 <button type="submit" class="btn btn-primary btn-lg fw-bold py-2">
                                     <i class="fas fa-sign-in-alt me-2"></i>
-                                    Register
+                                    Next
                                 </button>
                             </div>
 
@@ -282,243 +254,59 @@
                             </div>
                         </div>
                     </form>
+
+
+                    <form method="post" id="-form" action="/api/auth/register" class="row w-100"
+                        style="padding: 0rem 6rem; display: none;">
+                        <div class="mx-auto" style="padding: 0rem 3rem">
+                            <div class="mb-3">
+                                <button type="button" class="btn btn-light" id="back-button">
+                                    <i class="fa-solid fa-arrow-left"></i>
+                                </button>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="username" class="form-label fw-medium">Username</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-user text-muted"></i>
+                                    </span>
+                                    <input type="text" name="username" id="username" class="form-control"
+                                        placeholder="Enter your username" required>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="password" class="form-label fw-medium">Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-lock text-muted"></i>
+                                    </span>
+                                    <input type="password" name="password" id="password" class="form-control"
+                                        placeholder="Enter your password" required>
+                                    <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+
+                            <div class="d-grid mb-4">
+                                <button type="submit" class="btn btn-primary btn-lg fw-bold py-2">
+                                    <i class="fas fa-sign-in-alt me-2"></i>
+                                    Create Account
+                                </button>
+                            </div>
+
+
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
 
     </div>
 
-    <script>
-
-        let resend_interval;
-
-        document.getElementById('togglePassword').addEventListener('click', function () {
-            const passwordInput = document.getElementById('password');
-            const icon = this.children[0];
-
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
-            } else {
-                passwordInput.type = 'password';
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
-            }
-        });
-
-
-
-        // Form submission
-        document.querySelector('form#register-form').addEventListener('submit', function (e) {
-            e.preventDefault();
-
-            const formData = new FormData(e.target);
-            const email = formData.get('email');
-
-
-            fetch(
-                "/api/auth/verify_email",
-                {
-                    method: "POST",
-                    body: formData
-                }
-            ).then(res => {
-                return res.json();
-            }).then(data => {
-                if (data.success) {
-
-                    fetch("/api/auth/request_otp",
-                        {
-                            method: "POST",
-                            body: formData
-                        }
-                    ).then(res => {
-                        return res.json();
-                    }).then(data => {
-
-                        do_resend_timer();
-                        update_tabs("OTP");
-
-                        if (data.success) {
-                            let otp_form = document.querySelector("form#otp-form");
-                            let register_form = document.querySelector("form#register-form");
-
-                            otp_form.querySelector("#email-span").textContent = email;
-
-                            register_form.animate(
-                                [
-                                    { opacity: 1 },
-                                    { opacity: 0 }
-                                ],
-                                {
-                                    easing: "ease-out",
-                                    duration: 300
-                                }
-                            ).addEventListener("finish", function () {
-                                register_form.style.display = "none";
-                                otp_form.style.display = "block";
-                            });
-
-                        } else {
-                            console.error(data);
-                        }
-
-                    });
-
-
-                } else {
-                    console.error(data);
-                }
-            })
-
-
-
-        });
-
-        document.querySelector("form#otp-form").addEventListener("submit", function (e) {
-            e.preventDefault();
-
-            const formData = new FormData(this);
-
-            fetch("/api/auth/verify_otp",
-                {
-                    method: "POST",
-                    body: formData
-                }
-            ).then(res => {
-                return res.json();
-            }).then(data => {
-                if (data.success) {
-                    console.log(data)
-                } else {
-                    console.error(data);
-                }
-            });
-
-        });
-
-        document.querySelector("button#back-button").addEventListener("click", () => {
-            let otp_form = document.querySelector("form#otp-form");
-            let register_form = document.querySelector("form#register-form");
-
-            update_tabs("Details");
-
-            otp_form.querySelector("#email-span").textContent = "johndoe@email.com";
-            otp_form.animate(
-                [
-                    { opacity: 1 },
-                    { opacity: 0 }
-                ],
-                {
-                    easing: "ease-out",
-                    duration: 300
-                }
-            ).addEventListener("finish", function () {
-                otp_form.style.display = "none";
-                register_form.style.display = "block";
-                
-
-            });
-        });
-
-
-
-        let resend_code_btn = document.querySelector("button#resend_code");
-        resend_code_btn.addEventListener("click", function (event) {
-            event.preventDefault();
-
-
-            if (resend_interval !== undefined) {
-                return;
-            }
-
-            let register_form = document.querySelector("form#register-form");
-            const formData = new FormData(register_form);
-            formData.append("request_new", true);
-
-            fetch("/api/auth/request_otp",
-                { method: "POST", body: formData }
-            ).then(res => {
-                return res.json();
-            }).then(data => {
-                if (data.success) console.log(data);
-                else console.error(data);
-            })
-
-            do_resend_timer();
-        });
-
-        function do_resend_timer() {
-            let resend_code_btn = document.querySelector("button#resend_code");
-            let span = resend_code_btn.querySelector("span");
-
-            span.textContent = "00:30";
-
-            let start = new Date().getTime();
-
-            resend_interval = setInterval(
-                () => {
-                    let now = new Date().getTime();
-
-                    let elapsed_time = now - start;
-
-                    let display_time = `${30 - Math.floor(elapsed_time / 1000)}`
-
-                    span.textContent = `00:${display_time.padStart(2, "0")}`;
-
-                    if (elapsed_time > 30000) {
-                        clearInterval(resend_interval);
-                        resend_interval = undefined;
-                        span.textContent = "Resend Code";
-                    }
-                },
-                1000,
-            );
-        }
-
-        function update_tabs(tab_name) {
-            let progress_container = document.querySelector("div#progress-container");
-            let tabs = progress_container.querySelectorAll("div.progress-label");
-            let x = 0;
-
-            switch (tab_name) {
-                case "Details":
-                    x = 0;
-                    break;
-                case "OTP":
-                    x = 1;
-                    break;
-                case "Done":
-                    x = 2;
-                    break;
-                default:
-                    return;
-            }
-
-            for (let i = 0; i < tabs.length; i++) {
-                let tab = tabs[i];
-
-                if (tab.classList.contains("progress-label-done")) {
-                    tab.classList.remove("progress-label-done");
-                }
-
-                if (tab.classList.contains("progress-label-active")) {
-                    tab.classList.remove("progress-label-active");
-                }
-
-                if (i <= x) {
-                    tab.classList.add("progress-label-done");
-                }
-
-                if (i == x) {
-                    tab.classList.add("progress-label-active");
-                }
-
-            }
-
-        }
-    </script>
 </body>
 
 </html>
