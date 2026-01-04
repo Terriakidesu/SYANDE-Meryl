@@ -22,8 +22,15 @@ async def register(request: Request,
                    last_name: str = Form(),
                    username: str = Form(),
                    password: str = Form(),
-                   phone: str = Form(),
                    email: str = Form()):
+
+    if not request.session.get("otp_verified"):
+        return JSONResponse({
+            "success": False,
+            "message": "Unathorized Registration."
+        },
+            status_code=400
+        )
 
     try:
         if db.fetchOne(r'SELECT * FROM users WHERE username = %s', (username,)):
@@ -34,8 +41,6 @@ async def register(request: Request,
         cursor = db.commitOne(r'INSERT INTO users (first_name, last_name, username, password) VALUES (%s, %s, %s, %s)',
                               (first_name, last_name, username, hashed_pw))
 
-        db.commitOne(r'INSERT INTO phones (user_id, phone) VALUES (%s, %s)',
-                     (cursor.lastrowid, phone))
         db.commitOne(r'INSERT INTO emails (user_id, email) VALUES (%s, %s)',
                      (cursor.lastrowid, email))
 
@@ -261,6 +266,8 @@ async def verify_otp(request: Request, otp: str = Form()):
 
     # Validate OTP
     if otp == server_otp:
+        request.session["otp_verified"] = True
+
         # Clean up session data after successful verification
         request.session.pop("otp", None)
         request.session.pop("otp_cooldown_timestamp", None)
