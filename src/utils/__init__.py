@@ -23,8 +23,10 @@ def verify_password(password: str, password_hash: str):
 
 def check_user_permissions(user_permissions: list[str], *permissions: str):
 
-    for permission in permissions:
+    if Permissions.management.admin_all in user_permissions:
+        return True
 
+    for permission in permissions:
         if permission in user_permissions:
             return True
 
