@@ -179,7 +179,6 @@
                                     <label for="last_name" class="form-label fw-medium">Last Name</label>
                                     <input type="text" name="last_name" id="last_name" class="form-control"
                                         placeholder="Doe" required>
-
                                 </div>
                             </div>
 
@@ -195,8 +194,7 @@
                             </div>
 
 
-
-                            <div class="d-grid mb-4">
+                            <div class="d-grid mb-4 mt-5">
                                 <button type="submit" class="btn btn-primary btn-lg fw-bold py-2">
                                     <i class="fas fa-sign-in-alt me-2"></i>
                                     Next
@@ -218,7 +216,7 @@
                         style="padding: 0rem 6rem; display: none;">
                         <div class="mx-auto" style="padding: 0rem 3rem">
                             <div class="mb-3">
-                                <button type="button" class="btn btn-light" id="back-button">
+                                <button type="button" class="btn btn-light" id="otp-back-button">
                                     <i class="fa-solid fa-arrow-left"></i>
                                 </button>
                             </div>
@@ -236,7 +234,7 @@
                                     class="form-control-lg fs-2 text-center" placeholder="######" required>
                             </div>
 
-                            <div class="d-grid mb-4">
+                            <div class="d-grid mb-4 mt-5">
                                 <button type="submit" class="btn btn-primary btn-lg fw-bold py-2">
                                     <i class="fas fa-sign-in-alt me-2"></i>
                                     Verify OTP
@@ -255,15 +253,15 @@
                         </div>
                     </form>
 
-
-                    <form method="post" id="-form" action="/api/auth/register" class="row w-100"
+                    <form method="post" id="register-form" action="/api/auth/register" class="row w-100"
                         style="padding: 0rem 6rem; display: none;">
                         <div class="mx-auto" style="padding: 0rem 3rem">
                             <div class="mb-3">
-                                <button type="button" class="btn btn-light" id="back-button">
+                                <button type="button" class="btn btn-light" id="register-back-button">
                                     <i class="fa-solid fa-arrow-left"></i>
                                 </button>
                             </div>
+
 
                             <div class="mb-3">
                                 <label for="username" class="form-label fw-medium">Username</label>
@@ -291,7 +289,7 @@
                             </div>
 
 
-                            <div class="d-grid mb-4">
+                            <div class="d-grid mb-4 mt-5">
                                 <button type="submit" class="btn btn-primary btn-lg fw-bold py-2">
                                     <i class="fas fa-sign-in-alt me-2"></i>
                                     Create Account
