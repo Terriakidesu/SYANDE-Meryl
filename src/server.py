@@ -58,6 +58,15 @@ async def login(request: Request):
     return templates.TemplateResponse(request, "login.html")
 
 
+@app.get("/logout")
+async def logout(request: Request):
+
+    if request.session.get("authenticated"):
+        request.session["authenticated"] = False
+
+    return RedirectResponse("/")
+
+
 @app.get("/register")
 async def register(request: Request):
 
