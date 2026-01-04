@@ -50,7 +50,6 @@ const elements = {
         uppercase: () => document.getElementById('req-uppercase'),
         lowercase: () => document.getElementById('req-lowercase'),
         number: () => document.getElementById('req-number'),
-        special: () => document.getElementById('req-special'),
         validChars: () => document.getElementById('req-valid-chars')
     }
 };
@@ -375,7 +374,6 @@ function validatePassword(password) {
             uppercase: false,
             lowercase: false,
             number: false,
-            special: false,
             validChars: true
         };
     }
@@ -385,7 +383,6 @@ function validatePassword(password) {
         uppercase: /[A-Z]/.test(password),
         lowercase: /[a-z]/.test(password),
         number: /[0-9]/.test(password),
-        special: new RegExp(`[${ALLOWED_SPECIAL_CHARS.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}]`).test(password),
         validChars: PASSWORD_REGEX.test(password)
     };
 }
