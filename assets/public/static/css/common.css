@@ -1,0 +1,8 @@
+:root {
+    --main-color-rgb: 230, 6, 6;
+    --main-color-dark-rgb: 172, 16, 1;
+    --main-color-light-rgb: 247, 52, 52;
+    --main-color: rgb(var(--main-color-rgb));
+    --main-color-dark: rgb(var(--main-color-dark-rgb));
+    --main-color-light: rgb(var(--main-color-light-rgb));
+}
