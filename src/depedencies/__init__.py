@@ -5,6 +5,7 @@ from fastapi import Request, HTTPException
 from ..includes import Database
 from ..Settings import Settings
 from ..models.session import Session
+from ..utils import Permissions
 
 db = Database()
 
@@ -30,6 +31,9 @@ async def is_authenticated(request: Request):
 
 
 async def user_permissions(request: Request) -> list[str]:
+
+    if request.session.get("superadmin"):
+        return [Permissions.management.admin_all]
 
     user_id = request.session.get("user_id")
 
