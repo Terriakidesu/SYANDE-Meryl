@@ -70,11 +70,12 @@
     {% endif %}
 
     {% for item in navigation_inventory %}
-    <a class="sidebar-link" href="{{ item.href }}">
-        {% if not page_title == "{{ item.caption }}" %}
+    <a class="sidebar-link" href="{{item.href}}">
+        {% if not page_title == item.caption %}
         <div class="p-2 fs-6 rounded-start ms-2 text-center text-black">
             <i class="fa-solid {{ item.icon }}"></i>
             {{ item.caption }}
+
         </div>
         {% else %}
         <div class="p-2 fs-6 text-center rounded-start ms-2 sidebar-active">
@@ -93,8 +94,8 @@
     {% endif %}
 
     {% for item in navigation_sales %}
-    <a class="sidebar-link" href="{{ item.href }}">
-        {% if not page_title == "{{ item.caption }}" %}
+    <a class="sidebar-link" href="{{item.href}}">
+        {% if not page_title == item.caption %}
         <div class="p-2 fs-6 rounded-start ms-2 text-center text-black">
             <i class="fa-solid {{ item.icon }}"></i>
             {{ item.caption }}
@@ -119,8 +120,8 @@
     {% endif %}
 
     {% for item in navigation_management %}
-    <a class="sidebar-link" href="{{ item.href }}">
-        {% if not page_title == "{{ item.caption }}" %}
+    <a class="sidebar-link" href="{{item.href}}">
+        {% if not page_title == item.caption %}
         <div class="p-2 fs-6 rounded-start ms-2 text-center text-black">
             <i class="fa-solid {{ item.icon }}"></i>
             {{ item.caption }}
