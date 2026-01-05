@@ -43,6 +43,7 @@
     .sidebar-active {
         background-color: var(--main-color-dark);
         color: white;
+        transform: translateX(0.15rem);
     }
 </style>
 
@@ -79,7 +80,7 @@
         </div>
         {% else %}
         <div class="p-2 fs-6 text-center rounded-start ms-2 sidebar-active">
-            <i class="fa-solid fa-house"></i>
+            <i class="fa-solid {{ item.icon }}"></i>
             {{ item.caption }}
         </div>
         {% endif %}
@@ -102,7 +103,7 @@
         </div>
         {% else %}
         <div class="p-2 fs-6 text-center rounded-start ms-2 sidebar-active">
-            <i class="fa-solid fa-house"></i>
+            <i class="fa-solid {{ item.icon }}"></i>
             {{ item.caption }}
         </div>
         {% endif %}
@@ -128,7 +129,7 @@
         </div>
         {% else %}
         <div class="p-2 fs-6 text-center rounded-start ms-2 sidebar-active">
-            <i class="fa-solid fa-house"></i>
+            <i class="fa-solid {{ item.icon }}"></i>
             {{ item.caption }}
         </div>
         {% endif %}

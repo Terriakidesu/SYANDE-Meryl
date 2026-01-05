@@ -89,3 +89,51 @@ async def dashboard(request: Request):
         "navigation_sales": await sidebar.generate_sidebar_data(request, "Sales"),
         "navigation_management": await sidebar.generate_sidebar_data(request, "Management"),
     })
+
+@manage_router.get("/sales")
+async def dashboard(request: Request):
+
+    return templates.TemplateResponse(request, "dashboard.html", {
+        "user_id": request.session.get("user_id"),
+        "username": request.session.get("username"),
+        "page_title": "Sales",
+        "navigation_inventory": await sidebar.generate_sidebar_data(request, "Inventory"),
+        "navigation_sales": await sidebar.generate_sidebar_data(request, "Sales"),
+        "navigation_management": await sidebar.generate_sidebar_data(request, "Management"),
+    })
+
+@manage_router.get("/returns")
+async def dashboard(request: Request):
+
+    return templates.TemplateResponse(request, "dashboard.html", {
+        "user_id": request.session.get("user_id"),
+        "username": request.session.get("username"),
+        "page_title": "Returns",
+        "navigation_inventory": await sidebar.generate_sidebar_data(request, "Inventory"),
+        "navigation_sales": await sidebar.generate_sidebar_data(request, "Sales"),
+        "navigation_management": await sidebar.generate_sidebar_data(request, "Management"),
+    })
+
+@manage_router.get("/users")
+async def dashboard(request: Request):
+
+    return templates.TemplateResponse(request, "dashboard.html", {
+        "user_id": request.session.get("user_id"),
+        "username": request.session.get("username"),
+        "page_title": "Users",
+        "navigation_inventory": await sidebar.generate_sidebar_data(request, "Inventory"),
+        "navigation_sales": await sidebar.generate_sidebar_data(request, "Sales"),
+        "navigation_management": await sidebar.generate_sidebar_data(request, "Management"),
+    })
+
+@manage_router.get("/roles")
+async def dashboard(request: Request):
+
+    return templates.TemplateResponse(request, "dashboard.html", {
+        "user_id": request.session.get("user_id"),
+        "username": request.session.get("username"),
+        "page_title": "Roles",
+        "navigation_inventory": await sidebar.generate_sidebar_data(request, "Inventory"),
+        "navigation_sales": await sidebar.generate_sidebar_data(request, "Sales"),
+        "navigation_management": await sidebar.generate_sidebar_data(request, "Management"),
+    })
