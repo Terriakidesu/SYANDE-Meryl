@@ -71,7 +71,7 @@ async def dashboard(request: Request):
     return templates.TemplateResponse(request, "dashboard.html", {
         "user_id": request.session.get("user_id"),
         "username": request.session.get("username"),
-        "page_title": "Variants",
+        "page_title": "Sizes",
         "navigation_inventory": await sidebar.generate_sidebar_data(request, "Inventory"),
         "navigation_sales": await sidebar.generate_sidebar_data(request, "Sales"),
         "navigation_management": await sidebar.generate_sidebar_data(request, "Management"),
