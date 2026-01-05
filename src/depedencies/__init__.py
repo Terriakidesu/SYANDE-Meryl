@@ -20,11 +20,13 @@ async def is_authenticated(request: Request):
 
         elapsed_time = now - logged_at
 
+        # ignore timeout
+        if request.session.get("superadmin"):
+            return True
+
         if elapsed_time.total_seconds() >= (Settings.session.timeout * 60):
-
             request.session.clear()
-
-            raise HTTPException(status_code=401, detail="Unauthorized Access")
+            raise HTTPException(status_code=401, detail="Session Expired")
 
         return True
     raise HTTPException(status_code=401, detail="Unauthorized Access")
