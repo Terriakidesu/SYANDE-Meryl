@@ -116,4 +116,13 @@ class PermissionsClass:
     management: Management = Management()
 
 
+@dataclass
+class PermissionCategory:
+    Inventory: str = "Inventory"
+    Sales: str = "Sales"
+    Users: str = "Users"
+    POS: str = "POS"
+    Management: str = "Management"
+
+
 Permissions = PermissionsClass()

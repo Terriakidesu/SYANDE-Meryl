@@ -3,7 +3,7 @@ import random
 import bcrypt
 from fastapi import HTTPException
 
-from .permissions import Permissions
+from .permissions import Permissions, PermissionCategory
 
 
 def hash_password(password: str):
