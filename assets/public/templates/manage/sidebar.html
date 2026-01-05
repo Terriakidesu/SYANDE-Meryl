@@ -1,5 +1,11 @@
+
+
 <div class="d-flex flex-column">
-
-
-
+    <ul>
+        {% for item in navigation %}
+        <li>
+            <a href="{{ item.href }}">{{ item.caption }}</a>
+        </li>
+        {% endfor %}
+    </ul>
 </div>
