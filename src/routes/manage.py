@@ -27,7 +27,7 @@ async def dashboard(request: Request):
 
 
 @manage_router.get("/inventory/shoes")
-async def dashboard(request: Request):
+async def manage_shoes(request: Request):
 
     return templates.TemplateResponse(request, "dashboard.html", {
         "user_id": request.session.get("user_id"),
@@ -40,7 +40,7 @@ async def dashboard(request: Request):
 
 
 @manage_router.get("/inventory/variants")
-async def dashboard(request: Request):
+async def manage_variants(request: Request):
 
     return templates.TemplateResponse(request, "dashboard.html", {
         "user_id": request.session.get("user_id"),
@@ -53,7 +53,7 @@ async def dashboard(request: Request):
 
 
 @manage_router.get("/inventory/brands")
-async def dashboard(request: Request):
+async def manage_brands(request: Request):
 
     return templates.TemplateResponse(request, "dashboard.html", {
         "user_id": request.session.get("user_id"),
@@ -66,7 +66,7 @@ async def dashboard(request: Request):
 
 
 @manage_router.get("/inventory/sizes")
-async def dashboard(request: Request):
+async def manage_sizes(request: Request):
 
     return templates.TemplateResponse(request, "dashboard.html", {
         "user_id": request.session.get("user_id"),
@@ -79,7 +79,7 @@ async def dashboard(request: Request):
 
 
 @manage_router.get("/inventory/categories")
-async def dashboard(request: Request):
+async def manage_categories(request: Request):
 
     return templates.TemplateResponse(request, "dashboard.html", {
         "user_id": request.session.get("user_id"),
@@ -91,7 +91,7 @@ async def dashboard(request: Request):
     })
 
 @manage_router.get("/sales")
-async def dashboard(request: Request):
+async def manage_sales(request: Request):
 
     return templates.TemplateResponse(request, "dashboard.html", {
         "user_id": request.session.get("user_id"),
@@ -103,7 +103,7 @@ async def dashboard(request: Request):
     })
 
 @manage_router.get("/returns")
-async def dashboard(request: Request):
+async def manage_returns(request: Request):
 
     return templates.TemplateResponse(request, "dashboard.html", {
         "user_id": request.session.get("user_id"),
@@ -115,7 +115,7 @@ async def dashboard(request: Request):
     })
 
 @manage_router.get("/users")
-async def dashboard(request: Request):
+async def manage_users(request: Request):
 
     return templates.TemplateResponse(request, "dashboard.html", {
         "user_id": request.session.get("user_id"),
@@ -127,7 +127,7 @@ async def dashboard(request: Request):
     })
 
 @manage_router.get("/roles")
-async def dashboard(request: Request):
+async def manage_roles(request: Request):
 
     return templates.TemplateResponse(request, "dashboard.html", {
         "user_id": request.session.get("user_id"),
