@@ -26,22 +26,7 @@
             padding: 0;
             position: relative;
             min-height: 100lvh;
-            background-color: var(--main-color);
             overflow: hidden;
-        }
-
-        body::after {
-            content: "";
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 10rem;
-            transform: translateY(50%);
-            background: url("/static/images/abstract-lines-2.png");
-            background-size: contain;
-            background-repeat: repeat-x;
-            background-position: 67% 0;
         }
 
         .menu-card {
@@ -86,19 +71,19 @@
     </style>
 </head>
 
-<body>
+<body class="bg-body-tertiary">
     <div class="container justify-content-center">
 
         <div class="row justify-content-between">
             <div class="col mb-3">
                 <a href="/">
-                    <img class="img-fluid object-fit-contain" src="/static/svg/Meryl Logo - White.svg"
+                    <img class="img-fluid object-fit-contain" src="/static/svg/Meryl Logo - Red.svg"
                         alt="Meryl Shoes Logo" style="max-width: 300px; height: auto;">
                 </a>
             </div>
 
             <div class="col mt-3 mb-3 d-flex justify-content-end">
-                <a class="link-light text-decoration-none" href="/logout">
+                <a class="link text-decoration-none" style="color: var(--main-color);" href="/logout">
                     <i class="fa-solid fa-right-from-bracket"></i>
                     Logout
                 </a>
@@ -112,13 +97,13 @@
             <div class="col-12 col-md-6 col-lg-5 col-xl-4">
                 <a href="/pos" class="text-decoration-none">
                     <div class="card menu-card">
-                        <div class="card-body">
+                        <div class="card-body text-white" style="background-color: var(--main-color);">
                             <div class="icon-wrapper">
-                                <i class="fas fa-cash-register fa-4x" style="color: var(--main-color);"></i>
+                                <i class="fas fa-cash-register fa-4x"></i>
                             </div>
-                            <h5 class="card-title">POS</h5>
+                            <h5 class="card-title text-white">POS</h5>
                             <hr>
-                            <p class="card-text">Point of Sale System</p>
+                            <p class="card-text text-white">Point of Sale System</p>
                         </div>
                     </div>
                 </a>
@@ -127,13 +112,13 @@
             <div class="col-12 col-md-6 col-lg-5 col-xl-4">
                 <a href="/manage" class="text-decoration-none">
                     <div class="card menu-card">
-                        <div class="card-body">
+                        <div class="card-body text-white" style="background-color: var(--main-color);">
                             <div class="icon-wrapper">
-                                <i class="fas fa-chart-line fa-4x" style="color: var(--main-color);"></i>
+                                <i class="fas fa-chart-line fa-4x"></i>
                             </div>
-                            <h5 class="card-title">Manage</h5>
+                            <h5 class="card-title text-white">Manage</h5>
                             <hr>
-                            <p class="card-text">Management System</p>
+                            <p class="card-text text-white">Management System</p>
                         </div>
                     </div>
                 </a>
