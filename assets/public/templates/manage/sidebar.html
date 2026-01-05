@@ -1,11 +1,114 @@
+<style>
+    a.sidebar-link {
+        text-decoration: none;
+    }
 
+    a.sidebar-link>div {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: center;
+        gap: 1rem;
+        transition: background-color 100ms 0s linear, transform 100ms 0s ease-in-out;
+    }
 
-<div class="d-flex flex-column">
-    <ul>
-        {% for item in navigation %}
-        <li>
-            <a href="{{ item.href }}">{{ item.caption }}</a>
-        </li>
-        {% endfor %}
-    </ul>
+    a.sidebar-link:hover>div {
+        transform: translateX(0.15rem);
+    }
+
+    a.sidebar-link:has(>div.sidebar-active):hover>div {
+        background-color: var(--main-color-light);
+    }
+
+    .sidebar-active {
+        background-color: var(--main-color-dark);
+        color: white;
+    }
+</style>
+
+<div class="d-flex flex-column pt-3 bg-body-secondary me-0">
+
+    <a class="sidebar-link" href="/manage">
+        {% if not page_title == "Dashboard" %}
+        <div class="p-2 fs-6 rounded-start ms-2 text-center text-black">
+            <i class="fa-solid fa-house"></i>
+            Dashboard
+        </div>
+        {% else %}
+        <div class="p-2 fs-6 text-center rounded-start ms-2 sidebar-active">
+            <i class="fa-solid fa-house"></i>
+            Dashboard
+        </div>
+        {% endif %}
+    </a>
+
+    <div class="p-2 fs-4 mt-3 fw-bold text-muted border-top border-2 border-dark-subtle">
+        <i class="fa-solid fa-boxes-stacked"></i>
+        Inventory
+    </div>
+
+    {% for item in navigation_inventory %}
+    <li>
+        <a class="sidebar-link" href="{{ item.href }}">
+            {% if not page_title == "{{ item.caption }}" %}
+            <div class="p-2 fs-6 rounded-start ms-2 text-center text-black">
+                <i class="fa-solid {{ item.icon }}"></i>
+                {{ item.caption }}
+            </div>
+            {% else %}
+            <div class="p-2 fs-6 text-center rounded-start ms-2 sidebar-active">
+                <i class="fa-solid fa-house"></i>
+                {{ item.caption }}
+            </div>
+            {% endif %}
+        </a>
+    </li>
+    {% endfor %}
+
+    <div class="p-2 fs-4 mt-3 fw-bold text-muted border-top border-2 border-dark-subtle">
+        <i class="fa-solid fa-arrow-trend-up"></i>
+        Sales
+    </div>
+
+    {% for item in navigation_sales %}
+    <li>
+        <a class="sidebar-link" href="{{ item.href }}">
+            {% if not page_title == "{{ item.caption }}" %}
+            <div class="p-2 fs-6 rounded-start ms-2 text-center text-black">
+                <i class="fa-solid {{ item.icon }}"></i>
+                {{ item.caption }}
+            </div>
+            {% else %}
+            <div class="p-2 fs-6 text-center rounded-start ms-2 sidebar-active">
+                <i class="fa-solid fa-house"></i>
+                {{ item.caption }}
+            </div>
+            {% endif %}
+        </a>
+    </li>
+    {% endfor %}
+
+    <div class="p-2 fs-4 mt-3 fw-bold text-muted border-top border-2 border-dark-subtle">
+        <i class="fa-solid fa-gears"></i>
+        Management
+    </div>
+
+    {% for item in navigation_management %}
+    <li>
+        <a class="sidebar-link" href="{{ item.href }}">
+            {% if not page_title == "{{ item.caption }}" %}
+            <div class="p-2 fs-6 rounded-start ms-2 text-center text-black">
+                <i class="fa-solid {{ item.icon }}"></i>
+                {{ item.caption }}
+            </div>
+            {% else %}
+            <div class="p-2 fs-6 text-center rounded-start ms-2 sidebar-active">
+                <i class="fa-solid fa-house"></i>
+                {{ item.caption }}
+            </div>
+            {% endif %}
+        </a>
+    </li>
+    {% endfor %}
+
 </div>

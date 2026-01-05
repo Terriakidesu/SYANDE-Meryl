@@ -106,23 +106,12 @@ async def clear_session(request: Request):
     return RedirectResponse("/")
 
 
-@app.get("/endpoints")
-async def list_endpoints(request: Request):
-    url_list = [
-        f"{route.methods} - {route.path}" for route in request.app.routes
-    ]
-
-    return url_list
-
-
 @app.exception_handler(401)
 async def unauthorized_handler(request: Request, exception: HTTPException):
 
     if request.method == "GET":
         if exception.detail == "Session Expired":
             return RedirectResponse("/")
-
-        
 
     return JSONResponse(
         {
