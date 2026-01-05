@@ -4,12 +4,28 @@
     }
 
     a.sidebar-link>div {
+        position: relative;
         display: flex;
         flex-direction: row;
         justify-content: flex-start;
         align-items: center;
         gap: 1rem;
-        transition: background-color 100ms 0s linear, transform 100ms 0s ease-in-out;
+        transition: background-color 200ms 0s ease-in-out, transform 100ms 0s ease-in-out;
+    }
+
+    a.sidebar-link>div::after {
+        position: absolute;
+        content: "";
+        bottom: 0;
+        right: 0;
+        width: 0.2rem;
+        height: 0%;
+        background-color: var(--main-color-light);
+        transition: all 200ms 0s ease-in-out;
+    }
+
+    a.sidebar-link:hover>div::after {
+        height: 100%;
     }
 
     a.sidebar-link:hover>div {
@@ -18,6 +34,10 @@
 
     a.sidebar-link:has(>div.sidebar-active):hover>div {
         background-color: var(--main-color-light);
+    }
+
+    a.sidebar-link:hover>div {
+        background-color: hsl(from var(--main-color-light) h s calc(l * 1.5));
     }
 
     .sidebar-active {
@@ -42,73 +62,76 @@
         {% endif %}
     </a>
 
+    {% if navigation_inventory | length > 0 %}
     <div class="p-2 fs-4 mt-3 fw-bold text-muted border-top border-2 border-dark-subtle">
         <i class="fa-solid fa-boxes-stacked"></i>
         Inventory
     </div>
+    {% endif %}
 
     {% for item in navigation_inventory %}
-    <li>
-        <a class="sidebar-link" href="{{ item.href }}">
-            {% if not page_title == "{{ item.caption }}" %}
-            <div class="p-2 fs-6 rounded-start ms-2 text-center text-black">
-                <i class="fa-solid {{ item.icon }}"></i>
-                {{ item.caption }}
-            </div>
-            {% else %}
-            <div class="p-2 fs-6 text-center rounded-start ms-2 sidebar-active">
-                <i class="fa-solid fa-house"></i>
-                {{ item.caption }}
-            </div>
-            {% endif %}
-        </a>
-    </li>
+    <a class="sidebar-link" href="{{ item.href }}">
+        {% if not page_title == "{{ item.caption }}" %}
+        <div class="p-2 fs-6 rounded-start ms-2 text-center text-black">
+            <i class="fa-solid {{ item.icon }}"></i>
+            {{ item.caption }}
+        </div>
+        {% else %}
+        <div class="p-2 fs-6 text-center rounded-start ms-2 sidebar-active">
+            <i class="fa-solid fa-house"></i>
+            {{ item.caption }}
+        </div>
+        {% endif %}
+    </a>
     {% endfor %}
 
+    {% if navigation_sales | length > 0 %}
     <div class="p-2 fs-4 mt-3 fw-bold text-muted border-top border-2 border-dark-subtle">
         <i class="fa-solid fa-arrow-trend-up"></i>
         Sales
     </div>
+    {% endif %}
 
     {% for item in navigation_sales %}
-    <li>
-        <a class="sidebar-link" href="{{ item.href }}">
-            {% if not page_title == "{{ item.caption }}" %}
-            <div class="p-2 fs-6 rounded-start ms-2 text-center text-black">
-                <i class="fa-solid {{ item.icon }}"></i>
-                {{ item.caption }}
-            </div>
-            {% else %}
-            <div class="p-2 fs-6 text-center rounded-start ms-2 sidebar-active">
-                <i class="fa-solid fa-house"></i>
-                {{ item.caption }}
-            </div>
-            {% endif %}
-        </a>
-    </li>
+    <a class="sidebar-link" href="{{ item.href }}">
+        {% if not page_title == "{{ item.caption }}" %}
+        <div class="p-2 fs-6 rounded-start ms-2 text-center text-black">
+            <i class="fa-solid {{ item.icon }}"></i>
+            {{ item.caption }}
+        </div>
+        {% else %}
+        <div class="p-2 fs-6 text-center rounded-start ms-2 sidebar-active">
+            <i class="fa-solid fa-house"></i>
+            {{ item.caption }}
+        </div>
+        {% endif %}
+    </a>
     {% endfor %}
+
+    {% if navigation_management | length > 0 %}
 
     <div class="p-2 fs-4 mt-3 fw-bold text-muted border-top border-2 border-dark-subtle">
         <i class="fa-solid fa-gears"></i>
         Management
     </div>
 
+
+    {% endif %}
+
     {% for item in navigation_management %}
-    <li>
-        <a class="sidebar-link" href="{{ item.href }}">
-            {% if not page_title == "{{ item.caption }}" %}
-            <div class="p-2 fs-6 rounded-start ms-2 text-center text-black">
-                <i class="fa-solid {{ item.icon }}"></i>
-                {{ item.caption }}
-            </div>
-            {% else %}
-            <div class="p-2 fs-6 text-center rounded-start ms-2 sidebar-active">
-                <i class="fa-solid fa-house"></i>
-                {{ item.caption }}
-            </div>
-            {% endif %}
-        </a>
-    </li>
+    <a class="sidebar-link" href="{{ item.href }}">
+        {% if not page_title == "{{ item.caption }}" %}
+        <div class="p-2 fs-6 rounded-start ms-2 text-center text-black">
+            <i class="fa-solid {{ item.icon }}"></i>
+            {{ item.caption }}
+        </div>
+        {% else %}
+        <div class="p-2 fs-6 text-center rounded-start ms-2 sidebar-active">
+            <i class="fa-solid fa-house"></i>
+            {{ item.caption }}
+        </div>
+        {% endif %}
+    </a>
     {% endfor %}
 
 </div>
