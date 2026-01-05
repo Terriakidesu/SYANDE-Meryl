@@ -15,4 +15,8 @@ templates = Jinja2Templates("assets/public/templates/manage")
 
 @manage_router.get("/")
 async def dashboard(request: Request):
-    return templates.TemplateResponse(request, "dashboard.html")
+    return templates.TemplateResponse(request, "dashboard.html", {
+        "user_id": request.session.get("user_id"),
+        "username": request.session.get("username"),
+        "page_title": "Dashboard"
+    })

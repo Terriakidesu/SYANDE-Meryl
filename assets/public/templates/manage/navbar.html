@@ -1,0 +1,36 @@
+<nav class="navbar navbar-expand-lg bg-main-color">
+    <div class="container-fluid justify-content-between align-items-center">
+
+        <div class="container d-flex flex-row align-items-center">
+            <a href="/" class="navbar-brand">
+                <img src="/static/svg/Meryl Logo - White.svg" alt="Meryl Logo" class="d-inline-block align-text-bottom"
+                    width="170">
+            </a>
+
+            <div class="vr align-self-center bg-body-tertiary" style="min-height: 2em;"></div>
+
+            <div class="text-white px-3 fs-2 ">
+                {{ page_title }}
+            </div>
+
+        </div>
+
+        <div class="px-2d d-flex flex-row align-items-center">
+
+            <div class="p-1 text-white">
+                <span class="px-2">
+                    Hi, {{ username }}
+                </span>
+            </div>
+
+            <div class="rounded-circle bg-main-color-dark p-1">
+                <img src="/profile/?user_id={{ user_id }}" alt="user profile" width="40" height="40"
+                    class="rounded-circle">
+            </div>
+        </div>
+
+    </div>
+</nav>
+<div class="container-fluid">
+
+</div>

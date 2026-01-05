@@ -1,14 +1,16 @@
 import logging
-from fastapi import FastAPI, Request
+from pathlib import Path
+
+from fastapi import FastAPI, Request, HTTPException
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import JSONResponse, RedirectResponse, FileResponse
 from fastapi.templating import Jinja2Templates
-from starlette.middleware.sessions import SessionMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 
 from .routes.api import api_router
-from .routes.pos import pos_router
 from .routes.manage import manage_router
+from .routes.pos import pos_router
 from .Settings import Settings, setup_logging
 
 logger = logging.getLogger(__name__)
@@ -82,6 +84,20 @@ async def favicon():
     return FileResponse("favicon.ico")
 
 
+@app.get("/profile")
+async def get_profile_picture(request: Request, user_id: int):
+
+    filename = f"user-{user_id:04d}"
+
+    profiles_path = Path("assets", "public", "profiles")
+    profile_path = profiles_path.joinpath(filename)
+
+    if profile_path.exists():
+        return FileResponse(profile_path.joinpath(f"{filename}.jpeg"))
+
+    return FileResponse(profiles_path.joinpath("default", "default.jpeg"))
+
+
 @app.get("/clearSession")
 async def clear_session(request: Request):
 
@@ -100,7 +116,13 @@ async def list_endpoints(request: Request):
 
 
 @app.exception_handler(401)
-async def unauthorized_handler(request: Request, exception):
+async def unauthorized_handler(request: Request, exception: HTTPException):
+
+    if request.method == "GET":
+        if exception.detail == "Session Expired":
+            return RedirectResponse("/")
+
+        
 
     return JSONResponse(
         {
