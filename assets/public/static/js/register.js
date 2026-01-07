@@ -124,6 +124,7 @@ function setupEmailForm() {
 
         } catch (error) {
             console.error('Email form submission error:', error);
+            showError(error.message || 'An error occurred during email verification');
         }
     });
 }
@@ -166,6 +167,7 @@ function setupOtpForm() {
 
         } catch (error) {
             console.error('OTP form submission error:', error);
+            showError(error.message || 'An error occurred during OTP verification');
         }
     });
 }
@@ -205,6 +207,7 @@ function setupRegisterForm() {
 
         } catch (error) {
             console.error('Registration form submission error:', error);
+            showError(error.message || 'An error occurred during registration');
         }
     });
 }
@@ -264,6 +267,7 @@ function setupResendCode() {
 
         } catch (error) {
             console.error('Resend OTP error:', error);
+            showError(error.message || 'Failed to resend OTP');
         }
     });
 }

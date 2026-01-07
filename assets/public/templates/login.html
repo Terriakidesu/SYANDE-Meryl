@@ -136,6 +136,8 @@
         </div>
     </div>
 
+    {% include "components/toasts.html" %}
+
     <script>
 
         document.getElementById('togglePassword').addEventListener('click', function () {
@@ -159,6 +161,7 @@
 
             const formData = new FormData(e.target);
 
+
             fetch(e.target.action,
                 {
                     method: "POST",
@@ -169,7 +172,12 @@
             }).then(data => {
 
                 if (data.success) window.location = "/";
-                else throw new Error(data.message);
+                else {
+                    showErrorToast(data.message);
+                };
+
+            }).catch(error => {
+                showErrorToast(`${error}`)
             });
 
 
