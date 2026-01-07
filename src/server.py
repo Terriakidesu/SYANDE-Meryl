@@ -113,10 +113,30 @@ async def unauthorized_handler(request: Request, exception: HTTPException):
         if exception.detail == "Session Expired":
             return RedirectResponse("/")
 
+        print(exception)
+
+        return templates.TemplateResponse(request, "exceptions/401-unathorized.html")
+
     return JSONResponse(
         {
             "success": False,
             "message": f"{exception}"
         },
         status_code=401
+    )
+
+
+@app.exception_handler(404)
+async def not_found_handler(request: Request, exception: HTTPException):
+
+    if request.method == "GET":
+
+        return templates.TemplateResponse(request, "exceptions/404-not-found.html")
+
+    return JSONResponse(
+        {
+            "success": False,
+            "message": f"{exception}"
+        },
+        status_code=404
     )

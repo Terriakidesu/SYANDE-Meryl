@@ -29,15 +29,7 @@ db = Database()
 
 
 @inventory_router.get("/shoes", response_class=JSONResponse)
-async def list_shoes(request: Request, user_perms: list[str] = Depends(user_permissions)):
-
-    utils.check_user_permissions(
-        user_perms,
-        Permissions.inventory.manage_inventory,
-        Permissions.inventory.view_inventory,
-        Permissions.inventory.view_shoes,
-        Permissions.inventory.view_shoes
-    )
+async def list_shoes(request: Request):
 
     return db.fetchAll(r"SELECT * FROM shoes")
 
