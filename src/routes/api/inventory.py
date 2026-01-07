@@ -1,26 +1,20 @@
 
-from typing import Optional, Annotated
-
+import math
 import os
 import shutil
 from io import BytesIO
+from typing import Annotated, Optional
+
+from fastapi import APIRouter, Depends, File, Form, Request, UploadFile, Query
+from fastapi.responses import JSONResponse
 from PIL import Image
 
-from fastapi import APIRouter, Request, Form, File, UploadFile, Depends
-from fastapi.responses import JSONResponse
-
 from ... import utils
-from ...utils import Permissions
 from ...depedencies import is_authenticated, user_permissions
-from ...includes import Database
-from ...models.inventory import (
-    Brand,
-    Category,
-    Shoe,
-    Size,
-    Variant
-)
 from ...exceptions import DatabaseException
+from ...includes import Database
+from ...models.inventory import Brand, Category, Shoe, Size, Variant
+from ...utils import Permissions
 
 inventory_router = APIRouter(prefix="/inventory",
                              dependencies=[Depends(is_authenticated)])
@@ -242,12 +236,35 @@ async def fetch_shoe(request: Request, shoe_id: int, user_perms: list[str] = Dep
 
 
 @inventory_router.get("/brands", response_class=JSONResponse)
-async def list_brands(request: Request, query: Annotated[Optional[str], Form()]):
+async def list_brands(request: Request,
+                      query: Annotated[Optional[str], Query()] = None,
+                      page: Annotated[Optional[int], Query()] = 1,
+                      limit: Annotated[Optional[int], Query()] = 10
+                      ):
+
+    count = db.fetchOne(r'SELECT COUNT(*) as count FROM brands')["count"]
+    pages = math.ceil(count / limit)
+    offset = (page - 1) * limit
 
     if query:
-        return db.fetchAll(r'SELECT * FROM brands WHERE brand_id = %s OR brand_name LIKE %s', (query, f"%{query}%"))
 
-    return db.fetchAll(r'SELECT * FROM brands')
+        result = db.fetchAll(
+            r'SELECT * FROM brands WHERE brand_id = %s OR brand_name LIKE %s LIMIT %s OFFSET %s', (query, f"%{query}%", limit, offset))
+
+        return JSONResponse({
+            "result": result,
+            "count": count,
+            "pages": pages
+        })
+
+    result = db.fetchAll(
+        r'SELECT * FROM brands LIMIT %s OFFSET %s', (limit, offset))
+
+    return JSONResponse({
+        "result": result,
+        "count": count,
+        "pages": pages
+    })
 
 
 @inventory_router.post("/brands/add", response_class=JSONResponse)
@@ -343,14 +360,7 @@ async def delete_brand(request: Request, brand_id: int, user_perms: list[str] = 
 
 
 @inventory_router.get("/brands/{brand_id}", response_class=JSONResponse)
-async def fetch_brand(request: Request, brand_id: int, user_perms: list[str] = Depends(user_permissions)):
-    utils.check_user_permissions(
-        user_perms,
-        Permissions.inventory.manage_inventory,
-        Permissions.inventory.view_inventory,
-        Permissions.inventory.manage_brands,
-        Permissions.inventory.view_brands
-    )
+async def fetch_brand(request: Request, brand_id: int):
 
     return db.fetchOne(r'SELECT * FROM brands WHERE brand_id = %s', (brand_id,))
 
