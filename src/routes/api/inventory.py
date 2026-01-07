@@ -242,15 +242,10 @@ async def fetch_shoe(request: Request, shoe_id: int, user_perms: list[str] = Dep
 
 
 @inventory_router.get("/brands", response_class=JSONResponse)
-async def list_brands(request: Request, user_perms: list[str] = Depends(user_permissions)):
+async def list_brands(request: Request, query: Annotated[Optional[str], Form()]):
 
-    utils.check_user_permissions(
-        user_perms,
-        Permissions.inventory.manage_inventory,
-        Permissions.inventory.view_inventory,
-        Permissions.inventory.manage_brands,
-        Permissions.inventory.view_brands,
-    )
+    if query:
+        return db.fetchAll(r'SELECT * FROM brands WHERE brand_id = %s OR brand_name LIKE %s', (query, f"%{query}%"))
 
     return db.fetchAll(r'SELECT * FROM brands')
 
