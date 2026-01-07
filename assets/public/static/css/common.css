@@ -1,14 +1,16 @@
 :root {
-    --main-color-rgb: 198, 33, 26;
-    --main-color-dark-rgb: 146, 17, 6;
-    --main-color-light-rgb: 228, 48, 48;
-    --main-color: rgb(var(--main-color-rgb));
-    --main-color-dark: rgb(var(--main-color-dark-rgb));
-    --main-color-light: rgb(var(--main-color-light-rgb));
+    --main-color: rgb(198, 33, 26);
+    --main-color-dark: rgb(146, 17, 6);
+    --main-color-light: rgb(228, 48, 48);
+    --main-color-subtle: rgb(226, 92, 87);
 }
 
 .bg-main-color {
     background-color: var(--main-color);
+}
+
+.bg-main-color-subtle {
+    background-color: var(--main-color-subtle);
 }
 
 .bg-main-color-dark {

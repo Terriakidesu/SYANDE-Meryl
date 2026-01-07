@@ -1,0 +1,47 @@
+.search-bar {
+
+    --search-bar-animation-duration: 100ms;
+
+    display: flex;
+    gap: 0.5rem;
+    flex-direction: row;
+    transition: all var(--search-bar-animation-duration) 0s ease-in-out;
+
+    &> :first-child {
+        transition: all var(--search-bar-animation-duration) 0s ease-in-out;
+    }
+
+    &>input[type=search]#search-input {
+        background: none;
+        flex-grow: 1;
+        border: none;
+        transition: all var(--search-bar-animation-duration) 0s ease-in-out;
+    }
+
+    &>input[type=search]#search-input:active,
+    &>input[type=search]#search-input:focus {
+        outline: none;
+    }
+
+    &>button[type=submit].search-button {
+        background-color: gray;
+        color: white;
+        border: none;
+        transition: background-color var(--search-bar-animation-duration) 0s ease-in-out;
+
+    }
+
+    &:has(>input[type=search]#search-input:active),
+    &:has(>input[type=search]#search-input:focus),
+    &:hover {
+        outline: 2px solid var(--bs-primary);
+    }
+
+    &:has(>input[type=search]#search-input:active)>button[type=submit].search-button,
+    &:has(>input[type=search]#search-input:focus)>button[type=submit].search-button,
+    &:hover>button[type=submit].search-button {
+        background-color: var(--bs-primary);
+    }
+
+
+}

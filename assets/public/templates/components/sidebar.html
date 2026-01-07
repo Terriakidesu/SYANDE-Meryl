@@ -1,44 +1,46 @@
 <style>
     a.sidebar-link {
         text-decoration: none;
+
+        &>div {
+            position: relative;
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start;
+            align-items: center;
+            gap: 1rem;
+            transition: background-color 200ms 0s ease-in-out, transform 100ms 0s ease-in-out;
+
+            &::after {
+                position: absolute;
+                content: "";
+                bottom: 0;
+                right: 0;
+                width: 0.25rem;
+                height: 0%;
+                background-color: var(--main-color-light);
+                transition: all 200ms 0s ease-in-out;
+            }
+        }
+
+        &:hover {
+            &>div::after {
+                height: 100%;
+            }
+
+            &>div {
+                transform: translateX(0.15rem);
+                background-color: hsl(from var(--main-color-light) h s calc(l * 1.5));
+
+            }
+        }
+
+        &:has(>div.sidebar-active):hover>div {
+            background-color: var(--main-color-light);
+        }
     }
 
-    a.sidebar-link>div {
-        position: relative;
-        display: flex;
-        flex-direction: row;
-        justify-content: flex-start;
-        align-items: center;
-        gap: 1rem;
-        transition: background-color 200ms 0s ease-in-out, transform 100ms 0s ease-in-out;
-    }
 
-    a.sidebar-link>div::after {
-        position: absolute;
-        content: "";
-        bottom: 0;
-        right: 0;
-        width: 0.25rem;
-        height: 0%;
-        background-color: var(--main-color-light);
-        transition: all 200ms 0s ease-in-out;
-    }
-
-    a.sidebar-link:hover>div::after {
-        height: 100%;
-    }
-
-    a.sidebar-link:hover>div {
-        transform: translateX(0.15rem);
-    }
-
-    a.sidebar-link:has(>div.sidebar-active):hover>div {
-        background-color: var(--main-color-light);
-    }
-
-    a.sidebar-link:hover>div {
-        background-color: hsl(from var(--main-color-light) h s calc(l * 1.5));
-    }
 
     .sidebar-active {
         background-color: var(--main-color-dark);
@@ -47,7 +49,7 @@
     }
 </style>
 
-<div class="d-flex flex-column pt-3 bg-body-secondary me-0">
+<div class="sidebar d-flex flex-column pt-3 bg-body-secondary me-0">
 
     <a class="sidebar-link" href="/manage">
         {% if not page_title == "Dashboard" %}
