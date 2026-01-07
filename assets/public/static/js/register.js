@@ -86,6 +86,8 @@ function setupEmailForm() {
     elements.emailForm.addEventListener('submit', async function (e) {
         e.preventDefault();
 
+        changeButton(e.submitter, "Verifying...", "fa-solid fa-spinner", true, true);
+
         try {
             const formData = new FormData(this);
             const email = formData.get('email');
@@ -117,12 +119,14 @@ function setupEmailForm() {
                 // Update OTP form with email and transition
                 elements.otpEmailSpan().textContent = email;
 
+                changeButton(e.submitter, "Next", "fa-solid fa-right-to-bracket", false, false);
                 await animateFormTransition(elements.emailForm, elements.otpForm);
             } else {
-                throw new Error('OTP request failed');
+                throw new Error(otpData.message || 'OTP request failed');
             }
 
         } catch (error) {
+            changeButton(e.submitter, "Next", "fa-solid fa-right-to-bracket", false, false);
             console.error('Email form submission error:', error);
             showErrorToast(error.message || 'An error occurred during email verification');
         }
@@ -137,6 +141,8 @@ function setupOtpForm() {
 
     elements.otpForm.addEventListener('submit', async function (e) {
         e.preventDefault();
+        changeButton(e.submitter, "Verifying...", "fa-solid fa-spinner", true, true);
+
 
         try {
             const formData = new FormData(this);
@@ -160,12 +166,14 @@ function setupOtpForm() {
                 const detailForm = new FormData(elements.emailForm);
                 elements.registerForm.querySelector("input[name=username]").value = detailForm.get("first_name").toLowerCase();
                 updateProgressTabs("Account");
+                changeButton(e.submitter, "Next", "fa-solid fa-right-to-bracket", false, false);
                 await animateFormTransition(elements.otpForm, elements.registerForm);
             } else {
-                throw new Error('OTP verification failed');
+                throw new Error(data.message || 'OTP verification failed');
             }
 
         } catch (error) {
+            changeButton(e.submitter, "Next", "fa-solid fa-right-to-bracket", false, false);
             console.error('OTP form submission error:', error);
             showErrorToast(error.message || 'An error occurred during OTP verification');
         }
@@ -445,6 +453,32 @@ function setupPasswordValidation() {
             }
         }
     });
+}
+
+/**
+ * 
+ * @param {Element} button 
+ * @param {String} text 
+ * @param {String} icon
+ * @param {Boolean} disabled
+ * @param {Boolean} spinning
+ */
+function changeButton(button, text, icon = "", disabled = false, spinning = false) {
+    button.replaceChildren();
+    button.disabled = disabled;
+
+    if (icon.trim()) {
+        let i = document.createElement("i");
+        i.className = icon;
+        i.classList.add("me-2")
+        if (spinning) i.classList.add("spinning");
+
+        button.appendChild(i);
+    }
+
+    let span = document.createElement("span");
+    span.textContent = text;
+    button.appendChild(span);
 }
 
 /**

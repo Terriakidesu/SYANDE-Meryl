@@ -7,7 +7,7 @@ def send_otp_email(email, otp):
     resend.api_key = Settings.secrets.resend_api_key
 
     resend.Emails.send({
-        "from": "Meryl <onboarding@resend.dev>",
+        "from": "Meryl <meryl@syande-mail.hopto.org>",
         "to": email,
         "subject": "Your OTP",
         "template": {

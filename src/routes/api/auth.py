@@ -194,12 +194,12 @@ async def request_otp(request: Request, email: str = Form(), request_new: Annota
     try:
         otp = utils.generate_otp()
 
+        send_otp_email(email, otp)
+
         request.session["otp"] = otp
         request.session["email"] = email
         request.session["otp_timestamp"] = datetime.now().timestamp()
         request.session["otp_cooldown_timestamp"] = datetime.now().timestamp()
-
-        send_otp_email(email, otp)
 
         return JSONResponse({
             "success": True,
