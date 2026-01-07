@@ -226,14 +226,27 @@ async def list_popular(request: Request, limit: int = 10, user_perms: list[str] 
 @inventory_router.get("/shoes/{shoe_id}", response_class=JSONResponse)
 async def fetch_shoe(request: Request, shoe_id: int, user_perms: list[str] = Depends(user_permissions)):
 
-    utils.check_user_permissions(
-        user_perms,
-        Permissions.inventory.manage_inventory,
-        Permissions.inventory.view_inventory,
-        Permissions.inventory.view_shoes
-    )
-
     return db.fetchOne(r'SELECT * FROM shoes WHERE shoe_id = %s', (shoe_id,))
+
+
+@inventory_router.get("/shoes/{shoe_id}/all", response_class=JSONResponse)
+async def fetch_shoe(request: Request, shoe_id: int, user_perms: list[str] = Depends(user_permissions)):
+
+    if all_shoe_details := db.fetchOne(r"""
+                    SELECT * 
+                    FROM shoes s
+                    JOIN brands b ON b.brand_id = s.brand_id
+                    WHERE s.shoe_id = %s
+                       """,
+                                       (shoe_id,)
+                                       ):
+
+        all_shoe_details["categories"] = db.fetchAll(
+            r'SELECT * FROM categories WHERE shoe_id = %s', (shoe_id,))
+
+        return all_shoe_details
+
+    return None
 
 
 @inventory_router.get("/brands", response_class=JSONResponse)
