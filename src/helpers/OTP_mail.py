@@ -3,6 +3,7 @@ import resend
 from ..Settings import Settings
 
 
+# TODO: Change this to Gmail API in the future
 def send_otp_email(email, otp):
     resend.api_key = Settings.secrets.resend_api_key
 
