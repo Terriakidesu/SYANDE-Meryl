@@ -16,11 +16,11 @@
         flex-grow: 1;
         border: none;
         transition: all var(--search-bar-animation-duration) 0s ease-in-out;
-    }
 
-    &>input[type=search]#search-input:active,
-    &>input[type=search]#search-input:focus {
-        outline: none;
+        &:active,
+        &:focus {
+            outline: none;
+        }
     }
 
     &>button[type=submit].search-button {
