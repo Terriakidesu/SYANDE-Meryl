@@ -281,6 +281,9 @@ async def add_brand(request: Request, brand_name: str = Form(), user_perms: list
         if brand_name.strip() == "":
             raise DatabaseException("brand_name is empty.")
 
+        if _ := db.fetchOne(r'SELECT * FROM brands WHERE brand_name = %s', (brand_name.strip(),)):
+            raise Exception("Brand is already exists.")
+
         db.commitOne(
             r'INSERT INTO brands (brand_name) VALUES (%s)', (brand_name,))
 
@@ -314,6 +317,9 @@ async def edit_brand(request: Request, brand: Annotated[Brand, Form()], user_per
         if brand.brand_name.strip() == "":
             raise DatabaseException("brand_name is empty.")
 
+        if _ := db.fetchOne(r'SELECT * FROM brands WHERE brand_name = %s', (brand.brand_name.strip(),)):
+            raise Exception("Brand is already exists.")
+
         db.commitOne(
             r'UPDATE brands SET brand_name = %s WHERE brand_id = %s', (brand.brand_name, brand.brand_id))
 
@@ -330,7 +336,7 @@ async def edit_brand(request: Request, brand: Annotated[Brand, Form()], user_per
         )
 
 
-@inventory_router.delete("/brands/delete/")
+@inventory_router.delete("/brands/delete/{brand_id}")
 async def delete_brand(request: Request, brand_id: int, user_perms: list[str] = Depends(user_permissions)):
 
     utils.check_user_permissions(
