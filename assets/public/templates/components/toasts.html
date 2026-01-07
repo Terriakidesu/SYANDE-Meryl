@@ -1,43 +1,47 @@
 <!-- Toast Container - Place this at the bottom of your page -->
 <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
-    
+
     <!-- Success Toast -->
-    <div id="successToast" class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3000">
+    <div id="successToast" class="toast align-items-center border-0" role="alert" aria-live="assertive"
+        aria-atomic="true" data-bs-delay="3000">
         <div class="d-flex">
             <div class="toast-body d-flex align-items-center gap-2">
                 <i class="bi bi-check-circle-fill text-success"></i>
                 <span id="successMessage">Success message here</span>
             </div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                aria-label="Close"></button>
         </div>
     </div>
 
     <!-- Error Toast -->
-    <div id="errorToast" class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="5000">
+    <div id="errorToast" class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true"
+        data-bs-delay="5000">
         <div class="d-flex">
             <div class="toast-body d-flex align-items-center gap-2">
                 <i class="bi bi-exclamation-circle-fill text-danger"></i>
                 <span id="errorMessage">Error message here</span>
             </div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                aria-label="Close"></button>
         </div>
     </div>
 
 </div>
 
 <script>
-// Toast helper functions
-function showSuccess(message) {
-    const toastEl = document.getElementById('successToast');
-    document.getElementById('successMessage').textContent = message;
-    const toast = new bootstrap.Toast(toastEl);
-    toast.show();
-}
+    // Toast helper functions
+    function showSuccessToast(message) {
+        const toastEl = document.getElementById('successToast');
+        document.getElementById('successMessage').textContent = message;
+        const toast = new bootstrap.Toast(toastEl);
+        toast.show();
+    }
 
-function showError(message) {
-    const toastEl = document.getElementById('errorToast');
-    document.getElementById('errorMessage').textContent = message;
-    const toast = new bootstrap.Toast(toastEl);
-    toast.show();
-}
+    function showErrorToast(message) {
+        const toastEl = document.getElementById('errorToast');
+        document.getElementById('errorMessage').textContent = message;
+        const toast = new bootstrap.Toast(toastEl);
+        toast.show();
+    }
 </script>
