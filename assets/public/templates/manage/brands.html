@@ -164,6 +164,13 @@
                 }
             });
 
+
+            elements.search_form.querySelector('input[type="search"]').addEventListener("change", function (e) {
+                elements.page_input.value = 1;
+                const formData = new FormData(elements.search_form);
+                searchBrands(formData);
+            });
+
             // Add brand button handler
             elements.add_brand_btn.addEventListener("click", function () {
                 elements.brand_form.reset();
@@ -201,17 +208,19 @@
             // Confirm delete handler
             elements.confirm_delete_btn.addEventListener("click", function () {
                 const brandId = elements.delete_brand_id.value;
-                fetch(`/api/inventory/brands/delete`, {
+
+                fetch(`/api/inventory/brands/delete/${brandId}`, {
                     method: "DELETE",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ brand_id: brandId })
                 })
                     .then(res => res.json())
                     .then(data => {
                         deleteModal.hide();
                         refreshCurrentPage();
-                        if (typeof showSuccessToast === "function") {
+                        console.log(data)
+                        if (data.success) {
                             showSuccessToast(data.message || "Brand deleted successfully");
+                        } else {
+                            throw new Error(data.message);
                         }
                     })
                     .catch(err => {
@@ -264,10 +273,14 @@
                 })
                     .then(res => res.json())
                     .then(data => {
-                        brandModal.hide();
-                        refreshCurrentPage();
-                        if (typeof showSuccessToast === "function") {
-                            showSuccessToast(data.message || "Brand saved successfully");
+                        if (data.success) {
+                            brandModal.hide();
+                            refreshCurrentPage();
+                            if (typeof showSuccessToast === "function") {
+                                showSuccessToast(data.message || "Brand saved successfully");
+                            }
+                        } else {
+                            throw new Error(data.message || "Failed to save brand");
                         }
                     })
                     .catch(err => {
