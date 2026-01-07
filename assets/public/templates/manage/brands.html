@@ -10,11 +10,11 @@
 
 </head>
 
-<body class="bg-body-tertiary">
+<body class="bg-body-tertiary min-vh-100">
     {% include "components/navbar.html" with context %}
 
-    <div class="container-fluid row h-100">
-        <div class="px-0" style="max-width: 14em;">
+    <div class="container-fluid row">
+        <div class="px-0 h-100 flex-fill col" style="max-width: 14em;">
             {% include "components/sidebar.html" with context %}
         </div>
         <div class="col">
@@ -36,9 +36,17 @@
                     <i class="fa-solid fa-plus"></i>
                     Add Brand
                 </button>
+            </div>
+
+            <div class="px-2">
+
+                
 
             </div>
+
         </div>
+
+
     </div>
 </body>
 
