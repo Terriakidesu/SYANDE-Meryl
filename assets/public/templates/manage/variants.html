@@ -10,13 +10,417 @@
 
 </head>
 
-<body class="bg-body-tertiary">
+<body class="bg-body-tertiary min-vh-100">
     {% include "components/navbar.html" with context %}
 
-    <div class="container-fluid row h-100">
+    <div class="container-fluid row">
+
         {% include "components/sidebar.html" with context %}
-        <div class="col"></div>
+        <div class="col">
+            <div class="p-4 d-flex flex-row justify-content-between align-items-center">
+                <form id="search-form" action="/api/inventory/variants/" method="GET"
+                    class="d-flex flex-row gap-5 flex-fill" style="max-width: 50rem;">
+                    <input type="hidden" name="page" id="page-input" value="1">
+                    <div
+                        class="search-bar p-2 rounded-pill border border-1 border-dark-subtle align-items-center flex-fill">
+                        <i class="fa-solid fa-magnifying-glass ps-2 pe-1"></i>
+                        <div class="vr"></div>
+                        <input type="search" name="query" id="search-input" placeholder="Search">
+                        <button type="submit" class="search-button rounded-pill p-1 px-3">
+                            Search
+                        </button>
+                    </div>
+                </form>
+
+                <button type="button" class="btn btn-primary" id="add-variant-btn">
+                    <i class="fa-solid fa-plus"></i>
+                    Add Variant
+                </button>
+            </div>
+
+            <div id="content-container" class="px-2">
+
+                <template id="variant-item-template">
+                    <div class="card mb-2 variant-item" data-variant-id="">
+                        <div class="card-body d-flex align-items-center p-2">
+                            <div class="variant-id text-muted small" style="width: 80px;">ID: -</div>
+                            <div class="variant-details fw-medium" style="flex: 1;">-</div>
+                            <div style="width: 120px;" class="d-flex gap-2">
+                                <button type="button" class="btn btn-warning btn-sm edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                                <button type="button" class="btn btn-danger btn-sm delete-btn">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- List Header -->
+                <div class="d-flex py-2 px-3 fw-bold border-bottom">
+                    <div style="width: 80px;">ID</div>
+                    <div style="flex: 1;">Variant Details</div>
+                    <div style="width: 120px;">Actions</div>
+                </div>
+
+
+                <!-- List Items -->
+                <div class="variant-list" id="variant-list">
+
+                </div>
+
+                <!-- Pagination -->
+                <div id="pagination" class="d-flex justify-content-center mt-4 gap-1 fixed-bottom pb-3 bg-body-tertiary">
+                </div>
+            </div>
+
+        </div>
     </div>
+
+    {% include "components/toasts.html" %}
+
+    <!-- Variant Modal -->
+    <div class="modal fade" id="variant-modal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="variant-modal-title">Add Variant</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="variant-form">
+                        <input type="hidden" id="variant-id" name="variant_id">
+                        <div class="mb-3">
+                            <label for="variant-shoe" class="form-label">Shoe</label>
+                            <select class="form-select" id="variant-shoe" name="shoe_id" required>
+                                <option value="">Select Shoe</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="variant-size" class="form-label">Size</label>
+                            <select class="form-select" id="variant-size" name="size_id" required>
+                                <option value="">Select Size</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="variant-stock" class="form-label">Stock</label>
+                            <input type="number" class="form-control" id="variant-stock" name="stock" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="save-variant-btn">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="delete-modal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete Variant</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this variant?</p>
+                    <input type="hidden" id="delete-variant-id">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirm-delete-btn">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            const variantModal = new bootstrap.Modal(document.getElementById("variant-modal"));
+            const deleteModal = new bootstrap.Modal(document.getElementById("delete-modal"));
+            const elements = {
+                template: document.getElementById("variant-item-template"),
+                variant_list: document.getElementById("variant-list"),
+                search_form: document.getElementById("search-form"),
+                page_input: document.getElementById("page-input"),
+                pagination: document.getElementById("pagination"),
+                add_variant_btn: document.getElementById("add-variant-btn"),
+                variant_form: document.getElementById("variant-form"),
+                variant_id: document.getElementById("variant-id"),
+                variant_shoe: document.getElementById("variant-shoe"),
+                variant_size: document.getElementById("variant-size"),
+                variant_stock: document.getElementById("variant-stock"),
+                variant_modal_title: document.getElementById("variant-modal-title"),
+                save_variant_btn: document.getElementById("save-variant-btn"),
+                delete_variant_id: document.getElementById("delete-variant-id"),
+                confirm_delete_btn: document.getElementById("confirm-delete-btn")
+            };
+
+            // Load shoes
+            fetch('/api/inventory/shoes/')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.result) {
+                        data.result.forEach(shoe => {
+                            const option = document.createElement('option');
+                            option.value = shoe.shoe_id;
+                            option.textContent = shoe.shoe_name;
+                            elements.variant_shoe.appendChild(option);
+                        });
+                    }
+                })
+                .catch(err => console.error(err));
+
+            // Load sizes
+            fetch('/api/inventory/sizes/')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.result) {
+                        data.result.forEach(size => {
+                            const option = document.createElement('option');
+                            option.value = size.size_id;
+                            option.textContent = size.size_value;
+                            elements.variant_size.appendChild(option);
+                        });
+                    }
+                })
+                .catch(err => console.error(err));
+
+            elements.search_form.addEventListener("submit", function (event) {
+                event.preventDefault();
+                const formData = new FormData(elements.search_form);
+                elements.page_input.value = 1;
+                searchVariants(formData);
+            });
+
+            elements.search_form.querySelector('input[type="search"]').addEventListener("input", function (e) {
+                if (e.target.value === "") {
+                    elements.page_input.value = 1;
+                    const formData = new FormData(elements.search_form);
+                    searchVariants(formData);
+                }
+            });
+
+            elements.search_form.querySelector('input[type="search"]').addEventListener("change", function (e) {
+                elements.page_input.value = 1;
+                const formData = new FormData(elements.search_form);
+                searchVariants(formData);
+            });
+
+            elements.add_variant_btn.addEventListener("click", function () {
+                elements.variant_form.reset();
+                elements.variant_id.value = "";
+                elements.variant_modal_title.textContent = "Add Variant";
+                variantModal.show();
+            });
+
+            elements.variant_list.addEventListener("click", function (e) {
+                const editBtn = e.target.closest(".edit-btn");
+                if (editBtn) {
+                    const card = editBtn.closest(".variant-item");
+                    const variantId = card.dataset.variantId;
+                    openEditModal(variantId);
+                }
+            });
+
+            elements.variant_list.addEventListener("click", function (e) {
+                const deleteBtn = e.target.closest(".delete-btn");
+                if (deleteBtn) {
+                    const card = deleteBtn.closest(".variant-item");
+                    const variantId = card.dataset.variantId;
+                    openDeleteModal(variantId);
+                }
+            });
+
+            function openDeleteModal(variantId) {
+                elements.delete_variant_id.value = variantId;
+                deleteModal.show();
+            }
+
+            elements.confirm_delete_btn.addEventListener("click", function () {
+                const variantId = elements.delete_variant_id.value;
+
+                fetch(`/api/inventory/variants/delete/${variantId}`, {
+                    method: "DELETE",
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        deleteModal.hide();
+                        refreshCurrentPage();
+                        if (data.success) {
+                            showSuccessToast(data.message || "Variant deleted successfully");
+                        } else {
+                            throw new Error(data.message);
+                        }
+                    })
+                    .catch(err => {
+                        if (typeof showErrorToast === "function") {
+                            showErrorToast(err);
+                        } else {
+                            console.error(err);
+                        }
+                    });
+            });
+
+            function openEditModal(variantId) {
+                fetch(`/api/inventory/variants/${variantId}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        elements.variant_id.value = data.variant_id;
+                        elements.variant_shoe.value = data.shoe_id;
+                        elements.variant_size.value = data.size_id;
+                        elements.variant_stock.value = data.stock;
+                        elements.variant_modal_title.textContent = "Edit Variant";
+                        variantModal.show();
+                    })
+                    .catch(err => {
+                        if (typeof showErrorToast === "function") {
+                            showErrorToast(err);
+                        } else {
+                            console.error(err);
+                        }
+                    });
+            }
+
+            elements.save_variant_btn.addEventListener("click", function () {
+                if (!elements.variant_form.checkValidity()) {
+                    elements.variant_form.reportValidity();
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append("shoe_id", elements.variant_shoe.value);
+                formData.append("size_id", elements.variant_size.value);
+                formData.append("stock", elements.variant_stock.value);
+
+                const isEdit = !!elements.variant_id.value;
+                const url = isEdit ? "/api/inventory/variants/update" : "/api/inventory/variants/add";
+                if (isEdit) {
+                    formData.append("variant_id", elements.variant_id.value);
+                }
+
+                fetch(url, {
+                    method: "POST",
+                    body: formData
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            variantModal.hide();
+                            refreshCurrentPage();
+                            if (typeof showSuccessToast === "function") {
+                                showSuccessToast(data.message || "Variant saved successfully");
+                            }
+                        } else {
+                            throw new Error(data.message || "Failed to save variant");
+                        }
+                    })
+                    .catch(err => {
+                        if (typeof showErrorToast === "function") {
+                            showErrorToast(err);
+                        } else {
+                            console.error(err);
+                        }
+                    });
+            });
+
+            function searchVariants(formData) {
+                const url = new URL(elements.search_form.action, window.location.origin);
+                url.search = new URLSearchParams(formData).toString();
+
+                fetch(url, {
+                    method: "GET",
+                    headers: { "Accept": "application/json" }
+                })
+                    .then(res => res.json())
+                    .then(response => {
+                        try {
+                            const { result: items, count, pages } = response;
+                            elements.variant_list.replaceChildren();
+
+                            if (count === 0) {
+                                elements.variant_list.innerHTML = '<div class="text-center py-4 text-muted">No items found</div>';
+                            } else {
+                                items.forEach(addItemToList);
+                            }
+
+                            renderPagination(pages);
+                        } catch (err) {
+                            throw new Error(err);
+                        }
+                    })
+                    .catch(err => {
+                        if (typeof showErrorToast === "function") {
+                            showErrorToast(err);
+                        } else {
+                            console.error(err);
+                        }
+                    });
+            }
+
+            function addItemToList(item) {
+                const elem = elements.template.content.cloneNode(true);
+                const card = elem.querySelector(".variant-item");
+                const idEl = elem.querySelector(".variant-id");
+                const detailsEl = elem.querySelector(".variant-details");
+
+                card.dataset.variantId = item.variant_id;
+                idEl.textContent = `ID: ${item.variant_id}`;
+                detailsEl.textContent = `${item.shoe_name || 'N/A'} - Size ${item.size_value || 'N/A'} (Stock: ${item.stock})`;
+
+                elements.variant_list.appendChild(elem);
+            }
+
+            function renderPagination(totalPages) {
+                elements.pagination.innerHTML = "";
+                const currentPage = parseInt(elements.page_input.value) || 1;
+
+                if (totalPages <= 1) return;
+
+                const prevBtn = document.createElement("button");
+                prevBtn.className = `btn btn-sm ${currentPage === 1 ? "btn-secondary" : "btn-outline-primary"}`;
+                prevBtn.textContent = "Prev";
+                prevBtn.disabled = currentPage === 1;
+                prevBtn.addEventListener("click", () => goToPage(currentPage - 1));
+                elements.pagination.appendChild(prevBtn);
+
+                for (let i = 1; i <= totalPages; i++) {
+                    const pageBtn = document.createElement("button");
+                    pageBtn.className = `btn btn-sm ${i === currentPage ? "btn-primary" : "btn-outline-primary"}`;
+                    pageBtn.textContent = i;
+                    pageBtn.addEventListener("click", () => goToPage(i));
+                    elements.pagination.appendChild(pageBtn);
+                }
+
+                const nextBtn = document.createElement("button");
+                nextBtn.className = `btn btn-sm ${currentPage === totalPages ? "btn-secondary" : "btn-outline-primary"}`;
+                nextBtn.textContent = "Next";
+                nextBtn.disabled = currentPage === totalPages;
+                nextBtn.addEventListener("click", () => goToPage(currentPage + 1));
+                elements.pagination.appendChild(nextBtn);
+            }
+
+            function goToPage(page) {
+                elements.page_input.value = page;
+                const formData = new FormData(elements.search_form);
+                searchVariants(formData);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+            }
+
+            function refreshCurrentPage() {
+                const formData = new FormData(elements.search_form);
+                searchVariants(formData);
+            }
+
+            window.addEventListener("DOMContentLoaded", () => {
+                searchVariants();
+            });
+        })();
+    </script>
+
 </body>
 
 </html>

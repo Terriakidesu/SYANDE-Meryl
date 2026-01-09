@@ -10,13 +10,244 @@
 
 </head>
 
-<body class="bg-body-tertiary">
+<body class="bg-body-tertiary min-vh-100">
     {% include "components/navbar.html" with context %}
 
-    <div class="container-fluid row h-100">
+    <div class="container-fluid row">
+
         {% include "components/sidebar.html" with context %}
-        <div class="col"></div>
+        <div class="col">
+            <div class="p-4 d-flex flex-row justify-content-between align-items-center">
+                <form id="search-form" action="/api/sales/returns/" method="GET"
+                    class="d-flex flex-row gap-5 flex-fill" style="max-width: 50rem;">
+                    <input type="hidden" name="page" id="page-input" value="1">
+                    <div
+                        class="search-bar p-2 rounded-pill border border-1 border-dark-subtle align-items-center flex-fill">
+                        <i class="fa-solid fa-magnifying-glass ps-2 pe-1"></i>
+                        <div class="vr"></div>
+                        <input type="search" name="query" id="search-input" placeholder="Search">
+                        <button type="submit" class="search-button rounded-pill p-1 px-3">
+                            Search
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="content-container" class="px-2">
+
+                <template id="return-item-template">
+                    <div class="card mb-2 return-item" data-return-id="">
+                        <div class="card-body d-flex align-items-center p-2">
+                            <div class="return-id text-muted small" style="width: 80px;">ID: -</div>
+                            <div class="return-details fw-medium" style="flex: 1;">-</div>
+                            <div style="width: 120px;" class="d-flex gap-2">
+                                <button type="button" class="btn btn-warning btn-sm view-btn">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- List Header -->
+                <div class="d-flex py-2 px-3 fw-bold border-bottom">
+                    <div style="width: 80px;">ID</div>
+                    <div style="flex: 1;">Return Details</div>
+                    <div style="width: 120px;">Actions</div>
+                </div>
+
+
+                <!-- List Items -->
+                <div class="return-list" id="return-list">
+
+                </div>
+
+                <!-- Pagination -->
+                <div id="pagination" class="d-flex justify-content-center mt-4 gap-1 fixed-bottom pb-3 bg-body-tertiary">
+                </div>
+            </div>
+
+        </div>
     </div>
+
+    {% include "components/toasts.html" %}
+
+    <!-- View Return Modal -->
+    <div class="modal fade" id="return-modal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="return-modal-title">Return Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="return-details"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            const returnModal = new bootstrap.Modal(document.getElementById("return-modal"));
+            const elements = {
+                template: document.getElementById("return-item-template"),
+                return_list: document.getElementById("return-list"),
+                search_form: document.getElementById("search-form"),
+                page_input: document.getElementById("page-input"),
+                pagination: document.getElementById("pagination"),
+                return_details: document.getElementById("return-details")
+            };
+
+            elements.search_form.addEventListener("submit", function (event) {
+                event.preventDefault();
+                const formData = new FormData(elements.search_form);
+                elements.page_input.value = 1;
+                searchReturns(formData);
+            });
+
+            elements.search_form.querySelector('input[type="search"]').addEventListener("input", function (e) {
+                if (e.target.value === "") {
+                    elements.page_input.value = 1;
+                    const formData = new FormData(elements.search_form);
+                    searchReturns(formData);
+                }
+            });
+
+            elements.search_form.querySelector('input[type="search"]').addEventListener("change", function (e) {
+                elements.page_input.value = 1;
+                const formData = new FormData(elements.search_form);
+                searchReturns(formData);
+            });
+
+            elements.return_list.addEventListener("click", function (e) {
+                const viewBtn = e.target.closest(".view-btn");
+                if (viewBtn) {
+                    const card = viewBtn.closest(".return-item");
+                    const returnId = card.dataset.returnId;
+                    viewReturn(returnId);
+                }
+            });
+
+            function viewReturn(returnId) {
+                fetch(`/api/sales/returns/${returnId}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        elements.return_details.innerHTML = `
+                            <p><strong>Return ID:</strong> ${data.return_id}</p>
+                            <p><strong>Order ID:</strong> ${data.order_id}</p>
+                            <p><strong>Reason:</strong> ${data.reason || 'N/A'}</p>
+                            <p><strong>Status:</strong> ${data.status || 'N/A'}</p>
+                            <p><strong>Date:</strong> ${data.created_at || 'N/A'}</p>
+                        `;
+                        returnModal.show();
+                    })
+                    .catch(err => {
+                        if (typeof showErrorToast === "function") {
+                            showErrorToast(err);
+                        } else {
+                            console.error(err);
+                        }
+                    });
+            }
+
+            function searchReturns(formData) {
+                const url = new URL(elements.search_form.action, window.location.origin);
+                url.search = new URLSearchParams(formData).toString();
+
+                fetch(url, {
+                    method: "GET",
+                    headers: { "Accept": "application/json" }
+                })
+                    .then(res => res.json())
+                    .then(response => {
+                        try {
+                            const { result: items, count, pages } = response;
+                            elements.return_list.replaceChildren();
+
+                            if (count === 0) {
+                                elements.return_list.innerHTML = '<div class="text-center py-4 text-muted">No items found</div>';
+                            } else {
+                                items.forEach(addItemToList);
+                            }
+
+                            renderPagination(pages);
+                        } catch (err) {
+                            throw new Error(err);
+                        }
+                    })
+                    .catch(err => {
+                        if (typeof showErrorToast === "function") {
+                            showErrorToast(err);
+                        } else {
+                            console.error(err);
+                        }
+                    });
+            }
+
+            function addItemToList(item) {
+                const elem = elements.template.content.cloneNode(true);
+                const card = elem.querySelector(".return-item");
+                const idEl = elem.querySelector(".return-id");
+                const detailsEl = elem.querySelector(".return-details");
+
+                card.dataset.returnId = item.return_id;
+                idEl.textContent = `ID: ${item.return_id}`;
+                detailsEl.textContent = `Order #${item.order_id} - ${item.reason || 'No reason provided'}`;
+
+                elements.return_list.appendChild(elem);
+            }
+
+            function renderPagination(totalPages) {
+                elements.pagination.innerHTML = "";
+                const currentPage = parseInt(elements.page_input.value) || 1;
+
+                if (totalPages <= 1) return;
+
+                const prevBtn = document.createElement("button");
+                prevBtn.className = `btn btn-sm ${currentPage === 1 ? "btn-secondary" : "btn-outline-primary"}`;
+                prevBtn.textContent = "Prev";
+                prevBtn.disabled = currentPage === 1;
+                prevBtn.addEventListener("click", () => goToPage(currentPage - 1));
+                elements.pagination.appendChild(prevBtn);
+
+                for (let i = 1; i <= totalPages; i++) {
+                    const pageBtn = document.createElement("button");
+                    pageBtn.className = `btn btn-sm ${i === currentPage ? "btn-primary" : "btn-outline-primary"}`;
+                    pageBtn.textContent = i;
+                    pageBtn.addEventListener("click", () => goToPage(i));
+                    elements.pagination.appendChild(pageBtn);
+                }
+
+                const nextBtn = document.createElement("button");
+                nextBtn.className = `btn btn-sm ${currentPage === totalPages ? "btn-secondary" : "btn-outline-primary"}`;
+                nextBtn.textContent = "Next";
+                nextBtn.disabled = currentPage === totalPages;
+                nextBtn.addEventListener("click", () => goToPage(currentPage + 1));
+                elements.pagination.appendChild(nextBtn);
+            }
+
+            function goToPage(page) {
+                elements.page_input.value = page;
+                const formData = new FormData(elements.search_form);
+                searchReturns(formData);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+            }
+
+            function refreshCurrentPage() {
+                const formData = new FormData(elements.search_form);
+                searchReturns(formData);
+            }
+
+            window.addEventListener("DOMContentLoaded", () => {
+                searchReturns();
+            });
+        })();
+    </script>
+
 </body>
 
 </html>
