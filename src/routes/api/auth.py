@@ -8,7 +8,7 @@ from ...includes import Database
 from ...exceptions import DatabaseException
 from ...models.users import User
 from ...models.session import Session
-from ...helpers.OTP_mail import send_otp_email
+from ...helpers.email.OTP_mail import send_otp_email
 from ... import utils
 
 auth_router = APIRouter(prefix="/auth")
