@@ -1,19 +1,53 @@
-from typing import Optional
+import math
+from typing import Optional, Annotated
 
-from fastapi import APIRouter, Request, Form
+from fastapi import APIRouter, Request, Form, Depends, Query
 from fastapi.responses import JSONResponse
 
+from ...depedencies import is_authenticated
 from ...helpers import Database
 from ...exceptions import DatabaseException
 
-management_router = APIRouter(prefix="")
+management_router = APIRouter(prefix="", dependencies=[
+                              Depends(is_authenticated)])
 
 db = Database()
 
 
 @management_router.get("/roles", response_class=JSONResponse)
-async def list_roles(request: Request):
-    return db.fetchAll(r"SELECT * from roles")
+async def list_roles(request: Request,
+                     query: Annotated[Optional[str], Query()] = None,
+                     page: Annotated[Optional[int], Query()] = 1,
+                     limit: Annotated[Optional[int], Query()] = 10):
+
+    count = db.fetchOne(r'SELECT COUNT(*) as count FROM roles')["count"]
+    pages = math.ceil(count / limit)
+    offset = (page - 1) * limit
+
+    # Fetch results based on query
+    if query:
+        results = db.fetchAll(
+            r"""
+            SELECT * FROM roles
+            WHERE role_id = %s OR role_name LIKE %s
+            LIMIT %s OFFSET %s
+            """,
+            (query, f"%{query}%", limit, offset)
+        )
+    else:
+        results = db.fetchAll(
+            r"""
+            SELECT * FROM roles
+            LIMIT %s OFFSET %s
+            """,
+            (limit, offset)
+        )
+
+    return JSONResponse({
+        "result": results,
+        "count": count,
+        "pages": pages
+    })
 
 
 @management_router.post("/roles/add", response_class=JSONResponse)
