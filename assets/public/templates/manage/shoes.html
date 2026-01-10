@@ -9,12 +9,24 @@
     {% include "components/dependencies.html" %}
 
     <style>
-        .category-item, .brand-item, .size-item, .shoe-item, .variant-item, .user-item, .role-item {
+        .category-item,
+        .brand-item,
+        .size-item,
+        .shoe-item,
+        .variant-item,
+        .user-item,
+        .role-item {
             transition: all 0.2s ease-in-out;
             cursor: pointer;
         }
-        
-        .category-item:hover, .brand-item:hover, .size-item:hover, .shoe-item:hover, .variant-item:hover, .user-item:hover, .role-item:hover {
+
+        .category-item:hover,
+        .brand-item:hover,
+        .size-item:hover,
+        .shoe-item:hover,
+        .variant-item:hover,
+        .user-item:hover,
+        .role-item:hover {
             background-color: rgba(0, 0, 0, 0.05);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             transform: translateY(-1px);
@@ -29,7 +41,7 @@
         {% include "components/sidebar.html" with context %}
         <div class="col">
             <div class="p-4 d-flex flex-row justify-content-between align-items-center">
-                <form id="search-form" action="/api/inventory/shoes/" method="GET"
+                <form id="search-form" action="/api/inventory/shoes/all" method="GET"
                     class="d-flex flex-row gap-5 flex-fill" style="max-width: 50rem;">
                     <input type="hidden" name="page" id="page-input" value="1">
                     <div
@@ -43,7 +55,9 @@
                     </div>
                 </form>
 
-                <button type="button" class="btn btn-primary" id="add-shoe-btn" {% if "manage_shoes" not in user_permissions and "manage_inventory" not in user_permissions and "admin_all" not in user_permissions %}disabled{% endif %}>
+                <button type="button" class="btn btn-primary" id="add-shoe-btn" {% if "manage_shoes" not in
+                    user_permissions and "manage_inventory" not in user_permissions and "admin_all" not in
+                    user_permissions %}disabled{% endif %}>
                     <i class="fa-solid fa-plus"></i>
                     Add Shoe
                 </button>
@@ -58,10 +72,14 @@
                             <div class="shoe-name fw-medium" style="flex: 1;">-</div>
                             <div class="shoe-price text-muted" style="width: 100px;">-</div>
                             <div style="width: 120px;" class="d-flex gap-2">
-                                <button type="button" class="btn btn-warning btn-sm edit-btn" {% if "manage_shoes" not in user_permissions and "manage_inventory" not in user_permissions and "admin_all" not in user_permissions %}disabled{% endif %}>
+                                <button type="button" class="btn btn-warning btn-sm edit-btn" {% if "manage_shoes" not
+                                    in user_permissions and "manage_inventory" not in user_permissions and "admin_all"
+                                    not in user_permissions %}disabled{% endif %}>
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
-                                <button type="button" class="btn btn-danger btn-sm delete-btn" {% if "manage_shoes" not in user_permissions and "manage_inventory" not in user_permissions and "admin_all" not in user_permissions %}disabled{% endif %}>
+                                <button type="button" class="btn btn-danger btn-sm delete-btn" {% if "manage_shoes" not
+                                    in user_permissions and "manage_inventory" not in user_permissions and "admin_all"
+                                    not in user_permissions %}disabled{% endif %}>
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
                             </div>
@@ -84,7 +102,8 @@
                 </div>
 
                 <!-- Pagination -->
-                <div id="pagination" class="d-flex justify-content-center mt-4 gap-1 fixed-bottom pb-3 bg-body-tertiary">
+                <div id="pagination"
+                    class="d-flex justify-content-center mt-4 gap-1 fixed-bottom pb-3 bg-body-tertiary">
                 </div>
             </div>
 
@@ -95,7 +114,7 @@
 
     <!-- Shoe Modal -->
     <div class="modal fade" id="shoe-modal" tabindex="-1">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="shoe-modal-title">Add Shoe</h5>
@@ -104,13 +123,76 @@
                 <div class="modal-body">
                     <form id="shoe-form">
                         <input type="hidden" id="shoe-id" name="shoe_id">
-                        <div class="mb-3">
-                            <label for="shoe-name" class="form-label">Shoe Name</label>
-                            <input type="text" class="form-control" id="shoe-name" name="shoe_name" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="shoe-price" class="form-label">Price</label>
-                            <input type="number" class="form-control" id="shoe-price" name="price" step="0.01" required>
+                        <div class="row">
+                            <!-- Left Column -->
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="shoe-name" class="form-label">Shoe Name</label>
+                                    <input type="text" class="form-control" id="shoe-name" name="shoe_name" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="brand-input" class="form-label">Brand</label>
+                                    <div class="position-relative">
+                                        <input type="text" class="form-control" id="brand-input"
+                                            placeholder="Search and select brand" autocomplete="off">
+                                        <div id="brand-suggestions" class="list-group position-absolute w-100"
+                                            style="top: 100%; left: 0; z-index: 1000; display: none; max-height: 200px; overflow-y: auto;">
+                                        </div>
+                                    </div>
+                                    <input type="hidden" id="brand-id" name="brand_id" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="shoe-price" class="form-label">Price</label>
+                                    <input type="number" class="form-control" id="shoe-price" name="shoe_price"
+                                        step="0.01" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="markup" class="form-label">Markup (%)</label>
+                                    <input type="number" class="form-control" id="markup" name="markup" min="0"
+                                        required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="first-sale-at" class="form-label">First Sale Date</label>
+                                    <input type="date" class="form-control" id="first-sale-at" name="first_sale_at"
+                                        required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="shoe-file" class="form-label">Shoe Image</label>
+                                    <input type="file" class="form-control" id="shoe-file" name="file" accept="image/*">
+                                </div>
+                            </div>
+
+                            <!-- Right Column -->
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="category-input" class="form-label">Categories</label>
+                                    <div class="position-relative">
+                                        <input type="text" class="form-control" id="category-input"
+                                            placeholder="Search and select categories" autocomplete="off">
+                                        <div id="category-suggestions" class="list-group position-absolute w-100"
+                                            style="top: 100%; left: 0; z-index: 1000; display: none; max-height: 200px; overflow-y: auto;">
+                                        </div>
+                                    </div>
+                                    <input type="hidden" id="category-ids" name="category_ids">
+                                    <div id="category-selected" class="mt-2 d-flex flex-wrap gap-2">
+                                        <!-- Selected categories will appear as badges here -->
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="demographic-input" class="form-label">Demographics</label>
+                                    <div class="position-relative">
+                                        <input type="text" class="form-control" id="demographic-input"
+                                            placeholder="Search and select demographics" autocomplete="off">
+                                        <div id="demographic-suggestions" class="list-group position-absolute w-100"
+                                            style="top: 100%; left: 0; z-index: 1050; display: none; max-height: 200px; overflow-y: auto;">
+                                        </div>
+                                    </div>
+                                    <input type="hidden" id="demographic-ids" name="demographic_ids">
+                                    <div id="demographic-selected" class="mt-2 d-flex flex-wrap gap-2">
+                                        <!-- Selected demographics will appear as badges here -->
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -156,12 +238,57 @@
                 shoe_form: document.getElementById("shoe-form"),
                 shoe_id: document.getElementById("shoe-id"),
                 shoe_name: document.getElementById("shoe-name"),
+                brand_input: document.getElementById("brand-input"),
+                brand_id: document.getElementById("brand-id"),
+                brand_suggestions: document.getElementById("brand-suggestions"),
+                category_input: document.getElementById("category-input"),
+                category_ids: document.getElementById("category-ids"),
+                category_suggestions: document.getElementById("category-suggestions"),
+                category_selected: document.getElementById("category-selected"),
+                demographic_input: document.getElementById("demographic-input"),
+                demographic_ids: document.getElementById("demographic-ids"),
+                demographic_suggestions: document.getElementById("demographic-suggestions"),
+                demographic_selected: document.getElementById("demographic-selected"),
                 shoe_price: document.getElementById("shoe-price"),
+                markup: document.getElementById("markup"),
+                first_sale_at: document.getElementById("first-sale-at"),
+                shoe_file: document.getElementById("shoe-file"),
                 shoe_modal_title: document.getElementById("shoe-modal-title"),
                 save_shoe_btn: document.getElementById("save-shoe-btn"),
                 delete_shoe_id: document.getElementById("delete-shoe-id"),
                 confirm_delete_btn: document.getElementById("confirm-delete-btn")
             };
+
+            // Store for managing selected categories and demographics
+            let selectedCategories = {}; // { categoryId: categoryName }
+            let selectedDemographics = {}; // { demographicId: demographicName }
+            let selectedBrand = null; // { brandId: brandName }
+            let allBrands = [];
+            let allCategories = [];
+            let allDemographics = [];
+
+            // Load suggestions data
+            fetch('/api/inventory/shoes/suggestions')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.categories) {
+                        allCategories = data.categories;
+                    }
+                    if (data.demographics) {
+                        allDemographics = data.demographics;
+                    }
+                })
+                .catch(err => console.error(err));
+
+            // Load brands
+            fetch('/api/inventory/brands/suggestions')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.brands) {
+                        allBrands = data.brands;
+                    }
+                })
+                .catch(err => console.error(err));
 
             elements.search_form.addEventListener("submit", function (event) {
                 event.preventDefault();
@@ -194,8 +321,213 @@
             elements.add_shoe_btn.addEventListener("click", function () {
                 elements.shoe_form.reset();
                 elements.shoe_id.value = "";
+                elements.brand_id.value = "";
+                elements.brand_input.value = "";
+                selectedBrand = null;
+                selectedCategories = {};
+                selectedDemographics = {};
+                renderSelectedCategories();
+                renderSelectedDemographics();
                 elements.shoe_modal_title.textContent = "Add Shoe";
                 shoeModal.show();
+            });
+
+            // Brand suggestions
+            elements.brand_input.addEventListener("input", function () {
+                const query = this.value.trim().toLowerCase();
+
+                if (!query) {
+                    elements.brand_suggestions.style.display = 'none';
+                    return;
+                }
+
+                const filtered = allBrands.filter(brand =>
+                    brand.brand_name.toLowerCase().includes(query)
+                );
+
+                if (filtered.length === 0) {
+                    elements.brand_suggestions.style.display = 'none';
+                    return;
+                }
+
+                elements.brand_suggestions.innerHTML = '';
+                filtered.forEach((brand, index) => {
+                    const item = document.createElement('button');
+                    item.type = 'button';
+                    item.className = 'list-group-item list-group-item-action';
+                    if (index === 0) item.classList.add('active');
+                    item.textContent = brand.brand_name;
+                    item.dataset.brandId = brand.brand_id;
+                    item.dataset.brandName = brand.brand_name;
+                    item.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        selectedBrand = { id: brand.brand_id, name: brand.brand_name };
+                        elements.brand_id.value = brand.brand_id;
+                        elements.brand_input.value = brand.brand_name;
+                        elements.brand_suggestions.style.display = 'none';
+                    });
+                    elements.brand_suggestions.appendChild(item);
+                });
+
+                elements.brand_suggestions.style.display = 'block';
+            });
+
+            elements.brand_input.addEventListener("keydown", function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (elements.brand_suggestions.style.display !== 'none') {
+                        const firstItem = elements.brand_suggestions.querySelector('.list-group-item');
+                        if (firstItem) {
+                            const brandId = firstItem.dataset.brandId;
+                            const brandName = firstItem.dataset.brandName;
+                            if (brandId && brandName) {
+                                selectedBrand = { id: brandId, name: brandName };
+                                elements.brand_id.value = brandId;
+                                elements.brand_input.value = brandName;
+                                elements.brand_suggestions.style.display = 'none';
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Category suggestions
+            elements.category_input.addEventListener("input", function () {
+                const query = this.value.trim().toLowerCase();
+
+                if (!query) {
+                    elements.category_suggestions.style.display = 'none';
+                    return;
+                }
+
+                const filtered = allCategories.filter(cat =>
+                    !selectedCategories[cat.category_id] &&
+                    cat.category_name.toLowerCase().includes(query)
+                );
+
+                if (filtered.length === 0) {
+                    elements.category_suggestions.style.display = 'none';
+                    return;
+                }
+
+                elements.category_suggestions.innerHTML = '';
+                filtered.forEach((cat, index) => {
+                    const item = document.createElement('button');
+                    item.type = 'button';
+                    item.className = 'list-group-item list-group-item-action';
+                    if (index === 0) item.classList.add('active');
+                    item.textContent = cat.category_name;
+                    item.dataset.categoryId = cat.category_id;
+                    item.dataset.categoryName = cat.category_name;
+                    item.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        selectedCategories[cat.category_id] = cat.category_name;
+                        renderSelectedCategories();
+                        elements.category_input.value = '';
+                        elements.category_suggestions.style.display = 'none';
+                    });
+                    elements.category_suggestions.appendChild(item);
+                });
+
+                elements.category_suggestions.style.display = 'block';
+            });
+
+            elements.category_input.addEventListener("keydown", function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (elements.category_suggestions.style.display !== 'none') {
+                        const firstItem = elements.category_suggestions.querySelector('.list-group-item');
+                        if (firstItem) {
+                            const categoryId = firstItem.dataset.categoryId;
+                            const categoryName = firstItem.dataset.categoryName;
+                            if (categoryId && categoryName) {
+                                selectedCategories[categoryId] = categoryName;
+                                renderSelectedCategories();
+                                elements.category_input.value = '';
+                                elements.category_suggestions.style.display = 'none';
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Demographic suggestions
+            elements.demographic_input.addEventListener("input", function () {
+                const query = this.value.trim().toLowerCase();
+
+                if (!query) {
+                    elements.demographic_suggestions.style.display = 'none';
+                    return;
+                }
+
+                if (!allDemographics || allDemographics.length === 0) {
+                    elements.demographic_suggestions.style.display = 'none';
+                    return;
+                }
+
+                const filtered = allDemographics.filter(demo => {
+                    const demoName = demo.code || '';
+                    return !selectedDemographics[demo.demographic_id] &&
+                        demoName.toLowerCase().includes(query);
+                });
+
+                if (filtered.length === 0) {
+                    elements.demographic_suggestions.style.display = 'none';
+                    return;
+                }
+
+                elements.demographic_suggestions.innerHTML = '';
+                filtered.forEach((demo, index) => {
+                    const item = document.createElement('button');
+                    item.type = 'button';
+                    item.className = 'list-group-item list-group-item-action';
+                    if (index === 0) item.classList.add('active');
+                    item.textContent = demo.code || '';
+                    item.dataset.demographicId = demo.demographic_id;
+                    item.dataset.demographicName = demo.code || '';
+                    item.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        selectedDemographics[demo.demographic_id] = demo.code;
+                        renderSelectedDemographics();
+                        elements.demographic_input.value = '';
+                        elements.demographic_suggestions.style.display = 'none';
+                    });
+                    elements.demographic_suggestions.appendChild(item);
+                });
+
+                elements.demographic_suggestions.style.display = 'block';
+            });
+
+            elements.demographic_input.addEventListener("keydown", function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (elements.demographic_suggestions.style.display !== 'none') {
+                        const firstItem = elements.demographic_suggestions.querySelector('.list-group-item');
+                        if (firstItem) {
+                            const demographicId = firstItem.dataset.demographicId;
+                            const demographicName = firstItem.dataset.demographicName;
+                            if (demographicId && demographicName) {
+                                selectedDemographics[demographicId] = demographicName;
+                                renderSelectedDemographics();
+                                elements.demographic_input.value = '';
+                                elements.demographic_suggestions.style.display = 'none';
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Hide suggestions when clicking outside
+            document.addEventListener('click', function (e) {
+                if (e.target !== elements.brand_input) {
+                    elements.brand_suggestions.style.display = 'none';
+                }
+                if (e.target !== elements.category_input) {
+                    elements.category_suggestions.style.display = 'none';
+                }
+                if (e.target !== elements.demographic_input) {
+                    elements.demographic_suggestions.style.display = 'none';
+                }
             });
 
             elements.shoe_list.addEventListener("click", function (e) {
@@ -219,6 +551,38 @@
             function openDeleteModal(shoeId) {
                 elements.delete_shoe_id.value = shoeId;
                 deleteModal.show();
+            }
+
+            function renderSelectedCategories() {
+                elements.category_selected.innerHTML = '';
+                elements.category_ids.value = Object.keys(selectedCategories).join(',');
+
+                Object.entries(selectedCategories).forEach(([catId, catName]) => {
+                    const badge = document.createElement('span');
+                    badge.className = 'badge bg-primary d-flex align-items-center gap-2';
+                    badge.innerHTML = `${catName} <button type="button" class="btn-close btn-close-white" style="font-size: 0.7rem;"></button>`;
+                    badge.querySelector('.btn-close').addEventListener('click', () => {
+                        delete selectedCategories[catId];
+                        renderSelectedCategories();
+                    });
+                    elements.category_selected.appendChild(badge);
+                });
+            }
+
+            function renderSelectedDemographics() {
+                elements.demographic_selected.innerHTML = '';
+                elements.demographic_ids.value = Object.keys(selectedDemographics).join(',');
+
+                Object.entries(selectedDemographics).forEach(([demoId, demoName]) => {
+                    const badge = document.createElement('span');
+                    badge.className = 'badge bg-success d-flex align-items-center gap-2';
+                    badge.innerHTML = `${demoName} <button type="button" class="btn-close btn-close-white" style="font-size: 0.7rem;"></button>`;
+                    badge.querySelector('.btn-close').addEventListener('click', () => {
+                        delete selectedDemographics[demoId];
+                        renderSelectedDemographics();
+                    });
+                    elements.demographic_selected.appendChild(badge);
+                });
             }
 
             elements.confirm_delete_btn.addEventListener("click", function () {
@@ -247,12 +611,42 @@
             });
 
             function openEditModal(shoeId) {
-                fetch(`/api/inventory/shoes/${shoeId}`)
+                fetch(`/api/inventory/shoes/${shoeId}/all`)
                     .then(res => res.json())
                     .then(data => {
                         elements.shoe_id.value = data.shoe_id;
                         elements.shoe_name.value = data.shoe_name;
-                        elements.shoe_price.value = data.price;
+                        elements.brand_id.value = data.brand_id;
+
+                        // Set brand name in input
+                        const brand = allBrands.find(b => b.brand_id == data.brand_id);
+                        if (brand) {
+                            elements.brand_input.value = brand.brand_name;
+                            selectedBrand = { id: brand.brand_id, name: brand.brand_name };
+                        }
+
+                        elements.shoe_price.value = data.shoe_price;
+                        elements.markup.value = data.markup;
+                        elements.first_sale_at.value = data.first_sale_at;
+
+                        // Populate selected categories
+                        selectedCategories = {};
+                        if (data.categories && Array.isArray(data.categories)) {
+                            data.categories.forEach(cat => {
+                                selectedCategories[cat.category_id] = cat.category_name;
+                            });
+                        }
+                        renderSelectedCategories();
+
+                        // Populate selected demographics
+                        selectedDemographics = {};
+                        if (data.demographics && Array.isArray(data.demographics)) {
+                            data.demographics.forEach(demo => {
+                                selectedDemographics[demo.demographic_id] = demo.code;
+                            });
+                        }
+                        renderSelectedDemographics();
+
                         elements.shoe_modal_title.textContent = "Edit Shoe";
                         shoeModal.show();
                     })
@@ -273,7 +667,16 @@
 
                 const formData = new FormData();
                 formData.append("shoe_name", elements.shoe_name.value);
-                formData.append("price", elements.shoe_price.value);
+                formData.append("brand_id", elements.brand_id.value);
+                formData.append("category_ids", elements.category_ids.value);
+                formData.append("demographic_ids", elements.demographic_ids.value);
+                formData.append("shoe_price", elements.shoe_price.value);
+                formData.append("markup", elements.markup.value);
+                formData.append("first_sale_at", elements.first_sale_at.value);
+
+                if (elements.shoe_file.files.length > 0) {
+                    formData.append("file", elements.shoe_file.files[0]);
+                }
 
                 const isEdit = !!elements.shoe_id.value;
                 const url = isEdit ? "/api/inventory/shoes/update" : "/api/inventory/shoes/add";
