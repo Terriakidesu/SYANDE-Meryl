@@ -26,6 +26,13 @@
         "supported_formats": ["JPEG", "PNG"],
         "max_file_size": 5242880
     },
+    "shoes": {
+        "path": "assets/public/products/shoes",
+        "default": "assets/public/products/default/default.jpeg",
+        "size": 1280,
+        "quality": 85,
+        "supported_formats": ["JPEG", "PNG"]
+    },
     "session": {
         "timeout": 30,
         "secure": false,

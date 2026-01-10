@@ -34,6 +34,14 @@ class Productsettings(BaseModel):
     max_file_size: int = 5242880
 
 
+class ShoeSettings(BaseModel):
+    path: str
+    size: int
+    default: str
+    quality: int = 85
+    supported_formats: List[str] = ["JPEG", "PNG"]
+
+
 class SessionSettings(BaseModel):
     timeout: int
     secure: bool = False
@@ -45,4 +53,5 @@ class Properties(BaseModel):
     logging: LoggingSettings = LoggingSettings()
     profiles: ProfileSettings
     products: Productsettings
+    shoes: ShoeSettings
     session: SessionSettings
