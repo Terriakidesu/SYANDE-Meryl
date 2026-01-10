@@ -50,6 +50,47 @@ async def list_roles(request: Request,
     })
 
 
+@management_router.get("/roles/all", response_class=JSONResponse)
+async def list_roles(request: Request,
+                     query: Annotated[Optional[str], Query()] = None,
+                     page: Annotated[Optional[int], Query()] = 1,
+                     limit: Annotated[Optional[int], Query()] = 10):
+
+    count = db.fetchOne(r'SELECT COUNT(*) as count FROM roles')["count"]
+    pages = math.ceil(count / limit)
+    offset = (page - 1) * limit
+
+    # Fetch results based on query
+    if query:
+        results = db.fetchAll(
+            r"""
+            SELECT * FROM roles 
+            WHERE role_id = %s OR role_name LIKE %s
+            LIMIT %s OFFSET %s
+            """,
+            (query, f"%{query}%", limit, offset)
+        )
+    else:
+        results = db.fetchAll(
+            r"""
+            SELECT * FROM roles
+            LIMIT %s OFFSET %s
+            """,
+            (limit, offset)
+        )
+
+    for role in results:
+        perms = db.fetchAll(
+            r'SELECT rp.permission_id, p.permission_code, p.description, p.category FROM role_permissions rp JOIN permissions p ON p.permission_id = rp.permission_id WHERE rp.role_id = %s', (role["role_id"],))
+        role["permissions"] = perms
+
+    return JSONResponse({
+        "result": results,
+        "count": count,
+        "pages": pages
+    })
+
+
 @management_router.post("/roles/add", response_class=JSONResponse)
 async def add_role(request: Request, role_name: str = Form(), permission_ids: Optional[str] = Form(None)):
     try:
