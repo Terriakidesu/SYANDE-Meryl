@@ -1,6 +1,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request
+from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from ..depedencies import is_authenticated, user_permissions
@@ -24,6 +25,11 @@ async def dashboard(request: Request):
         "navigation_sales": await sidebar.generate_sidebar_data(request, "Sales"),
         "navigation_management": await sidebar.generate_sidebar_data(request, "Management"),
     })
+
+
+@manage_router.get("/inventory")
+async def inventory_home():
+    return RedirectResponse("/manage/inventory/shoes")
 
 
 @manage_router.get("/inventory/shoes")
