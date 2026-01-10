@@ -159,6 +159,13 @@
                 confirm_delete_btn: document.getElementById("confirm-delete-btn")
             };
 
+            // Prevent search form submission when modal is open
+            elements.variant_form.addEventListener("keypress", function (event) {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                }
+            });
+
             // Load shoes
             fetch('/api/inventory/shoes/')
                 .then(res => res.json())

@@ -159,6 +159,13 @@
                 confirm_delete_btn: document.getElementById("confirm-delete-btn")
             };
 
+            // Prevent search form submission when modal is open
+            elements.user_form.addEventListener("keypress", function (event) {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                }
+            });
+
             // Load roles
             fetch('/api/management/roles/')
                 .then(res => res.json())
