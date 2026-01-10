@@ -1,4 +1,5 @@
 import math
+import datetime
 import os
 import shutil
 from io import BytesIO
@@ -86,6 +87,10 @@ async def list_shoes(request: Request,
 
     for shoe in result:
         shoe_id = shoe["shoe_id"]
+        
+        shoe["created_at"] = shoe["created_at"].isoformat()
+        shoe["first_sale_at"] = shoe["first_sale_at"].isoformat()
+
         shoe["categories"] = db.fetchAll(
             r"""
             SELECT c.*
@@ -101,6 +106,8 @@ async def list_shoes(request: Request,
             JOIN demographics d ON sd.demographic_id = d.demographic_id
             WHERE sd.shoe_id = %s """, (shoe_id,)
         )
+
+    print(result)
 
     return JSONResponse({
         "result": result,

@@ -466,7 +466,7 @@
                 }
 
                 const filtered = allDemographics.filter(demo => {
-                    const demoName = demo.code || '';
+                    const demoName = demo.demographic_Code || '';
                     return !selectedDemographics[demo.demographic_id] &&
                         demoName.toLowerCase().includes(query);
                 });
@@ -482,12 +482,12 @@
                     item.type = 'button';
                     item.className = 'list-group-item list-group-item-action';
                     if (index === 0) item.classList.add('active');
-                    item.textContent = demo.code || '';
+                    item.textContent = demo.demographic_Code || '';
                     item.dataset.demographicId = demo.demographic_id;
-                    item.dataset.demographicName = demo.code || '';
+                    item.dataset.demographicName = demo.demographic_Code || '';
                     item.addEventListener('click', function (e) {
                         e.preventDefault();
-                        selectedDemographics[demo.demographic_id] = demo.code;
+                        selectedDemographics[demo.demographic_id] = demo.demographic_Code;
                         renderSelectedDemographics();
                         elements.demographic_input.value = '';
                         elements.demographic_suggestions.style.display = 'none';
@@ -625,6 +625,7 @@
                             selectedBrand = { id: brand.brand_id, name: brand.brand_name };
                         }
 
+
                         elements.shoe_price.value = data.shoe_price;
                         elements.markup.value = data.markup;
                         elements.first_sale_at.value = data.first_sale_at;
@@ -642,7 +643,7 @@
                         selectedDemographics = {};
                         if (data.demographics && Array.isArray(data.demographics)) {
                             data.demographics.forEach(demo => {
-                                selectedDemographics[demo.demographic_id] = demo.code;
+                                selectedDemographics[demo.demographic_id] = demo.demographic_Code;
                             });
                         }
                         renderSelectedDemographics();
@@ -753,7 +754,7 @@
                 card.dataset.shoeId = item.shoe_id;
                 idEl.textContent = `ID: ${item.shoe_id}`;
                 nameEl.textContent = item.shoe_name;
-                priceEl.textContent = `₱${parseFloat(item.price).toFixed(2)}`;
+                priceEl.textContent = `₱${parseFloat(item.shoe_price).toFixed(2)}`;
 
                 elements.shoe_list.appendChild(elem);
             }
