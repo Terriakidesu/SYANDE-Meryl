@@ -168,10 +168,17 @@ async def update_user(request: Request, user_id: int = Form(), username: str = F
         if existing:
             raise DatabaseException("Username is already taken")
 
-        db.commitOne(
-            r'UPDATE users SET first_name = %s, last_name = %s, username = %s WHERE user_id = %s',
-            (first_name, last_name, username, user_id)
-        )
+        # For superadmin (user_id = -1), don't update username
+        if user_id == -1:
+            db.commitOne(
+                r'UPDATE users SET first_name = %s, last_name = %s WHERE user_id = %s',
+                (first_name, last_name, user_id)
+            )
+        else:
+            db.commitOne(
+                r'UPDATE users SET first_name = %s, last_name = %s, username = %s WHERE user_id = %s',
+                (first_name, last_name, username, user_id)
+            )
 
         # Update email
         db.commitOne(

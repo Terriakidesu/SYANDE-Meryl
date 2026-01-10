@@ -16,7 +16,14 @@ async def settings_home(request: Request):
     return templates.TemplateResponse(request, "settings/index.html", {
         "user_id": request.session["user_id"],
         "username": request.session["username"],
-        "page_title": "Settings"
+        "page_title": "Settings",
+        "navigation_management": [
+            {
+                "caption": "Profile Settings",
+                "href": "/settings/profile",
+                "icon": "fa-user-gear"
+            }
+        ]
     })
 
 
@@ -26,4 +33,13 @@ async def settings_home(request: Request):
         "user_id": request.session["user_id"],
         "username": request.session["username"],
         "page_title": "Profile Settings"
+    })
+
+
+@settings_router.get("/change-password")
+async def change_password(request: Request):
+    return templates.TemplateResponse(request, "settings/change-password.html", {
+        "user_id": request.session["user_id"],
+        "username": request.session["username"],
+        "page_title": "Change Password"
     })
