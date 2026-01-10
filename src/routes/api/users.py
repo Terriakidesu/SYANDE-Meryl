@@ -1,19 +1,20 @@
+import math
 import os
 import shutil
 from io import BytesIO
 from typing import Annotated, Optional
 
-from fastapi import APIRouter, File, Form, Request, UploadFile, Depends
+from fastapi import APIRouter, Depends, File, Form, Request, UploadFile, Query
 from fastapi.responses import JSONResponse
 from PIL import Image
 
 from ... import utils
-from ...utils import Permissions
-from ...depedencies import user_permissions, is_authenticated
+from ...depedencies import is_authenticated, user_permissions
 from ...exceptions import DatabaseException
 from ...helpers import Database
 from ...models.users import UserForm
 from ...Settings import Settings
+from ...utils import Permissions
 
 users_router = APIRouter(prefix="/users",
                          dependencies=[Depends(is_authenticated)])
@@ -22,14 +23,56 @@ db = Database()
 
 
 @users_router.get("/", response_class=JSONResponse)
-async def list_users(request: Request, user_perms: list[str] = Depends(user_permissions)):
-    utils.check_user_permissions(
-        user_perms,
-        Permissions.users.manage_users,
-        Permissions.users.view_users
-    )
+async def list_users(request: Request,
+                     query: Annotated[Optional[str], Query()] = None,
+                     page: Annotated[Optional[int], Query()] = 1,
+                     limit: Annotated[Optional[int], Query()] = 10
+                     ):
 
-    return db.fetchAll(r'SELECT * FROM users')
+    count = db.fetchOne(r'SELECT COUNT(*) as count FROM users')["count"]
+    pages = math.ceil(count / limit)
+    offset = (page - 1) * limit
+
+    # Fetch results based on query
+    if query:
+        results = db.fetchAll(
+            r"""
+            SELECT u.user_id, u.first_name, u.last_name, u.username, u.created_at, e.email
+            FROM users u 
+            JOIN emails e ON u.user_id = e.user_id
+            WHERE u.user_id = %s OR u.username LIKE %s OR u.first_name LIKE %s OR u.last_name LIKE %s OR e.email = %s
+            LIMIT %s OFFSET %s
+            """,
+            (query, f"%{query}%", f"%{query}%",
+             f"%{query}%", query, limit, offset)
+        )
+    else:
+        results = db.fetchAll(
+            r"""
+            SELECT u.user_id, u.first_name, u.last_name, u.username, u.created_at, e.email
+            FROM users u 
+            JOIN emails e ON u.user_id = e.user_id
+            LIMIT %s OFFSET %s
+            """,
+            (limit, offset)
+        )
+
+    # Enrich users with roles and convert dates to ISO format
+    for user in results:
+        user["roles"] = db.fetchAll(
+            r"""
+            SELECT r.* FROM user_roles ur
+            JOIN roles r ON ur.role_id = r.role_id
+            WHERE ur.user_id = %s
+            """, (user["user_id"],))
+        if user.get("created_at"):
+            user["created_at"] = user["created_at"].isoformat()
+
+    return JSONResponse({
+        "result": results,
+        "count": count,
+        "pages": pages
+    })
 
 
 @users_router.post("/add", response_class=JSONResponse)
