@@ -294,6 +294,10 @@ async def delete_shoe(request: Request, shoe_id: int, user_perms: list[str] = De
     )
 
     try:
+
+        db.commitOne(r'DELETE FROM shoe_categories WHERE shoe_id = %s', (shoe_id,))
+        db.commitOne(r'DELETE FROM shoe_demographics WHERE shoe_id = %s', (shoe_id,))
+
         rowCount = db.commitOne(
             r'DELETE FROM shoes WHERE shoe_id = %s', (shoe_id,)).rowcount
 
