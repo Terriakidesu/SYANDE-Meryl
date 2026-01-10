@@ -14,12 +14,16 @@ templates = Jinja2Templates("assets/public/templates/")
 @settings_router.get("/")
 async def settings_home(request: Request):
     return templates.TemplateResponse(request, "settings/index.html", {
-        "user_id": request.session["user_id"]
+        "user_id": request.session["user_id"],
+        "username": request.session["username"],
+        "page_title": "Settings"
     })
 
 
 @settings_router.get("/profile")
 async def settings_home(request: Request):
     return templates.TemplateResponse(request, "settings/profile.html", {
-        "user_id": request.session["user_id"]
+        "user_id": request.session["user_id"],
+        "username": request.session["username"],
+        "page_title": "Profile Settings"
     })
