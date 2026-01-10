@@ -62,7 +62,7 @@ async def add_category(request: Request, category_name: str = Form(), user_perms
         if category_name.strip() == "":
             raise DatabaseException("category_name is empty.")
 
-        if _ := db.fetchOne(r'SELECT * FROM catgories WHERE category_name = %s', (category_name,)):
+        if _ := db.fetchOne(r'SELECT * FROM categories WHERE category_name = %s', (category_name,)):
             return JSONResponse({
                 "success": False,
                 "message": "Category already exists."

@@ -32,7 +32,7 @@
                     </div>
                 </form>
 
-                <button type="button" class="btn btn-primary" id="add-brand-btn">
+                <button type="button" class="btn btn-primary" id="add-brand-btn" {% if "manage_brands" not in user_permissions and "manage_inventory" not in user_permissions %}disabled{% endif %}>
                     <i class="fa-solid fa-plus"></i>
                     Add Brand
                 </button>
@@ -46,10 +46,10 @@
                             <div class="brand-id text-muted small" style="width: 80px;">ID: -</div>
                             <div class="brand-name fw-medium" style="flex: 1;">-</div>
                             <div style="width: 120px;" class="d-flex gap-2">
-                                <button type="button" class="btn btn-warning btn-sm edit-btn">
+                                <button type="button" class="btn btn-warning btn-sm edit-btn" {% if "manage_brands" not in user_permissions and "manage_inventory" not in user_permissions %}disabled{% endif %}>
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
-                                <button type="button" class="btn btn-danger btn-sm delete-btn">
+                                <button type="button" class="btn btn-danger btn-sm delete-btn" {% if "manage_brands" not in user_permissions and "manage_inventory" not in user_permissions %}disabled{% endif %}>
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
                             </div>
