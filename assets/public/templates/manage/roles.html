@@ -8,7 +8,18 @@
 
     {% include "components/dependencies.html" %}
 
-</head>
+    <style>
+        .category-item, .brand-item, .size-item, .shoe-item, .variant-item, .user-item, .role-item {
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+        }
+        
+        .category-item:hover, .brand-item:hover, .size-item:hover, .shoe-item:hover, .variant-item:hover, .user-item:hover, .role-item:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
+        }
+    </style>
 
 <body class="bg-body-tertiary min-vh-100">
     {% include "components/navbar.html" with context %}
@@ -32,7 +43,7 @@
                     </div>
                 </form>
 
-                <button type="button" class="btn btn-primary" id="add-role-btn" {% if "manage_roles" not in user_permissions %}disabled{% endif %}>
+                <button type="button" class="btn btn-primary" id="add-role-btn" {% if "manage_roles" not in user_permissions and "admin_all" not in user_permissions %}disabled{% endif %}>
                     <i class="fa-solid fa-plus"></i>
                     Add Role
                 </button>
@@ -46,10 +57,10 @@
                             <div class="role-id text-muted small" style="width: 80px;">ID: -</div>
                             <div class="role-name fw-medium" style="flex: 1;">-</div>
                             <div style="width: 120px;" class="d-flex gap-2">
-                                <button type="button" class="btn btn-warning btn-sm edit-btn" {% if "manage_roles" not in user_permissions %}disabled{% endif %}>
+                                <button type="button" class="btn btn-warning btn-sm edit-btn" {% if "manage_roles" not in user_permissions and "admin_all" not in user_permissions %}disabled{% endif %}>
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
-                                <button type="button" class="btn btn-danger btn-sm delete-btn" {% if "manage_roles" not in user_permissions %}disabled{% endif %}>
+                                <button type="button" class="btn btn-danger btn-sm delete-btn" {% if "manage_roles" not in user_permissions and "admin_all" not in user_permissions %}disabled{% endif %}>
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
                             </div>
