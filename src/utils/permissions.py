@@ -115,6 +115,42 @@ class PermissionsClass:
     pos: POS = POS()
     management: Management = Management()
 
+    def all(self) -> list[str]:
+        """
+        Returns a list of all permission codes in the system.
+        
+        Returns:
+            list[str]: A list containing all permission codes from all categories.
+        """
+        all_permissions = []
+        
+        # Add inventory permissions
+        for attr in dir(self.inventory):
+            if not attr.startswith('_') and isinstance(getattr(self.inventory, attr), str):
+                all_permissions.append(getattr(self.inventory, attr))
+        
+        # Add sales permissions
+        for attr in dir(self.sales):
+            if not attr.startswith('_') and isinstance(getattr(self.sales, attr), str):
+                all_permissions.append(getattr(self.sales, attr))
+        
+        # Add users permissions
+        for attr in dir(self.users):
+            if not attr.startswith('_') and isinstance(getattr(self.users, attr), str):
+                all_permissions.append(getattr(self.users, attr))
+        
+        # Add POS permissions
+        for attr in dir(self.pos):
+            if not attr.startswith('_') and isinstance(getattr(self.pos, attr), str):
+                all_permissions.append(getattr(self.pos, attr))
+        
+        # Add management permissions
+        for attr in dir(self.management):
+            if not attr.startswith('_') and isinstance(getattr(self.management, attr), str):
+                all_permissions.append(getattr(self.management, attr))
+        
+        return all_permissions
+
 
 @dataclass
 class PermissionCategory:

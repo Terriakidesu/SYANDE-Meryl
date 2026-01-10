@@ -126,6 +126,12 @@ async def generate_sidebar_data(request: Request, category: str, prefix: str = "
                     Permissions.management.manage_role_permissions
                 ]
             },
+            {
+                "href": f"/settings",
+                "caption": "Settings",
+                "icon": "fa-gear",
+                "permissions": Permissions.all()
+            },
         ]
     }
 
