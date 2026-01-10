@@ -131,6 +131,7 @@ async def generate_sidebar_data(request: Request, category: str, prefix: str = "
 
     sidebar = []
     user_perms = await user_permissions(request)
+    print(user_perms)
     for item in navigations[category]:
 
         if check_user_permissions(user_perms, *item["permissions"]):

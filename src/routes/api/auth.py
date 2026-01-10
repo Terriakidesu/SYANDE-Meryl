@@ -123,7 +123,7 @@ async def login(request: Request, email: str = Form(), password: str = Form()):
         )
 
 
-@auth_router.post("/logout")
+@auth_router.get("/logout")
 async def logout(request: Request):
 
     if not request.session.get("authenticated"):

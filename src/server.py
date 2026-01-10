@@ -11,6 +11,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from .routes.api import api_router
 from .routes.manage import manage_router
 from .routes.pos import pos_router
+from .routes.settings import settings_router
 from .Settings import Settings, setup_logging
 
 logger = logging.getLogger(__name__)
@@ -37,6 +38,7 @@ app.add_middleware(SessionMiddleware,
 app.include_router(api_router)
 app.include_router(pos_router)
 app.include_router(manage_router)
+app.include_router(settings_router)
 
 
 app.mount("/static", StaticFiles(directory="assets/public/static"), name="static")
@@ -65,7 +67,7 @@ async def login(request: Request):
 async def logout(request: Request):
 
     if request.session.get("authenticated"):
-        request.session["authenticated"] = False
+        request.session.clear()
 
     return RedirectResponse("/")
 
