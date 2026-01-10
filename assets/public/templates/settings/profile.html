@@ -84,7 +84,7 @@
                                 <!-- Profile Picture Upload -->
                                 <div class="form-group">
                                     <label for="profile-picture-input" class="form-label">Profile Picture</label>
-                                    <input type="file" class="form-control" id="profile-picture-input" accept="image/*">
+                                    <input type="file" class="form-control" id="profile-picture-input" accept="image/*" {% if user_id==-1 %}disabled{% endif %}>
                                     <div class="form-text">Upload a new profile picture (JPG, PNG, or GIF)</div>
                                 </div>
 
