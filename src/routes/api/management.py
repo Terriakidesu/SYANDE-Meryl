@@ -81,7 +81,13 @@ async def list_roles(request: Request,
 
     for role in results:
         perms = db.fetchAll(
-            r'SELECT rp.permission_id, p.permission_code, p.description, p.category FROM role_permissions rp JOIN permissions p ON p.permission_id = rp.permission_id WHERE rp.role_id = %s', (role["role_id"],))
+            r"""
+            SELECT rp.permission_id, p.permission_code, p.description, p.category 
+            FROM role_permissions rp 
+            JOIN permissions p ON p.permission_id = rp.permission_id 
+            WHERE rp.role_id = %s""",
+            (role["role_id"],)
+        )
         role["permissions"] = perms
 
     return JSONResponse({
