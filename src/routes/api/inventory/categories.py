@@ -1,6 +1,7 @@
-from typing import Annotated
+import math
+from typing import Annotated, Optional
 
-from fastapi import APIRouter, Depends, Form, Request
+from fastapi import APIRouter, Depends, Form, Query, Request
 from fastapi.responses import JSONResponse
 
 from .... import utils
@@ -17,16 +18,35 @@ db = Database()
 
 
 @categories_router.get("", response_class=JSONResponse)
-async def list_categories(request: Request, user_perms: list[str] = Depends(user_permissions)):
-    utils.check_user_permissions(
-        user_perms,
-        Permissions.inventory.manage_inventory,
-        Permissions.inventory.view_inventory,
-        Permissions.inventory.manage_categories,
-        Permissions.inventory.view_categories
-    )
+async def list_categories(request: Request,
+                          query: Annotated[Optional[str], Query()] = None,
+                          page: Annotated[Optional[int], Query()] = 1,
+                          limit: Annotated[Optional[int], Query()] = 10
+                          ):
 
-    return db.fetchAll(r'SELECT * FROM categories')
+    count = db.fetchOne(r'SELECT COUNT(*) as count FROM categories')["count"]
+    pages = math.ceil(count / limit)
+    offset = (page - 1) * limit
+
+    if query:
+
+        result = db.fetchAll(
+            r'SELECT * FROM categories WHERE category_id = %s OR category_name LIKE %s LIMIT %s OFFSET %s', (query, f"%{query}%", limit, offset))
+
+        return JSONResponse({
+            "result": result,
+            "count": count,
+            "pages": pages
+        })
+
+    result = db.fetchAll(
+        r'SELECT * FROM categories LIMIT %s OFFSET %s', (limit, offset))
+
+    return JSONResponse({
+        "result": result,
+        "count": count,
+        "pages": pages
+    })
 
 
 @categories_router.post("/add", response_class=JSONResponse)
