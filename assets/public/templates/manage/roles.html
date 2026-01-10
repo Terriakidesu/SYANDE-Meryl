@@ -29,7 +29,7 @@
         {% include "components/sidebar.html" with context %}
         <div class="col">
             <div class="p-4 d-flex flex-row justify-content-between align-items-center">
-                <form id="search-form" action="/api/management/roles/" method="GET"
+                <form id="search-form" action="/api/roles/" method="GET"
                     class="d-flex flex-row gap-5 flex-fill" style="max-width: 50rem;">
                     <input type="hidden" name="page" id="page-input" value="1">
                     <div
@@ -217,7 +217,7 @@
             elements.confirm_delete_btn.addEventListener("click", function () {
                 const roleId = elements.delete_role_id.value;
 
-                fetch(`/api/management/roles/delete/${roleId}`, {
+                fetch(`/api/roles/delete/${roleId}`, {
                     method: "DELETE",
                 })
                     .then(res => res.json())
@@ -240,7 +240,7 @@
             });
 
             function openEditModal(roleId) {
-                fetch(`/api/management/roles/${roleId}`)
+                fetch(`/api/roles/${roleId}`)
                     .then(res => res.json())
                     .then(data => {
                         elements.role_id.value = data.role_id;
@@ -267,7 +267,7 @@
                 formData.append("role_name", elements.role_name.value);
 
                 const isEdit = !!elements.role_id.value;
-                const url = isEdit ? "/api/management/roles/update" : "/api/management/roles/add";
+                const url = isEdit ? "/api/roles/update" : "/api/roles/add";
                 if (isEdit) {
                     formData.append("role_id", elements.role_id.value);
                 }
