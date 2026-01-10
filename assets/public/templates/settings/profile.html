@@ -11,12 +11,12 @@
             max-width: 600px;
             margin: 2rem auto;
         }
-        
+
         .profile-header {
             text-align: center;
             margin-bottom: 2rem;
         }
-        
+
         .profile-picture {
             width: 120px;
             height: 120px;
@@ -25,33 +25,33 @@
             object-fit: cover;
             margin-bottom: 1rem;
         }
-        
+
         .form-group {
             margin-bottom: 1.5rem;
         }
-        
+
         .btn-main {
             background-color: var(--main-color);
             border-color: var(--main-color);
             color: white;
         }
-        
+
         .btn-main:hover {
             background-color: var(--main-color-dark);
             border-color: var(--main-color-dark);
         }
-        
+
         .btn-secondary {
             background-color: var(--main-color-subtle);
             border-color: var(--main-color-subtle);
             color: white;
         }
-        
+
         .btn-secondary:hover {
             background-color: var(--main-color-dark);
             border-color: var(--main-color-dark);
         }
-        
+
         .password-section {
             background-color: #f8f9fa;
             padding: 1.5rem;
@@ -65,8 +65,9 @@
     {% include "components/navbar.html" with context %}
 
     <div class="container-fluid row">
-        {% include "components/sidebar.html" with context %}
-        
+
+        {% include "components/settings-sidebar.html" with context %}
+
         <div class="col">
             <div class="container-fluid">
                 <div class="row justify-content-center">
@@ -74,157 +75,165 @@
                         <div class="card profile-card">
                             <div class="card-body">
                                 <div class="profile-header">
-                                    <img id="current-profile-pic" src="/profile/?user_id={{ user_id }}" alt="Profile Picture" class="profile-picture">
+                                    <img id="current-profile-pic" src="/profile/?user_id={{ user_id }}"
+                                        alt="Profile Picture" class="profile-picture">
                                     <h2 class="card-title">{{ username }}</h2>
                                     <p class="text-muted">Update your profile information</p>
                                 </div>
 
-                        <!-- Profile Picture Upload -->
-                        <div class="form-group">
-                            <label for="profile-picture-input" class="form-label">Profile Picture</label>
-                            <input type="file" class="form-control" id="profile-picture-input" accept="image/*">
-                            <div class="form-text">Upload a new profile picture (JPG, PNG, or GIF)</div>
-                        </div>
+                                <!-- Profile Picture Upload -->
+                                <div class="form-group">
+                                    <label for="profile-picture-input" class="form-label">Profile Picture</label>
+                                    <input type="file" class="form-control" id="profile-picture-input" accept="image/*">
+                                    <div class="form-text">Upload a new profile picture (JPG, PNG, or GIF)</div>
+                                </div>
 
-                        <!-- User Details Form -->
-                        <form id="profile-form">
-                            <div class="row">
-                                <div class="col-md-6">
+                                <!-- User Details Form -->
+                                <form id="profile-form">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="first-name" class="form-label">First Name</label>
+                                                <input type="text" class="form-control" id="first-name"
+                                                    name="first_name" required {% if user_id==-1 %}disabled{% endif %}>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="last-name" class="form-label">Last Name</label>
+                                                <input type="text" class="form-control" id="last-name" name="last_name"
+                                                    required {% if user_id==-1 %}disabled{% endif %}>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <div class="form-group">
-                                        <label for="first-name" class="form-label">First Name</label>
-                                        <input type="text" class="form-control" id="first-name" name="first_name" required {% if user_id == -1 %}disabled{% endif %}>
+                                        <label for="username" class="form-label">Username</label>
+                                        <input type="text" class="form-control" id="username" name="username" required
+                                            {% if user_id==-1 %}disabled{% endif %}
+                                            value="{% if user_id == -1 %}superadmin{% else %}{{ username }}{% endif %}">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="email" class="form-label">Email Address</label>
+                                        <input type="email" class="form-control" id="email" name="email" required {% if
+                                            user_id==-1 %}disabled{% endif %}>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="phone" class="form-label">Phone Number</label>
+                                        <input type="tel" class="form-control" id="phone" name="phone" {% if user_id==-1
+                                            %}disabled{% endif %}>
+                                    </div>
+
+                                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                        <button type="submit" class="btn btn-main" {% if user_id==-1 %}disabled{% endif
+                                            %}>
+                                            <i class="fa-solid fa-save"></i> Save Changes
+                                        </button>
+                                    </div>
+                                </form>
+
+                                <!-- Password Change Section -->
+                                <div class="password-section">
+                                    <h5>Security</h5>
+                                    <p class="text-muted">Change your password to keep your account secure</p>
+                                    <div class="d-grid">
+                                        <a href="/settings/change-password" class="btn btn-secondary">
+                                            <i class="fa-solid fa-key"></i> Change Password
+                                        </a>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="last-name" class="form-label">Last Name</label>
-                                        <input type="text" class="form-control" id="last-name" name="last_name" required {% if user_id == -1 %}disabled{% endif %}>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="username" class="form-label">Username</label>
-                                <input type="text" class="form-control" id="username" name="username" required {% if user_id == -1 %}disabled{% endif %} value="{% if user_id == -1 %}superadmin{% else %}{{ username }}{% endif %}">
-                            </div>
-
-                            <div class="form-group">
-                                <label for="email" class="form-label">Email Address</label>
-                                <input type="email" class="form-control" id="email" name="email" required {% if user_id == -1 %}disabled{% endif %}>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="phone" class="form-label">Phone Number</label>
-                                <input type="tel" class="form-control" id="phone" name="phone" {% if user_id == -1 %}disabled{% endif %}>
-                            </div>
-
-                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                                <button type="submit" class="btn btn-main" {% if user_id == -1 %}disabled{% endif %}>
-                                    <i class="fa-solid fa-save"></i> Save Changes
-                                </button>
-                            </div>
-                        </form>
-
-                        <!-- Password Change Section -->
-                        <div class="password-section">
-                            <h5>Security</h5>
-                            <p class="text-muted">Change your password to keep your account secure</p>
-                            <div class="d-grid">
-                                <a href="/settings/change-password" class="btn btn-secondary">
-                                    <i class="fa-solid fa-key"></i> Change Password
-                                </a>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Toast Container -->
-    <div class="toast-container position-fixed top-0 end-0 p-3">
-        <div id="profile-toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="toast-header">
-                <i class="fa-solid fa-circle-check text-success me-2"></i>
-                <strong class="me-auto">Success</strong>
-                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            <!-- Toast Container -->
+            <div class="toast-container position-fixed top-0 end-0 p-3">
+                <div id="profile-toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="toast-header">
+                        <i class="fa-solid fa-circle-check text-success me-2"></i>
+                        <strong class="me-auto">Success</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                    <div class="toast-body" id="toast-message">
+                        Profile updated successfully!
+                    </div>
+                </div>
             </div>
-            <div class="toast-body" id="toast-message">
-                Profile updated successfully!
-            </div>
-        </div>
-    </div>
 
-    <script>
-        // Profile Picture Preview
-        document.getElementById('profile-picture-input').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('current-profile-pic').src = e.target.result;
-                }
-                reader.readAsDataURL(file);
-            }
-        });
-
-        // Form Submission
-        document.getElementById('profile-form').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData();
-            const fileInput = document.getElementById('profile-picture-input');
-            
-            // Add profile picture if selected
-            if (fileInput.files[0]) {
-                formData.append('profile_picture', fileInput.files[0]);
-            }
-            
-            // Add form data
-            formData.append('first_name', document.getElementById('first-name').value);
-            formData.append('last_name', document.getElementById('last-name').value);
-            formData.append('email', document.getElementById('email').value);
-            formData.append('phone', document.getElementById('phone').value);
-            formData.append('address', document.getElementById('address').value);
-
-            try {
-                const response = await fetch('/api/users/profile', {
-                    method: 'PUT',
-                    body: formData
+            <script>
+                // Profile Picture Preview
+                document.getElementById('profile-picture-input').addEventListener('change', function (e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function (e) {
+                            document.getElementById('current-profile-pic').src = e.target.result;
+                        }
+                        reader.readAsDataURL(file);
+                    }
                 });
 
-                if (response.ok) {
-                    showToast('Profile updated successfully!');
-                } else {
-                    const error = await response.json();
-                    showToast('Error: ' + error.message, 'danger');
+                // Form Submission
+                document.getElementById('profile-form').addEventListener('submit', async function (e) {
+                    e.preventDefault();
+
+                    const formData = new FormData();
+                    const fileInput = document.getElementById('profile-picture-input');
+
+                    // Add profile picture if selected
+                    if (fileInput.files[0]) {
+                        formData.append('profile_picture', fileInput.files[0]);
+                    }
+
+                    // Add form data
+                    formData.append('first_name', document.getElementById('first-name').value);
+                    formData.append('last_name', document.getElementById('last-name').value);
+                    formData.append('email', document.getElementById('email').value);
+                    formData.append('phone', document.getElementById('phone').value);
+                    formData.append('address', document.getElementById('address').value);
+
+                    try {
+                        const response = await fetch('/api/users/profile', {
+                            method: 'PUT',
+                            body: formData
+                        });
+
+                        if (response.ok) {
+                            showToast('Profile updated successfully!');
+                        } else {
+                            const error = await response.json();
+                            showToast('Error: ' + error.message, 'danger');
+                        }
+                    } catch (error) {
+                        showToast('Network error occurred', 'danger');
+                    }
+                });
+
+                function showToast(message, type = 'success') {
+                    const toastEl = document.getElementById('profile-toast');
+                    const toastBody = document.getElementById('toast-message');
+                    const toastHeader = toastEl.querySelector('.toast-header strong');
+
+                    toastBody.textContent = message;
+                    toastHeader.textContent = type === 'success' ? 'Success' : 'Error';
+
+                    if (type === 'danger') {
+                        toastHeader.className = 'me-auto text-danger';
+                        toastEl.querySelector('.toast-header i').className = 'fa-solid fa-circle-exclamation text-danger me-2';
+                    } else {
+                        toastHeader.className = 'me-auto';
+                        toastEl.querySelector('.toast-header i').className = 'fa-solid fa-circle-check text-success me-2';
+                    }
+
+                    const toast = new bootstrap.Toast(toastEl);
+                    toast.show();
                 }
-            } catch (error) {
-                showToast('Network error occurred', 'danger');
-            }
-        });
 
-        function showToast(message, type = 'success') {
-            const toastEl = document.getElementById('profile-toast');
-            const toastBody = document.getElementById('toast-message');
-            const toastHeader = toastEl.querySelector('.toast-header strong');
-            
-            toastBody.textContent = message;
-            toastHeader.textContent = type === 'success' ? 'Success' : 'Error';
-            
-            if (type === 'danger') {
-                toastHeader.className = 'me-auto text-danger';
-                toastEl.querySelector('.toast-header i').className = 'fa-solid fa-circle-exclamation text-danger me-2';
-            } else {
-                toastHeader.className = 'me-auto';
-                toastEl.querySelector('.toast-header i').className = 'fa-solid fa-circle-check text-success me-2';
-            }
-            
-            const toast = new bootstrap.Toast(toastEl);
-            toast.show();
-        }
-
-    </script>
+            </script>
 </body>
 
 </html>

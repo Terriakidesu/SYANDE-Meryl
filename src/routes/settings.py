@@ -17,13 +17,7 @@ async def settings_home(request: Request):
         "user_id": request.session["user_id"],
         "username": request.session["username"],
         "page_title": "Settings",
-        "navigation_management": [
-            {
-                "caption": "Profile Settings",
-                "href": "/settings/profile",
-                "icon": "fa-user-gear"
-            }
-        ]
+        "is_superadmin": request.session["user_id"] == -1
     })
 
 

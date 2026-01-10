@@ -1,0 +1,84 @@
+<style>
+    a.settings-sidebar-link {
+        text-decoration: none;
+
+        &>div {
+            position: relative;
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start;
+            align-items: center;
+            gap: 1rem;
+            transition: background-color 200ms 0s ease-in-out, transform 100ms 0s ease-in-out;
+
+            &::after {
+                position: absolute;
+                content: "";
+                bottom: 0;
+                right: 0;
+                width: 0.25rem;
+                height: 0%;
+                background-color: var(--main-color-light);
+                transition: all 200ms 0s ease-in-out;
+            }
+        }
+
+        &:hover {
+            &>div::after {
+                height: 100%;
+            }
+
+            &>div {
+                transform: translateX(0.15rem);
+                background-color: hsl(from var(--main-color-light) h s calc(l * 1.5));
+
+            }
+        }
+
+        &:has(>div.settings-sidebar-active):hover>div {
+            background-color: var(--main-color-light);
+        }
+    }
+
+    .settings-sidebar-active {
+        background-color: var(--main-color-dark);
+        color: white;
+        transform: translateX(0.15rem);
+    }
+</style>
+
+<div class="col settings-sidebar d-flex flex-column pt-3 bg-body-secondary me-0 px-0" style="max-width:14rem; min-height: calc(100vh - 56px);">
+
+    <div class="p-2 fs-4 fw-bold text-muted border-bottom border-2 border-dark-subtle">
+        <i class="fa-solid fa-cog"></i>
+        Settings
+    </div>
+
+
+    <a class="settings-sidebar-link" href="/settings/profile">
+        {% if not page_title == "Profile Settings" %}
+        <div class="p-2 fs-6 rounded-start ms-2 text-center text-black">
+            <i class="fa-solid fa-user-gear"></i>
+            Profile Settings
+        </div>
+        {% else %}
+        <div class="p-2 fs-6 text-center rounded-start ms-2 settings-sidebar-active">
+            <i class="fa-solid fa-user-gear"></i>
+            Profile Settings
+        </div>
+        {% endif %}
+    </a>
+
+    <div class="p-2 fs-4 mt-3 fw-bold text-muted border-top border-2 border-dark-subtle">
+        <i class="fa-solid fa-shield-alt"></i>
+        Security
+    </div>
+
+    <a class="settings-sidebar-link" href="/settings/change-password">
+        <div class="p-2 fs-6 rounded-start ms-2 text-center text-black">
+            <i class="fa-solid fa-key"></i>
+            Change Password
+        </div>
+    </a>
+
+</div>
