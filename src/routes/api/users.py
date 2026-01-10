@@ -150,9 +150,9 @@ async def add_user(request: Request,
 
 
 @users_router.post("/update", response_class=JSONResponse)
-async def update_user(request: Request, user: Annotated[UserForm, Form()], user_perms: list[str] = Depends(user_permissions)):
+async def update_user(request: Request, user_id: int = Form(), username: str = Form(), email: str = Form(), first_name: str = Form(default=""), last_name: str = Form(default=""), password: str = Form(default=""), role_ids: list[str] = Form(default=[]), user_perms: list[str] = Depends(user_permissions)):
 
-    if user.user_id != request.session["user_id"]:
+    if user_id != request.session["user_id"]:
         utils.check_user_permissions(
             user_perms,
             Permissions.users.manage_users
@@ -160,25 +160,50 @@ async def update_user(request: Request, user: Annotated[UserForm, Form()], user_
 
     try:
 
-        if user.user_id < 0:
+        if user_id < 0:
             raise DatabaseException("user_id cannot be negative")
 
-        if user.username.strip() == "":
+        if username.strip() == "":
             raise DatabaseException("username is empty.")
 
-        if user.first_name.strip() == "":
-            raise DatabaseException("first_name is empty.")
-
-        if user.last_name.strip() == "":
-            raise DatabaseException("last_name is empty.")
-
-        if db.fetchOne(r'SELECT * FROM users WHERE username = %s', (user.username)):
+        # Check if username is already taken by another user
+        existing = db.fetchOne(r'SELECT user_id FROM users WHERE username = %s AND user_id != %s', (username, user_id))
+        if existing:
             raise DatabaseException("Username is already taken")
 
         db.commitOne(
-            r'UPDATE users SET first_name = %s, last_name = %s, username = %s  WHERE user_id = %s',
-            (user.first_name, user.last_name, user.username, user.user_id)
+            r'UPDATE users SET first_name = %s, last_name = %s, username = %s WHERE user_id = %s',
+            (first_name, last_name, username, user_id)
         )
+        
+        # Update email
+        db.commitOne(
+            r'UPDATE emails SET email = %s WHERE user_id = %s',
+            (email, user_id)
+        )
+        
+        # Update password if provided
+        if password.strip() != "":
+            hashed_pw = utils.hash_password(password)
+            db.commitOne(
+                r'UPDATE users SET password = %s WHERE user_id = %s',
+                (hashed_pw, user_id)
+            )
+        
+        # Update roles
+        if role_ids:
+            # Convert string IDs to integers
+            role_ids = [int(rid) for rid in role_ids]
+            
+            # Delete existing roles
+            db.commitOne(r'DELETE FROM user_roles WHERE user_id = %s', (user_id,))
+            
+            # Insert new roles
+            for role_id in role_ids:
+                db.commitOne(
+                    r'INSERT INTO user_roles (user_id, role_id) VALUES (%s, %s)',
+                    (user_id, role_id)
+                )
 
         return {
             "success": True,
@@ -282,16 +307,24 @@ async def delete_user(request: Request, user_id: int, user_perms: list[str] = De
 
 @users_router.get("/{user_id}", response_class=JSONResponse)
 async def fetch_user(request: Request, user_id: Optional[int] = None, user_perms: list[str] = Depends(user_permissions)):
-    utils.check_user_permissions(
-        user_perms,
-        Permissions.users.manage_users,
-        Permissions.users.view_users
-    )
-
     if user_id is None:
-        return []
+        return JSONResponse({"error": "user_id is required"}, status_code=400)
 
-    return db.fetchAll(r'SELECT * FROM users WHERE user_id = %s', (user_id,))
+    user = db.fetchOne(r'SELECT u.user_id, u.username, u.first_name, u.last_name, e.email FROM users u JOIN emails e ON u.user_id = e.user_id WHERE u.user_id = %s', (user_id,))
+    
+    if not user:
+        return JSONResponse({"error": "User not found"}, status_code=404)
+    
+    # Fetch roles for this user
+    roles = db.fetchAll(
+        r"""
+        SELECT r.role_id, r.role_name FROM user_roles ur
+        JOIN roles r ON ur.role_id = r.role_id
+        WHERE ur.user_id = %s
+        """, (user_id,))
+    
+    user["roles"] = roles
+    return user
 
 
 @users_router.get("/{user_id}/phones", response_class=JSONResponse)
