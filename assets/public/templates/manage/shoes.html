@@ -80,9 +80,7 @@
                                 <div class="shoe-demographics small text-muted">-</div>
                             </div>
                             <div class="shoe-price text-muted" style="width: 100px;">-</div>
-                            <div class="chevron-container" style="width: 30px; text-align: center;">
-                                <i class="fa-solid fa-chevron-down shoe-chevron" style="color: #6c757d;"></i>
-                            </div>
+
                             <div style="width: 120px;" class="d-flex gap-2">
                                 <button type="button" class="btn btn-warning btn-sm edit-btn" {% if "manage_shoes" not
                                     in user_permissions and "manage_inventory" not in user_permissions and "admin_all"
@@ -94,6 +92,9 @@
                                     not in user_permissions %}disabled{% endif %}>
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
+                            </div>
+                            <div class="chevron-container" style="width: 30px; text-align: center;">
+                                <i class="fa-solid fa-chevron-down shoe-chevron" style="color: #6c757d;"></i>
                             </div>
                         </div>
                         <div class="shoe-details px-3 pb-3" style="display: none;">
@@ -860,7 +861,7 @@
                     }
                     const isVisible = detailsEl.style.display !== "none";
                     detailsEl.style.display = isVisible ? "none" : "block";
-                    
+
                     // Toggle chevron rotation
                     const chevron = card.querySelector(".shoe-chevron");
                     if (chevron) {
