@@ -128,7 +128,7 @@ async def edit_size(request: Request,
         )
 
 
-@sizes_router.delete("/delete/")
+@sizes_router.delete("/delete/{size_id}")
 async def delete_size(request: Request, size_id: int, user_perms: list[str] = Depends(user_permissions)):
     utils.check_user_permissions(
         user_perms,

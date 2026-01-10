@@ -255,6 +255,50 @@
                     });
             }
 
+            // Size conversion formulas
+            const sizeConversions = {
+                usToUk: (us) => us + 1.5,
+                usToEu: (us) => us + 31.5,
+                ukToUs: (uk) => uk - 1.5,
+                ukToEu: (uk) => uk + 30,
+                euToUs: (eu) => eu - 31.5,
+                euToUk: (eu) => eu - 30
+            };
+
+            // Add auto-conversion listeners
+            elements.us_size.addEventListener("input", function () {
+                if (this.value === "") {
+                    elements.uk_size.value = "";
+                    elements.eu_size.value = "";
+                } else {
+                    const usVal = parseFloat(this.value);
+                    elements.uk_size.value = sizeConversions.usToUk(usVal).toFixed(1);
+                    elements.eu_size.value = sizeConversions.usToEu(usVal).toFixed(1);
+                }
+            });
+
+            elements.uk_size.addEventListener("input", function () {
+                if (this.value === "") {
+                    elements.us_size.value = "";
+                    elements.eu_size.value = "";
+                } else {
+                    const ukVal = parseFloat(this.value);
+                    elements.us_size.value = sizeConversions.ukToUs(ukVal).toFixed(1);
+                    elements.eu_size.value = sizeConversions.ukToEu(ukVal).toFixed(1);
+                }
+            });
+
+            elements.eu_size.addEventListener("input", function () {
+                if (this.value === "") {
+                    elements.us_size.value = "";
+                    elements.uk_size.value = "";
+                } else {
+                    const euVal = parseFloat(this.value);
+                    elements.us_size.value = sizeConversions.euToUs(euVal).toFixed(1);
+                    elements.uk_size.value = sizeConversions.euToUk(euVal).toFixed(1);
+                }
+            });
+
             elements.save_size_btn.addEventListener("click", function () {
                 if (!elements.size_form.checkValidity()) {
                     elements.size_form.reportValidity();
