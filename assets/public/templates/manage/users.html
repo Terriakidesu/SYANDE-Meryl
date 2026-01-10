@@ -80,12 +80,12 @@
                                     <div style="width: 120px;" class="d-flex gap-2">
                                         <button type="button" class="btn btn-warning btn-sm edit-btn" {%
                                             if "manage_users" not in user_permissions and "admin_all" not in
-                                            user_permissions %}disabled{% endif %} onclick="event.stopPropagation();">
+                                            user_permissions %}disabled{% endif %}>
                                             <i class="fa-solid fa-pen"></i>
                                         </button>
                                         <button type="button" class="btn btn-danger btn-sm delete-btn" {%
                                             if "manage_users" not in user_permissions and "admin_all" not in
-                                            user_permissions %}disabled{% endif %} onclick="event.stopPropagation();">
+                                            user_permissions %}disabled{% endif %}>
                                             <i class="fa-solid fa-trash"></i>
                                         </button>
                                     </div>
@@ -391,8 +391,8 @@
                     });
                     elements.user_roles_selected.appendChild(badge);
                 }
-                // Trigger auto-save when role is added
-                if (elements.user_id.value) {
+                // Trigger auto-save when role is added (but not during init)
+                if (elements.user_id.value && !isInitializing) {
                     autoSaveUser();
                 }
             }
@@ -433,6 +433,7 @@
             elements.user_list.addEventListener("click", function (e) {
                 const editBtn = e.target.closest(".edit-btn");
                 if (editBtn) {
+                    e.stopPropagation();
                     const card = editBtn.closest(".user-item");
                     const userId = card.dataset.userId;
                     openEditModal(userId);
@@ -442,6 +443,7 @@
             elements.user_list.addEventListener("click", function (e) {
                 const deleteBtn = e.target.closest(".delete-btn");
                 if (deleteBtn) {
+                    e.stopPropagation();
                     const card = deleteBtn.closest(".user-item");
                     const userId = card.dataset.userId;
                     openDeleteModal(userId);
@@ -480,8 +482,15 @@
 
             function openEditModal(userId) {
                 fetch(`/api/users/${userId}`)
-                    .then(res => res.json())
+                    .then(res => {
+                        if (!res.ok) {
+                            throw new Error(`HTTP error! status: ${res.status}`);
+                        }
+                        return res.json();
+                    })
                     .then(data => {
+                        isInitializing = true; // Prevent auto-save during init
+                        
                         elements.user_id.value = data.user_id;
                         elements.user_email.value = data.email;
                         elements.user_username.value = data.username || '';
@@ -499,11 +508,14 @@
 
                         elements.user_password.required = false;
                         elements.user_modal_title.textContent = "Edit User";
+                        
+                        isInitializing = false; // Allow auto-save after init
                         userModal.show();
                     })
                     .catch(err => {
+                        console.error('Error fetching user:', err);
                         if (typeof showErrorToast === "function") {
-                            showErrorToast(err);
+                            showErrorToast(err.message);
                         } else {
                             console.error(err);
                         }
@@ -511,10 +523,11 @@
             }
 
             let autoSaveTimeout;
+            let isInitializing = false;
 
             function autoSaveUser() {
-                // Only auto-save if we're editing (not adding new)
-                if (!elements.user_id.value) return;
+                // Don't auto-save during initialization or if not editing
+                if (isInitializing || !elements.user_id.value) return;
 
                 clearTimeout(autoSaveTimeout);
                 autoSaveTimeout = setTimeout(() => {
