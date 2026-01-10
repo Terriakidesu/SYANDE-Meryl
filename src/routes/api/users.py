@@ -82,7 +82,6 @@ async def add_user(request: Request,
                    last_name: str = Form(),
                    username: str = Form(),
                    password: str = Form(),
-                   phone: str = Form(),
                    email: str = Form(),
                    user_perms: list[str] = Depends(user_permissions)
                    ):
@@ -109,8 +108,8 @@ async def add_user(request: Request,
     cursor = db.commitOne(r'INSERT INTO users (first_name, last_name, username, password) VALUES (%s, %s, %s, %s)',
                           (first_name, last_name, username, hashed_pw))
 
-    db.commitOne(r'INSERT INTO phones (user_id, phone) VALUES (%s, %s)',
-                 (cursor.lastrowid, phone))
+    # db.commitOne(r'INSERT INTO phones (user_id, phone) VALUES (%s, %s)',
+    #              (cursor.lastrowid, phone))
     db.commitOne(r'INSERT INTO emails (user_id, email) VALUES (%s, %s)',
                  (cursor.lastrowid, email))
 

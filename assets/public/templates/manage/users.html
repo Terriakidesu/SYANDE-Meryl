@@ -550,11 +550,6 @@
 
                 const selectedRoleIds = Object.keys(selectedRoles);
 
-                if (selectedRoleIds.length === 0) {
-                    alert('Please select at least one role');
-                    return;
-                }
-
                 const formData = new FormData();
                 formData.append("email", elements.user_email.value);
                 formData.append("username", elements.user_username.value);
