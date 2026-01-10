@@ -15,7 +15,8 @@ from ....helpers import Database
 from ....models.inventory import Shoe
 from ....utils import Permissions
 
-shoes_router = APIRouter(prefix="/shoes", dependencies=[Depends(is_authenticated)])
+shoes_router = APIRouter(
+    prefix="/shoes", dependencies=[Depends(is_authenticated)])
 
 db = Database()
 
@@ -51,6 +52,61 @@ async def list_shoes(request: Request,
     })
 
 
+@shoes_router.get("/all", response_class=JSONResponse)
+async def list_shoes(request: Request,
+                     query: Annotated[Optional[str], Query()] = None,
+                     page: Annotated[Optional[int], Query()] = 1,
+                     limit: Annotated[Optional[int], Query()] = 10
+                     ):
+
+    count = db.fetchOne(r'SELECT COUNT(*) as count FROM shoes')["count"]
+    pages = math.ceil(count / limit)
+    offset = (page - 1) * limit
+
+    if query:
+        result = db.fetchAll(
+            r"""
+            SELECT * 
+            FROM shoes 
+            WHERE shoe_id = %s OR shoe_name LIKE %s 
+            LIMIT %s OFFSET %s""",
+            (query, f"%{query}%", limit, offset)
+        )
+
+    else:
+        result = db.fetchAll(
+            r"""
+            SELECT * 
+            FROM shoes 
+            LIMIT %s OFFSET %s""",
+            (limit, offset)
+        )
+
+    for shoe in result:
+        shoe_id = shoe["shoe_id"]
+        shoe["categories"] = db.fetchAll(
+            r"""
+            SELECT c.*
+            FROM shoe_categories sc
+            JOIN categories c ON sc.category_id = c.category_id
+            WHERE sc.shoe_id = %s """, (shoe_id,)
+        )
+
+        shoe["demographics"] = db.fetchAll(
+            r"""
+            SELECT d.*
+            FROM shoe_demographics sd
+            JOIN demographics d ON sd.demographic_id = d.demographic_id
+            WHERE sd.shoe_id = %s """, (shoe_id,)
+        )
+
+    return JSONResponse({
+        "result": result,
+        "count": count,
+        "pages": pages
+    })
+
+
 @shoes_router.post("/add", response_class=JSONResponse)
 async def add_shoe(request: Request,
                    file: UploadFile | None = File(None),
@@ -74,7 +130,7 @@ async def add_shoe(request: Request,
             raise DatabaseException("shoe_name is empty.")
 
         cursor = db.commitOne(
-            r'INSERT INTO shoes (shoe_name, brand_id, category_id, markup, shoe_price, first_sale_at) VALUES (%s, %s, %s, %s, %s, %s)',
+            r'INSERT INTO shoes (shoe_name, brand_id, markup, shoe_price, first_sale_at) VALUES (%s, %s, %s, %s, %s, %s)',
             (shoe_name, brand_id, category_id,
              markup, shoe_price, first_sale_at)
         )
@@ -171,7 +227,7 @@ async def edit_shoe(request: Request, shoe: Annotated[Shoe, Form()], user_perms:
         )
 
 
-@shoes_router.delete("/delete/")
+@shoes_router.delete("/delete/{shoe_id}")
 async def delete_shoe(request: Request, shoe_id: int, user_perms: list[str] = Depends(user_permissions)):
 
     utils.check_user_permissions(
