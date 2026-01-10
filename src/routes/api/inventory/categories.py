@@ -62,6 +62,14 @@ async def add_category(request: Request, category_name: str = Form(), user_perms
         if category_name.strip() == "":
             raise DatabaseException("category_name is empty.")
 
+        if _ := db.fetchOne(r'SELECT * FROM catgories WHERE category_name = %s', (category_name,)):
+            return JSONResponse({
+                "success": False,
+                "message": "Category already exists."
+            },
+                status_code=400
+            )
+
         db.commitOne(
             r'INSERT INTO categories (category_name) VALUES (%s)', (category_name,))
 
@@ -109,7 +117,7 @@ async def edit_category(request: Request, category: Annotated[Category, Form()],
         )
 
 
-@categories_router.delete("/delete/")
+@categories_router.delete("/delete/{category_id}")
 async def delete_category(request: Request, category_id: int, user_perms: list[str] = Depends(user_permissions)):
     utils.check_user_permissions(
         user_perms,
