@@ -139,9 +139,6 @@ async def add_user(request: Request,
         with open(download_profile_path, "wb") as f:
             f.write(buffer.read())
 
-    else:
-        shutil.copy(Settings.profiles.default, download_profile_path)
-
     return {
         "success": True,
         "message": "Successfully added user"
@@ -166,7 +163,8 @@ async def update_user(request: Request, user_id: int = Form(), username: str = F
             raise DatabaseException("username is empty.")
 
         # Check if username is already taken by another user
-        existing = db.fetchOne(r'SELECT user_id FROM users WHERE username = %s AND user_id != %s', (username, user_id))
+        existing = db.fetchOne(
+            r'SELECT user_id FROM users WHERE username = %s AND user_id != %s', (username, user_id))
         if existing:
             raise DatabaseException("Username is already taken")
 
@@ -174,13 +172,13 @@ async def update_user(request: Request, user_id: int = Form(), username: str = F
             r'UPDATE users SET first_name = %s, last_name = %s, username = %s WHERE user_id = %s',
             (first_name, last_name, username, user_id)
         )
-        
+
         # Update email
         db.commitOne(
             r'UPDATE emails SET email = %s WHERE user_id = %s',
             (email, user_id)
         )
-        
+
         # Update password if provided
         if password.strip() != "":
             hashed_pw = utils.hash_password(password)
@@ -188,15 +186,16 @@ async def update_user(request: Request, user_id: int = Form(), username: str = F
                 r'UPDATE users SET password = %s WHERE user_id = %s',
                 (hashed_pw, user_id)
             )
-        
+
         # Update roles
         if role_ids:
             # Convert string IDs to integers
             role_ids = [int(rid) for rid in role_ids]
-            
+
             # Delete existing roles
-            db.commitOne(r'DELETE FROM user_roles WHERE user_id = %s', (user_id,))
-            
+            db.commitOne(
+                r'DELETE FROM user_roles WHERE user_id = %s', (user_id,))
+
             # Insert new roles
             for role_id in role_ids:
                 db.commitOne(
@@ -309,11 +308,12 @@ async def fetch_user(request: Request, user_id: Optional[int] = None, user_perms
     if user_id is None:
         return JSONResponse({"error": "user_id is required"}, status_code=400)
 
-    user = db.fetchOne(r'SELECT u.user_id, u.username, u.first_name, u.last_name, e.email FROM users u JOIN emails e ON u.user_id = e.user_id WHERE u.user_id = %s', (user_id,))
-    
+    user = db.fetchOne(
+        r'SELECT u.user_id, u.username, u.first_name, u.last_name, e.email FROM users u JOIN emails e ON u.user_id = e.user_id WHERE u.user_id = %s', (user_id,))
+
     if not user:
         return JSONResponse({"error": "User not found"}, status_code=404)
-    
+
     # Fetch roles for this user
     roles = db.fetchAll(
         r"""
@@ -321,7 +321,7 @@ async def fetch_user(request: Request, user_id: Optional[int] = None, user_perms
         JOIN roles r ON ur.role_id = r.role_id
         WHERE ur.user_id = %s
         """, (user_id,))
-    
+
     user["roles"] = roles
     return user
 
