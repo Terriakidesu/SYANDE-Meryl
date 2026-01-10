@@ -17,6 +17,16 @@ brands_router = APIRouter(
 db = Database()
 
 
+@brands_router.get("/suggestions", response_class=JSONResponse)
+async def get_suggestions(request: Request, user_perms: list[str] = Depends(user_permissions)):
+    """Get all brands for autocomplete suggestions"""
+    brands = db.fetchAll(r'SELECT * FROM brands')
+    
+    return JSONResponse({
+        "brands": brands
+    })
+
+
 @brands_router.get("", response_class=JSONResponse)
 async def list_brands(request: Request,
                       query: Annotated[Optional[str], Query()] = None,

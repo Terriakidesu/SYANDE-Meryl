@@ -2,7 +2,7 @@ import math
 import os
 import shutil
 from io import BytesIO
-from typing import Annotated, Optional
+from typing import Annotated, Optional, List
 
 from fastapi import APIRouter, Depends, File, Form, Query, Request, UploadFile
 from fastapi.responses import JSONResponse
@@ -67,8 +67,9 @@ async def list_shoes(request: Request,
         result = db.fetchAll(
             r"""
             SELECT * 
-            FROM shoes 
-            WHERE shoe_id = %s OR shoe_name LIKE %s 
+            FROM shoes s
+            JOIN brands b ON b.brand_id = s.brand_id
+            WHERE s.shoe_id = %s OR s.shoe_name LIKE %s 
             LIMIT %s OFFSET %s""",
             (query, f"%{query}%", limit, offset)
         )
@@ -77,7 +78,8 @@ async def list_shoes(request: Request,
         result = db.fetchAll(
             r"""
             SELECT * 
-            FROM shoes 
+            FROM shoes s
+            JOIN brands b ON b.brand_id = s.brand_id
             LIMIT %s OFFSET %s""",
             (limit, offset)
         )
@@ -112,7 +114,8 @@ async def add_shoe(request: Request,
                    file: UploadFile | None = File(None),
                    shoe_name: str = Form(),
                    brand_id: int = Form(),
-                   category_id: int = Form(),
+                   category_ids: str = Form(default=""),
+                   demographic_ids: str = Form(default=""),
                    markup: int = Form(),
                    shoe_price: float = Form(),
                    first_sale_at: str = Form(),
@@ -130,12 +133,29 @@ async def add_shoe(request: Request,
             raise DatabaseException("shoe_name is empty.")
 
         cursor = db.commitOne(
-            r'INSERT INTO shoes (shoe_name, brand_id, markup, shoe_price, first_sale_at) VALUES (%s, %s, %s, %s, %s, %s)',
-            (shoe_name, brand_id, category_id,
-             markup, shoe_price, first_sale_at)
+            r'INSERT INTO shoes (shoe_name, brand_id, markup, shoe_price, first_sale_at) VALUES (%s, %s, %s, %s, %s)',
+            (shoe_name, brand_id, markup, shoe_price, first_sale_at)
         )
 
         shoe_id = cursor.lastrowid
+
+        # Add categories
+        if category_ids.strip():
+            category_list = [int(cat_id.strip()) for cat_id in category_ids.split(",") if cat_id.strip()]
+            for cat_id in category_list:
+                db.commitOne(
+                    r'INSERT INTO shoe_categories (shoe_id, category_id) VALUES (%s, %s)',
+                    (shoe_id, cat_id)
+                )
+
+        # Add demographics
+        if demographic_ids.strip():
+            demographic_list = [int(demo_id.strip()) for demo_id in demographic_ids.split(",") if demo_id.strip()]
+            for demo_id in demographic_list:
+                db.commitOne(
+                    r'INSERT INTO shoe_demographics (shoe_id, demographic_id) VALUES (%s, %s)',
+                    (shoe_id, demo_id)
+                )
 
         # Handle image upload
         if file is not None:
@@ -192,7 +212,16 @@ async def add_shoe(request: Request,
 
 
 @shoes_router.post("/update", response_class=JSONResponse)
-async def edit_shoe(request: Request, shoe: Annotated[Shoe, Form()], user_perms: list[str] = Depends(user_permissions)):
+async def edit_shoe(request: Request,
+                    shoe_id: int = Form(),
+                    shoe_name: str = Form(),
+                    brand_id: int = Form(),
+                    category_ids: str = Form(default=""),
+                    demographic_ids: str = Form(default=""),
+                    markup: int = Form(),
+                    shoe_price: float = Form(),
+                    first_sale_at: str = Form(),
+                    user_perms: list[str] = Depends(user_permissions)):
 
     utils.check_user_permissions(
         user_perms,
@@ -202,17 +231,38 @@ async def edit_shoe(request: Request, shoe: Annotated[Shoe, Form()], user_perms:
 
     try:
 
-        if shoe.brand_id < 0:
+        if brand_id < 0:
             raise DatabaseException("brand_id cannot be negative")
 
-        if shoe.shoe_name.strip() == "":
-            raise DatabaseException("brand_name is empty.")
+        if shoe_name.strip() == "":
+            raise DatabaseException("shoe_name is empty.")
 
         db.commitOne(
-            r'UPDATE shoes SET shoe_name = %s, brand_id = %s, category_id = %s, markup = %s, shoe_price = %s, first_sale_at = %s  WHERE shoe_id = %s',
-            (shoe.shoe_name, shoe.brand_id, shoe.category_id, shoe.markup,
-             shoe.shoe_price, shoe.first_sale_at, shoe.shoe_id)
+            r'UPDATE shoes SET shoe_name = %s, brand_id = %s, markup = %s, shoe_price = %s, first_sale_at = %s WHERE shoe_id = %s',
+            (shoe_name, brand_id, markup, shoe_price, first_sale_at, shoe_id)
         )
+
+        # Delete existing categories and demographics
+        db.commitOne(r'DELETE FROM shoe_categories WHERE shoe_id = %s', (shoe_id,))
+        db.commitOne(r'DELETE FROM shoe_demographics WHERE shoe_id = %s', (shoe_id,))
+
+        # Add categories
+        if category_ids.strip():
+            category_list = [int(cat_id.strip()) for cat_id in category_ids.split(",") if cat_id.strip()]
+            for cat_id in category_list:
+                db.commitOne(
+                    r'INSERT INTO shoe_categories (shoe_id, category_id) VALUES (%s, %s)',
+                    (shoe_id, cat_id)
+                )
+
+        # Add demographics
+        if demographic_ids.strip():
+            demographic_list = [int(demo_id.strip()) for demo_id in demographic_ids.split(",") if demo_id.strip()]
+            for demo_id in demographic_list:
+                db.commitOne(
+                    r'INSERT INTO shoe_demographics (shoe_id, demographic_id) VALUES (%s, %s)',
+                    (shoe_id, demo_id)
+                )
 
         return {
             "success": True,
@@ -281,6 +331,18 @@ async def list_popular(request: Request, limit: int = 10, user_perms: list[str] 
                """, (limit,))
 
 
+@shoes_router.get("/suggestions", response_class=JSONResponse)
+async def get_suggestions(request: Request, user_perms: list[str] = Depends(user_permissions)):
+    """Get all categories and demographics for autocomplete suggestions"""
+    categories = db.fetchAll(r'SELECT * FROM categories')
+    demographics = db.fetchAll(r'SELECT * FROM demographics')
+    
+    return JSONResponse({
+        "categories": categories,
+        "demographics": demographics
+    })
+
+
 @shoes_router.get("/{shoe_id}", response_class=JSONResponse)
 async def fetch_shoe(request: Request, shoe_id: int, user_perms: list[str] = Depends(user_permissions)):
 
@@ -300,7 +362,18 @@ async def fetch_shoe_all_details(request: Request, shoe_id: int, user_perms: lis
                                        ):
 
         all_shoe_details["categories"] = db.fetchAll(
-            r'SELECT * FROM categories WHERE shoe_id = %s', (shoe_id,))
+            r"""
+            SELECT c.*
+            FROM shoe_categories sc
+            JOIN categories c ON sc.category_id = c.category_id
+            WHERE sc.shoe_id = %s """, (shoe_id,))
+
+        all_shoe_details["demographics"] = db.fetchAll(
+            r"""
+            SELECT d.*
+            FROM shoe_demographics sd
+            JOIN demographics d ON sd.demographic_id = d.demographic_id
+            WHERE sd.shoe_id = %s """, (shoe_id,))
 
         return all_shoe_details
 
