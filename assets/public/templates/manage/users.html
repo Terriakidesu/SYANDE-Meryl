@@ -52,18 +52,45 @@
             <div id="content-container" class="px-2">
 
                 <template id="user-item-template">
-                    <div class="card mb-2 user-item" data-user-id="">
-                        <div class="card-body d-flex align-items-center p-2">
-                            <div class="user-id text-muted small" style="width: 80px;">ID: -</div>
-                            <div class="user-email fw-medium" style="flex: 1;">-</div>
-                            <div class="user-role text-muted" style="width: 100px;">-</div>
-                            <div style="width: 120px;" class="d-flex gap-2">
-                                <button type="button" class="btn btn-warning btn-sm edit-btn" {% if "manage_users" not in user_permissions and "admin_all" not in user_permissions %}disabled{% endif %}>
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
-                                <button type="button" class="btn btn-danger btn-sm delete-btn" {% if "manage_users" not in user_permissions and "admin_all" not in user_permissions %}disabled{% endif %}>
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
+                    <div class="card mb-2 user-item" data-user-id="" style="cursor: pointer;">
+                        <div class="card-body p-2">
+                            <div class="user-header">
+                                <div style="display: flex; gap: 1rem; align-items: center;">
+                                    <div class="user-id text-muted small fw-bold" style="width: 50px;">ID: -</div>
+                                    <div class="user-name-username fw-medium" style="flex: 1;">- -</div>
+                                    <div class="user-email" style="flex: 0 0 150px; color: #666; font-size: 0.9rem; text-align: right;">-</div>
+                                    <div class="user-roles-display" style="width: 120px; text-align: right;">
+                                        <span class="badge bg-secondary me-1" style="font-size: 0.75rem;">Role</span>
+                                    </div>
+                                    <div style="width: 120px;" class="d-flex gap-2">
+                                        <button type="button" class="btn btn-warning btn-sm edit-btn" {% if "manage_users" not in user_permissions and "admin_all" not in user_permissions %}disabled{% endif %} onclick="event.stopPropagation();">
+                                            <i class="fa-solid fa-pen"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-danger btn-sm delete-btn" {% if "manage_users" not in user_permissions and "admin_all" not in user_permissions %}disabled{% endif %} onclick="event.stopPropagation();">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </div>
+                                    <div style="width: 30px; text-align: center;">
+                                        <i class="fa-solid fa-chevron-down user-dropdown-icon" style="color: #666; transition: transform 0.2s;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="user-details mt-3" style="display: none;">
+                                <hr class="my-2">
+                                <div class="row small">
+                                    <div class="col-md-6">
+                                        <p class="mb-2"><strong>Username:</strong> <span class="user-username">-</span></p>
+                                        <p class="mb-2"><strong>First Name:</strong> <span class="user-first-name">-</span></p>
+                                        <p class="mb-2"><strong>Last Name:</strong> <span class="user-last-name">-</span></p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p class="mb-2"><strong>Created:</strong> <span class="user-created-at">-</span></p>
+                                        <p class="mb-2"><strong>Roles:</strong></p>
+                                        <div class="user-roles-list ms-2">
+                                            <span class="badge bg-secondary">-</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -71,9 +98,10 @@
 
                 <!-- List Header -->
                 <div class="d-flex py-2 px-3 fw-bold border-bottom">
-                    <div style="width: 80px;">ID</div>
-                    <div style="flex: 1;">Email</div>
-                    <div style="width: 100px;">Role</div>
+                    <div style="width: 50px;">ID</div>
+                    <div style="flex: 1;">Name</div>
+                    <div style="flex: 0 0 150px;">Email</div>
+                    <div style="width: 120px;">Roles</div>
                     <div style="width: 120px;">Actions</div>
                 </div>
 
@@ -109,14 +137,28 @@
                             <input type="email" class="form-control" id="user-email" name="email" required>
                         </div>
                         <div class="mb-3">
+                            <label for="user-username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="user-username" name="username" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="user-first-name" class="form-label">First Name</label>
+                                <input type="text" class="form-control" id="user-first-name" name="first_name">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="user-last-name" class="form-label">Last Name</label>
+                                <input type="text" class="form-control" id="user-last-name" name="last_name">
+                            </div>
+                        </div>
+                        <div class="mb-3">
                             <label for="user-password" class="form-label">Password</label>
                             <input type="password" class="form-control" id="user-password" name="password">
                         </div>
                         <div class="mb-3">
-                            <label for="user-role" class="form-label">Role</label>
-                            <select class="form-select" id="user-role" name="role_id" required>
-                                <option value="">Select Role</option>
-                            </select>
+                            <label class="form-label">Roles</label>
+                            <div id="user-roles-checkboxes" class="d-flex flex-column gap-2">
+                                <!-- Roles will be populated here -->
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -162,8 +204,11 @@
                 user_form: document.getElementById("user-form"),
                 user_id: document.getElementById("user-id"),
                 user_email: document.getElementById("user-email"),
+                user_username: document.getElementById("user-username"),
+                user_first_name: document.getElementById("user-first-name"),
+                user_last_name: document.getElementById("user-last-name"),
                 user_password: document.getElementById("user-password"),
-                user_role: document.getElementById("user-role"),
+                user_roles_checkboxes: document.getElementById("user-roles-checkboxes"),
                 user_modal_title: document.getElementById("user-modal-title"),
                 save_user_btn: document.getElementById("save-user-btn"),
                 delete_user_id: document.getElementById("delete-user-id"),
@@ -183,10 +228,15 @@
                 .then(data => {
                     if (data.result) {
                         data.result.forEach(role => {
-                            const option = document.createElement('option');
-                            option.value = role.role_id;
-                            option.textContent = role.role_name;
-                            elements.user_role.appendChild(option);
+                            const checkbox = document.createElement('div');
+                            checkbox.className = 'form-check';
+                            checkbox.innerHTML = `
+                                <input class="form-check-input user-role-checkbox" type="checkbox" value="${role.role_id}" id="role-${role.role_id}" name="role_id">
+                                <label class="form-check-label" for="role-${role.role_id}">
+                                    ${role.role_name}
+                                </label>
+                            `;
+                            elements.user_roles_checkboxes.appendChild(checkbox);
                         });
                     }
                 })
@@ -217,6 +267,7 @@
                 elements.user_form.reset();
                 elements.user_id.value = "";
                 elements.user_password.required = true;
+                elements.user_username.required = true;
                 elements.user_modal_title.textContent = "Add User";
                 userModal.show();
             });
@@ -275,7 +326,26 @@
                     .then(data => {
                         elements.user_id.value = data.user_id;
                         elements.user_email.value = data.email;
-                        elements.user_role.value = data.role_id;
+                        elements.user_username.value = data.username || '';
+                        elements.user_first_name.value = data.first_name || '';
+                        elements.user_last_name.value = data.last_name || '';
+                        
+                        // Uncheck all roles first
+                        elements.user_roles_checkboxes.querySelectorAll('.user-role-checkbox').forEach(cb => {
+                            cb.checked = false;
+                        });
+                        
+                        // Check the roles for this user
+                        if (data.roles && data.roles.length > 0) {
+                            const roleIds = data.roles.map(role => role.role_id);
+                            roleIds.forEach(roleId => {
+                                const checkbox = elements.user_roles_checkboxes.querySelector(`input[value="${roleId}"]`);
+                                if (checkbox) {
+                                    checkbox.checked = true;
+                                }
+                            });
+                        }
+                        
                         elements.user_password.required = false;
                         elements.user_modal_title.textContent = "Edit User";
                         userModal.show();
@@ -295,12 +365,29 @@
                     return;
                 }
 
+                // Get selected roles
+                const selectedRoles = Array.from(elements.user_roles_checkboxes.querySelectorAll('.user-role-checkbox:checked')).map(cb => cb.value);
+                
+                if (selectedRoles.length === 0) {
+                    alert('Please select at least one role');
+                    return;
+                }
+
                 const formData = new FormData();
                 formData.append("email", elements.user_email.value);
+                formData.append("username", elements.user_username.value);
+                if (elements.user_first_name.value) {
+                    formData.append("first_name", elements.user_first_name.value);
+                }
+                if (elements.user_last_name.value) {
+                    formData.append("last_name", elements.user_last_name.value);
+                }
                 if (elements.user_password.value) {
                     formData.append("password", elements.user_password.value);
                 }
-                formData.append("role_id", elements.user_role.value);
+                selectedRoles.forEach(roleId => {
+                    formData.append("role_ids", roleId);
+                });
 
                 const isEdit = !!elements.user_id.value;
                 const url = isEdit ? "/api/users/update" : "/api/users/register";
@@ -371,13 +458,79 @@
                 const elem = elements.template.content.cloneNode(true);
                 const card = elem.querySelector(".user-item");
                 const idEl = elem.querySelector(".user-id");
+                const nameUsernameEl = elem.querySelector(".user-name-username");
                 const emailEl = elem.querySelector(".user-email");
-                const roleEl = elem.querySelector(".user-role");
+                const rolesDisplayEl = elem.querySelector(".user-roles-display");
+                const usernameEl = elem.querySelector(".user-username");
+                const firstNameEl = elem.querySelector(".user-first-name");
+                const lastNameEl = elem.querySelector(".user-last-name");
+                const createdAtEl = elem.querySelector(".user-created-at");
+                const rolesListEl = elem.querySelector(".user-roles-list");
+                const detailsEl = elem.querySelector(".user-details");
 
                 card.dataset.userId = item.user_id;
+                
+                // Header line 1: ID | first_name last_name (username)
                 idEl.textContent = `ID: ${item.user_id}`;
-                emailEl.textContent = item.email;
-                roleEl.textContent = item.role_name || 'N/A';
+                nameUsernameEl.textContent = `${item.first_name || '-'} ${item.last_name || '-'} (${item.username || '-'})`;
+                
+                // Header line 2: email and roles
+                emailEl.textContent = item.email || '-';
+                
+                // Display first 2 roles + (+X) if more than 2
+                if (item.roles && item.roles.length > 0) {
+                    rolesDisplayEl.innerHTML = '';
+                    const rolesToShow = item.roles.slice(0, 2);
+                    rolesToShow.forEach(role => {
+                        const badge = document.createElement('span');
+                        badge.className = 'badge bg-secondary me-1';
+                        badge.style.fontSize = '0.75rem';
+                        badge.textContent = role.role_name;
+                        rolesDisplayEl.appendChild(badge);
+                    });
+                    
+                    if (item.roles.length > 2) {
+                        const moreBadge = document.createElement('span');
+                        moreBadge.className = 'badge bg-secondary';
+                        moreBadge.style.fontSize = '0.75rem';
+                        moreBadge.textContent = `+${item.roles.length - 2}`;
+                        rolesDisplayEl.appendChild(moreBadge);
+                    }
+                } else {
+                    rolesDisplayEl.innerHTML = '<span class="badge bg-secondary" style="font-size: 0.75rem;">None</span>';
+                }
+                
+                // Populate detailed info
+                usernameEl.textContent = item.username || '-';
+                firstNameEl.textContent = item.first_name || '-';
+                lastNameEl.textContent = item.last_name || '-';
+                createdAtEl.textContent = item.created_at || '-';
+                
+                // Populate all roles in details
+                if (item.roles && item.roles.length > 0) {
+                    rolesListEl.innerHTML = '';
+                    item.roles.forEach(role => {
+                        const badge = document.createElement('span');
+                        badge.className = 'badge bg-secondary me-1';
+                        badge.textContent = role.role_name;
+                        rolesListEl.appendChild(badge);
+                    });
+                } else {
+                    rolesListEl.innerHTML = '<span class="badge bg-secondary">None</span>';
+                }
+
+                // Add click handler to toggle details
+                card.addEventListener('click', function() {
+                    const isVisible = detailsEl.style.display === 'block';
+                    detailsEl.style.display = isVisible ? 'none' : 'block';
+                    card.style.backgroundColor = isVisible ? '' : 'rgba(0, 0, 0, 0.05)';
+                    
+                    // Rotate chevron icon
+                    const chevronIcon = card.querySelector('.user-dropdown-icon');
+                    if (chevronIcon) {
+                        chevronIcon.style.transform = isVisible ? 'rotate(0deg)' : 'rotate(180deg)';
+                    }
+                });
 
                 elements.user_list.appendChild(elem);
             }
