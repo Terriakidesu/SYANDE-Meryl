@@ -44,7 +44,6 @@ A comprehensive inventory and sales management system built with FastAPI, design
 
 - Python 3.8+
 - MySQL Server
-- Node.js (for additional frontend tooling, optional)
 
 ## Installation
 
