@@ -559,7 +559,7 @@
                 });
 
                 const isEdit = !!elements.user_id.value;
-                const url = isEdit ? "/api/users/update" : "/api/users/register";
+                const url = isEdit ? "/api/users/update" : "/api/users/add";
                 if (isEdit) {
                     formData.append("user_id", elements.user_id.value);
                 }
