@@ -1,5 +1,6 @@
 
 from fastapi import APIRouter, Request, Depends
+from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from ..depedencies import is_authenticated
@@ -13,12 +14,13 @@ templates = Jinja2Templates("assets/public/templates/")
 
 @settings_router.get("/")
 async def settings_home(request: Request):
-    return templates.TemplateResponse(request, "settings/index.html", {
-        "user_id": request.session["user_id"],
-        "username": request.session["username"],
-        "page_title": "Settings",
-        "is_superadmin": request.session["user_id"] == -1
-    })
+    # return templates.TemplateResponse(request, "settings/index.html", {
+    #     "user_id": request.session["user_id"],
+    #     "username": request.session["username"],
+    #     "page_title": "Settings",
+    #     "is_superadmin": request.session["user_id"] == -1
+    # })
+    return RedirectResponse("/settings/profile")
 
 
 @settings_router.get("/profile")

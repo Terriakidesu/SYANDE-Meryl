@@ -13,6 +13,7 @@ __all__ = [
 ]
 
 from fastapi import APIRouter
+from fastapi.responses import RedirectResponse
 
 inventory_router = APIRouter(prefix="/inventory")
 
@@ -21,3 +22,8 @@ inventory_router.include_router(brands_router)
 inventory_router.include_router(categories_router)
 inventory_router.include_router(sizes_router)
 inventory_router.include_router(variants_router)
+
+
+@inventory_router.get("/")
+async def inventory_home():
+    return RedirectResponse("/manage/inventory/shoes")
