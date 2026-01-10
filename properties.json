@@ -27,7 +27,7 @@
         "max_file_size": 5242880
     },
     "shoes": {
-        "path": "assets/public/products/shoes",
+        "path": "assets/public/products/",
         "default": "assets/public/products/default/default.jpeg",
         "size": 1280,
         "quality": 85,

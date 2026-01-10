@@ -99,6 +99,17 @@ async def get_profile_picture(request: Request, user_id: int):
 
     return FileResponse(profiles_path.joinpath("default", "default.jpeg"))
 
+@app.get("/shoes")
+async def get_shoe_image(request: Request, shoe_id: int):
+    filename = f"user-{shoe_id:04d}"
+
+    profiles_path = Path("assets", "public", "products")
+    profile_path = profiles_path.joinpath(filename)
+
+    if profile_path.exists():
+        return FileResponse(profile_path.joinpath(f"{filename}.jpeg"))
+
+    return FileResponse(Settings.shoes.default)
 
 @app.get("/clearSession")
 async def clear_session(request: Request):
