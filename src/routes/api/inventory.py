@@ -23,9 +23,34 @@ db = Database()
 
 
 @inventory_router.get("/shoes", response_class=JSONResponse)
-async def list_shoes(request: Request):
+async def list_shoes(request: Request,
+                     query: Annotated[Optional[str], Query()] = None,
+                     page: Annotated[Optional[int], Query()] = 1,
+                     limit: Annotated[Optional[int], Query()] = 10
+                     ):
 
-    return db.fetchAll(r"SELECT * FROM shoes")
+    count = db.fetchOne(r'SELECT COUNT(*) as count FROM shoes')["count"]
+    pages = math.ceil(count / limit)
+    offset = (page - 1) * limit
+
+    if query:
+        result = db.fetchAll(
+            r'SELECT * FROM shoes WHERE shoe_id = %s OR shoe_name LIKE %s LIMIT %s OFFSET %s', (query, f"%{query}%", limit, offset))
+
+        return JSONResponse({
+            "result": result,
+            "count": count,
+            "pages": pages
+        })
+
+    result = db.fetchAll(
+        r'SELECT * FROM shoes LIMIT %s OFFSET %s', (limit, offset))
+
+    return JSONResponse({
+        "result": result,
+        "count": count,
+        "pages": pages
+    })
 
 
 @inventory_router.post("/shoes/add", response_class=JSONResponse)
@@ -179,13 +204,6 @@ async def delete_shoe(request: Request, shoe_id: int, user_perms: list[str] = De
 
 @inventory_router.get("/shoes/popular", response_class=JSONResponse)
 async def list_popular(request: Request, limit: int = 10, user_perms: list[str] = Depends(user_permissions)):
-
-    utils.check_user_permissions(
-        user_perms,
-        Permissions.inventory.manage_inventory,
-        Permissions.inventory.view_inventory,
-        Permissions.inventory.view_shoes
-    )
 
     return db.fetchAll(r"""
             SELECT
@@ -486,16 +504,34 @@ async def fetch_category(request: Request, category_id: int, user_perms: list[st
 
 
 @inventory_router.get("/sizes", response_class=JSONResponse)
-async def list_sizes(request: Request, user_perms: list[str] = Depends(user_permissions)):
-    utils.check_user_permissions(
-        user_perms,
-        Permissions.inventory.manage_inventory,
-        Permissions.inventory.view_inventory,
-        Permissions.inventory.manage_sizes,
-        Permissions.inventory.view_sizes
-    )
+async def list_sizes(request: Request,
+                     query: Annotated[Optional[str], Query()] = None,
+                     page: Annotated[Optional[int], Query()] = 1,
+                     limit: Annotated[Optional[int], Query()] = 10
+                     ):
 
-    return db.fetchAll(r'SELECT * FROM sizes')
+    count = db.fetchOne(r'SELECT COUNT(*) as count FROM sizes')["count"]
+    pages = math.ceil(count / limit)
+    offset = (page - 1) * limit
+
+    if query:
+        result = db.fetchAll(
+            r'SELECT * FROM sizes WHERE size_id = %s OR sizing_system LIKE %s LIMIT %s OFFSET %s', (query, f"%{query}%", limit, offset))
+
+        return JSONResponse({
+            "result": result,
+            "count": count,
+            "pages": pages
+        })
+
+    result = db.fetchAll(
+        r'SELECT * FROM sizes LIMIT %s OFFSET %s', (limit, offset))
+
+    return JSONResponse({
+        "result": result,
+        "count": count,
+        "pages": pages
+    })
 
 
 @inventory_router.post("/sizes/add", response_class=JSONResponse)
