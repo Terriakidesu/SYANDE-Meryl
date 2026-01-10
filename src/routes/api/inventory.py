@@ -12,7 +12,7 @@ from PIL import Image
 from ... import utils
 from ...depedencies import is_authenticated, user_permissions
 from ...exceptions import DatabaseException
-from ...includes import Database
+from ...helpers import Database
 from ...models.inventory import Brand, Category, Shoe, Size, Variant
 from ...utils import Permissions
 

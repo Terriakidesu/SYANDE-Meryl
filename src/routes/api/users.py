@@ -11,7 +11,7 @@ from ... import utils
 from ...utils import Permissions
 from ...depedencies import user_permissions, is_authenticated
 from ...exceptions import DatabaseException
-from ...includes import Database
+from ...helpers import Database
 from ...models.users import UserForm
 from ...Settings import Settings
 
