@@ -15,8 +15,10 @@ class Category(BaseModel):
 
 class Size(BaseModel):
     size_id: int
-    size: float
-    sizing_system: str
+    demographic_id: int
+    us_size: float
+    uk_size: float
+    eu_size: float
 
 
 class Variant(BaseModel):
