@@ -316,7 +316,7 @@ async def delete_shoe(request: Request, shoe_id: int, user_perms: list[str] = De
 
 
 @shoes_router.get("/popular", response_class=JSONResponse)
-async def list_popular(request: Request, limit: int = 10, user_perms: list[str] = Depends(user_permissions)):
+async def list_popular(request: Request, limit: int = 10):
 
     return db.fetchAll(r"""
             SELECT
