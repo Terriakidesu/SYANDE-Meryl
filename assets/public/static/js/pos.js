@@ -682,9 +682,10 @@
                 alert('Sale completed successfully!');
                 cart = [];
                 saveCart();
-
-                // Redirect to sales management page
-                window.location.href = '/manage/sales';
+                displayCart(); // Refresh cart display
+                // Close the checkout modal
+                const checkoutModal = bootstrap.Modal.getInstance(elements.checkout_modal);
+                if (checkoutModal) checkoutModal.hide();
             } else {
                 alert('Error completing sale: ' + result.message);
             }
