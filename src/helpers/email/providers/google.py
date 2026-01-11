@@ -45,7 +45,15 @@ class GoogleProvider(MailProvider):
             message = MIMEText(f'Your OTP code is: {otp}')
             message['to'] = email
             message['subject'] = 'Your OTP Code'
-            message['from'] = 'me'  # Use authenticated user's email
+
+            # Option 1: Use authenticated user's email ('me')
+            # message['from'] = 'me'
+
+            # Option 2: Use a custom from name (but still sends from authenticated account)
+            message['from'] = 'SYANDE Meryl <me>'
+
+            # Option 3: Use a verified alias if you have one
+            # message['from'] = 'your-verified-alias@gmail.com'
 
             # Encode message
             raw_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
