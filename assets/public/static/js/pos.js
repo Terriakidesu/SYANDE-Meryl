@@ -667,7 +667,6 @@
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
                 body: new URLSearchParams({
-                    user_id: 1, // TODO: Get from session
                     customer_name: customerName,
                     total_amount: total,
                     cash_received: cashReceived,

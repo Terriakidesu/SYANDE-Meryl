@@ -64,7 +64,6 @@ async def list_sales(request: Request,
 
 @sales_router.post("/add", response_class=JSONResponse)
 async def add_sale(request: Request,
-                   user_id: int = Form(),
                    customer_name: str = Form(),
                    total_amount: float = Form(),
                    cash_received: float = Form(),
@@ -72,6 +71,9 @@ async def add_sale(request: Request,
                    items: str = Form()
                    ):
     try:
+
+        user_id = request.session["user_id"]
+
         # Check stock availability first
         for item in items.split(","):
             item = item.strip().split(":")
