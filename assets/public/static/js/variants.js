@@ -290,7 +290,10 @@
         shoeImage.alt = shoe.shoe_name;
 
         // Set shoe info
-        shoeInfo.textContent = `Shoe: ${shoe.shoe_name} (Brand: ${shoe.brand_name})`;
+        const shoeName = shoeContainer.querySelector('.shoe-name');
+        const shoeBrand = shoeContainer.querySelector('.shoe-brand');
+        shoeName.textContent = shoe.shoe_name;
+        shoeBrand.textContent = shoe.brand_name;
 
         // Add collapse event listeners
         variantsContainer.addEventListener('show.bs.collapse', () => {
