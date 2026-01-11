@@ -60,14 +60,14 @@ async def list_variants(request: Request,
             FROM variants v
             JOIN sizes sz ON sz.size_id = v.size_id
             WHERE v.shoe_id = %s
+            ORDER BY sz.us_size
             """,
             (shoe_id,)
         )
         shoe["variants"] = variants
         shoe["created_at"] = shoe["created_at"].isoformat()
         shoe["first_sale_at"] = shoe["first_sale_at"].isoformat()
-        # Add image URL
-        shoe["image_url"] = f"/assets/public/products/shoe-{shoe_id:05d}/shoe-{shoe_id:05d}.jpeg"
+        
         result.append(shoe)
 
     return JSONResponse({
