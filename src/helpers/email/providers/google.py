@@ -41,8 +41,92 @@ class GoogleProvider(MailProvider):
             # Create Gmail API service
             service = build('gmail', 'v1', credentials=self.creds)
 
-            # Create message
-            message = MIMEText(f'Your OTP code is: {otp}')
+            # Create HTML message
+            html_content = f"""
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>OTP Verification</title>
+                <style>
+                    body {{
+                        font-family: Arial, sans-serif;
+                        margin: 0;
+                        padding: 20px;
+                        background-color: #f4f4f4;
+                    }}
+                    .container {{
+                        max-width: 600px;
+                        margin: 0 auto;
+                        background-color: #ffffff;
+                        padding: 30px;
+                        border-radius: 10px;
+                        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+                    }}
+                    .header {{
+                        text-align: center;
+                        margin-bottom: 30px;
+                    }}
+                    .header h1 {{
+                        color: #333;
+                        margin: 0;
+                        font-size: 24px;
+                    }}
+                    .otp-code {{
+                        font-size: 32px;
+                        font-weight: bold;
+                        color: #007bff;
+                        text-align: center;
+                        margin: 30px 0;
+                        padding: 20px;
+                        background-color: #f8f9fa;
+                        border-radius: 5px;
+                        letter-spacing: 2px;
+                    }}
+                    .warning {{
+                        background-color: #fff3cd;
+                        border: 1px solid #ffeaa7;
+                        padding: 15px;
+                        border-radius: 5px;
+                        margin: 20px 0;
+                    }}
+                    .warning strong {{
+                        color: #856404;
+                    }}
+                    .footer {{
+                        text-align: center;
+                        margin-top: 30px;
+                        color: #666;
+                        font-size: 14px;
+                    }}
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>SYANDE Meryl</h1>
+                        <p>OTP Verification</p>
+                    </div>
+                    <p>Dear User,</p>
+                    <p>We have received a request to verify your account. Please use the following One-Time Password (OTP) to complete the verification process:</p>
+                    <div class="otp-code">{otp}</div>
+                    <div class="warning">
+                        <strong>Important Security Notice:</strong><br>
+                        • This OTP is valid for 30 minutes only.<br>
+                        • Do not share this code with anyone.<br>
+                        • If you did not request this verification, please ignore this email.
+                    </div>
+                    <p>If you have any questions, please contact our support team.</p>
+                    <p>Best regards,<br>The SYANDE Meryl Team</p>
+                    <div class="footer">
+                        <p>This is an automated message. Please do not reply to this email.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+            message = MIMEText(html_content, 'html')
             message['to'] = email
             message['subject'] = 'Your OTP Code'
 
