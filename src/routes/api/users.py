@@ -156,7 +156,7 @@ async def update_user(request: Request, user_id: int = Form(), username: str = F
 
     try:
 
-        if user_id < 0:
+        if user_id < 0 and user_id != -1:
             raise DatabaseException("user_id cannot be negative")
 
         if username.strip() == "":
@@ -210,6 +210,21 @@ async def update_user(request: Request, user_id: int = Form(), username: str = F
                     (user_id, role_id)
                 )
 
+        # For superadmin (user_id = -1), ensure Account Manager role is assigned
+        if user_id == -1:
+            account_manager_role = db.fetchOne(r'SELECT role_id FROM roles WHERE role_name = %s', ("Account Manager",))
+            if not account_manager_role:
+                # Create the Account Manager role if it doesn't exist
+                cursor = db.commitOne(r'INSERT INTO roles (role_name) VALUES (%s)', ("Account Manager",))
+                role_id = cursor.lastrowid
+            else:
+                role_id = account_manager_role['role_id']
+
+            # Check if superadmin already has this role
+            existing = db.fetchOne(r'SELECT * FROM user_roles WHERE user_id = %s AND role_id = %s', (user_id, role_id))
+            if not existing:
+                db.commitOne(r'INSERT INTO user_roles (user_id, role_id) VALUES (%s, %s)', (user_id, role_id))
+
         return {
             "success": True,
             "message": "Successfully Updated User."
@@ -224,7 +239,7 @@ async def update_user(request: Request, user_id: int = Form(), username: str = F
 
 
 @users_router.post("/updatePassword", response_class=JSONResponse)
-async def update_user_password(request: Request, user_id: int = Form(), password: str = Form(), user_perms: list[str] = Depends(user_permissions)):
+async def update_user_password(request: Request, user_id: int = Form(), password: str = Form(), old_password: str = Form(default=""), user_perms: list[str] = Depends(user_permissions)):
 
     if user_id != request.session["user_id"]:
         utils.check_user_permissions(
@@ -234,28 +249,31 @@ async def update_user_password(request: Request, user_id: int = Form(), password
 
     try:
 
-        if user_id < 0:
+        if user_id < 0 and user_id != -1:
             raise DatabaseException("user_id cannot be negative")
 
-        if result := db.fetchOne(r'SELECT password FROM users WHERE user_id = %s', (user_id,)):
-            password_hash: str = result['password']  # type: ignore
+        if password.strip() == "":
+            raise Exception("Password is required")
 
-            if utils.verify_password(password, password_hash):
-                raise Exception(
-                    "New password is the same as the last password.")
+        if user_id == -1:
+            # Use AccountManager for superadmin
+            from ...helpers.account_manager import AccountManager
+            manager = AccountManager(db)
+            manager.change_superadmin_password(old_password, password)
+        else:
+            # Regular user password update
+            if result := db.fetchOne(r'SELECT password FROM users WHERE user_id = %s', (user_id,)):
+                password_hash: str = result['password']
 
-        hashed_pw = utils.hash_password(password)
+                if utils.verify_password(password, password_hash):
+                    raise Exception("New password is the same as the last password.")
 
-        db.commitOne(
-            r'UPDATE users SET password = %s  WHERE user_id = %s',
-            (hashed_pw, user_id)
-        )
-
-        del hashed_pw
+            hashed_pw = utils.hash_password(password)
+            db.commitOne(r'UPDATE users SET password = %s WHERE user_id = %s', (hashed_pw, user_id))
 
         return {
             "success": True,
-            "message": "Successfully Updated User."
+            "message": "Successfully Updated User Password."
         }
     except Exception as e:
         return JSONResponse({
