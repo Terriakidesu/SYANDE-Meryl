@@ -7,7 +7,7 @@
     <title>Meryl - Home</title>
 
     {% include "components/dependencies.html" %}
-    
+
     <style>
         body {
             margin: 0;
@@ -62,21 +62,54 @@
 <body class="bg-body-tertiary">
     <div class="container justify-content-center">
 
-        <div class="row justify-content-between">
-            <div class="col mb-3">
-                <a href="/">
-                    <img class="img-fluid object-fit-contain" src="/static/svg/Meryl_Logo_Red.svg"
-                        alt="Meryl Shoes Logo" style="max-width: 300px; height: auto;">
-                </a>
-            </div>
+        <nav class="navbar navbar-expand-lg sticky-top">
+            <div class="container-fluid justify-content-between align-items-center">
 
-            <div class="col mt-3 mb-3 d-flex justify-content-end">
-                <a class="link text-decoration-none" style="color: var(--main-color);" href="/logout">
-                    <i class="fa-solid fa-right-from-bracket"></i>
-                    Logout
-                </a>
+                <div class="mx-4 d-flex flex-row align-items-center">
+                    <a href="/" class="navbar-brand">
+                        <img src="/static/svg/Meryl_Logo_Red.svg" alt="Meryl Logo"
+                            class="d-inline-block align-text-bottom" width="250">
+                    </a>
+                </div>
+
+                <div class="px-2d d-flex flex-row align-items-center">
+
+                    <div class="p-1 main-color">
+                        <span class="px-2">
+                            Hi, {{ username }}
+                        </span>
+                    </div>
+
+                    <div class="dropdown">
+                        <a role="button" data-bs-toggle="dropdown">
+                            <div class="rounded-circle bg-main-color-dark p-1">
+                                <img src="/profile/?user_id={{ user_id }}" alt="user profile" width="40" height="40"
+                                    class="rounded-circle">
+                            </div>
+                        </a>
+
+                        <ul class="dropdown-menu dropdown-menu-lg-end">
+                            <li>
+                                <a class="dropdown-item" href="/settings/profile">
+                                    <i class="fa-solid fa-user-gear"></i>
+                                    Profile Settings
+                                </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="/logout">
+                                    <i class="fa-solid fa-right-from-bracket"></i>
+                                    Logout
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
             </div>
-        </div>
+        </nav>
 
         <div class="row g-4 justify-content-center mt-4">
 

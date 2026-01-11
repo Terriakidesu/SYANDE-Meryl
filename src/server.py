@@ -51,7 +51,10 @@ async def home(request: Request):
     if not request.session.get("authenticated"):
         return RedirectResponse("/login")
 
-    return templates.TemplateResponse(request, "index.html")
+    return templates.TemplateResponse(request, "index.html", {
+        "user_id" : request.session["user_id"],
+        "username" : request.session["username"]
+    })
 
 
 @app.get("/login")
