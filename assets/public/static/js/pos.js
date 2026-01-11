@@ -218,33 +218,42 @@
             const variantsText = cardElement.querySelector('.variants-text');
             if (product.variants && product.variants.length > 0) {
 
-                for (let i = 0; i < Math.min(2, product.variants.length); i++) {
-                    const variant = product.variants[i];
+                for (let i = 0; i < 2; i++) {
+
                     const variant_elem = document.createElement("div");
-
                     variant_elem.className = "d-flex flex-row justify-content-between";
-
                     const size_elem = document.createElement("span");
                     const stock_elem = document.createElement("span");
 
-                    size_elem.textContent = `US:${variant.us_size} UK:${variant.uk_size} EU:${variant.eu_size}`;
-                    stock_elem.textContent = `Stock:${variant.variant_stock}`
+                    if (i < product.variants.length) {
+                        const variant = product.variants[i];
+                        size_elem.textContent = `US:${variant.us_size} UK:${variant.uk_size} EU:${variant.eu_size}`;
+                        stock_elem.textContent = `Stock:${variant.variant_stock}`;
+
+                    } else {
+                        size_elem.style.whiteSpace = "pre";
+                        size_elem.textContent = ` `;
+                        
+                        stock_elem.style.whiteSpace = "pre";
+                        stock_elem.textContent = ` `;
+                    }
 
                     variant_elem.appendChild(size_elem);
                     variant_elem.appendChild(stock_elem);
+
                     variantsText.appendChild(variant_elem);
                 }
 
                 const variant_elem = document.createElement("div");
                 variant_elem.style.whiteSpace = "pre";
                 variant_elem.style.fontSize = "10pt";
-                variant_elem.textContent = product.variants.length > 2 ? `+${Math.abs(product.variants.length - 2)} more` : ` `;
+                variant_elem.textContent = product.variants.length > 2 ? `+${Math.abs(product.variants.length - 2)} more` : " ";
                 variantsText.appendChild(variant_elem);
 
 
 
             } else {
-                variantsText.textContent = 'Variants: None';
+                variantsText.textContent = 'Sizes: None';
             }
 
             const price = cardElement.querySelector('.price-text');
