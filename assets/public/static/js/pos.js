@@ -247,15 +247,44 @@
             price.textContent = `₱${parseFloat(product.shoe_price).toFixed(2)}`;
 
             const button = cardElement.querySelector('.add-to-cart-btn');
-            button.addEventListener('click', () => addToCart(product));
+            button.addEventListener('click', () => openModal(product));
 
             elements.products_container.appendChild(cardElement);
         });
     }
 
-    function addToCart(product) {
-        // Placeholder for add to cart functionality
-        alert(`Added ${product.shoe_name} to cart!`);
+    function openModal(product) {
+        const modal_elem = document.querySelector("#product-modal");
+
+        modal_elem.querySelector("#shoe-name").textContent = product.shoe_name;
+        modal_elem.querySelector("#shoe-brand").textContent = product.brand_name;
+
+        product.demographics.forEach(demo => {
+
+            const demographicContainer = document.querySelector("#modal-demographics-container");
+
+            const demographic_elem = document.createElement("span");
+            demographic_elem.className = "badge bg-success me-1 mb-1";
+            demographic_elem.textContent = demo.demographic_Code;
+
+            demographicContainer.appendChild(demographic_elem);
+
+        });
+
+        product.categories.forEach(category => {
+
+            const categoryContainer = document.querySelector("#modal-categories-container");
+
+            const category_elem = document.createElement("span");
+            category_elem.className = "badge bg-primary me-1 mb-1";
+            category_elem.textContent = category.category_name;
+
+            categoryContainer.appendChild(category_elem);
+
+        });
+
+        const modal = new bootstrap.Modal(modal_elem);
+        modal.show();
     }
 
     // Search input handler

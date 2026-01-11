@@ -25,6 +25,7 @@
             from {
                 transform: translateX(0px);
             }
+
             to {
                 transform: translateX(-5px);
             }
@@ -75,7 +76,10 @@
 
                 <!-- Brands Filter -->
                 <div class="mb-3">
-                    <button class="btn btn-link p-0 text-decoration-none w-100 text-start d-flex align-items-center justify-content-between" type="button" data-bs-toggle="collapse" data-bs-target="#brands-collapse" aria-expanded="true" aria-controls="brands-collapse">
+                    <button
+                        class="btn btn-link p-0 text-decoration-none w-100 text-start d-flex align-items-center justify-content-between"
+                        type="button" data-bs-toggle="collapse" data-bs-target="#brands-collapse" aria-expanded="true"
+                        aria-controls="brands-collapse">
                         <span class="fw-medium">Brands</span>
                         <i class="fa-solid fa-chevron-down toggle-icon" style="font-size: 0.8em;"></i>
                     </button>
@@ -88,7 +92,10 @@
 
                 <!-- Categories Filter -->
                 <div class="mb-3">
-                    <button class="btn btn-link p-0 text-decoration-none w-100 text-start d-flex align-items-center justify-content-between" type="button" data-bs-toggle="collapse" data-bs-target="#categories-collapse" aria-expanded="true" aria-controls="categories-collapse">
+                    <button
+                        class="btn btn-link p-0 text-decoration-none w-100 text-start d-flex align-items-center justify-content-between"
+                        type="button" data-bs-toggle="collapse" data-bs-target="#categories-collapse"
+                        aria-expanded="true" aria-controls="categories-collapse">
                         <span class="fw-medium">Categories</span>
                         <i class="fa-solid fa-chevron-down toggle-icon" style="font-size: 0.8em;"></i>
                     </button>
@@ -101,7 +108,10 @@
 
                 <!-- Demographics Filter -->
                 <div class="mb-3">
-                    <button class="btn btn-link p-0 text-decoration-none w-100 text-start d-flex align-items-center justify-content-between" type="button" data-bs-toggle="collapse" data-bs-target="#demographics-collapse" aria-expanded="true" aria-controls="demographics-collapse">
+                    <button
+                        class="btn btn-link p-0 text-decoration-none w-100 text-start d-flex align-items-center justify-content-between"
+                        type="button" data-bs-toggle="collapse" data-bs-target="#demographics-collapse"
+                        aria-expanded="true" aria-controls="demographics-collapse">
                         <span class="fw-medium">Demographics</span>
                         <i class="fa-solid fa-chevron-down toggle-icon" style="font-size: 0.8em;"></i>
                     </button>
@@ -140,14 +150,74 @@
                                     </div>
                                 </div>
                                 <p class="card-text fw-bold price-text"></p>
-                                <button class="btn btn-primary mt-auto add-to-cart-btn">Buy</button>
+                                <button class="btn btn-primary mt-auto add-to-cart-btn">
+                                    <i class="fa-solid fa-cart-shopping"></i>
+                                    Buy
+                                </button>
                             </div>
                         </div>
                     </div>
                 </template>
 
                 <div id="products-container" class="row">
-                    
+
+                </div>
+            </div>
+
+            <div id="product-modal" class="modal modal-xl fade" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+
+                        <div class="modal-header">
+                            <div class="modal-title fs-5">
+                                Buy Product
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+
+                        <div class="modal-body">
+                            <div class="container">
+                                <div class="row">
+                                    <div class="col">
+                                        <img src="/shoe?shoe_id=-1" alt=""
+                                            class="img-fluid object-fit-contain ratio-1x1">
+                                    </div>
+                                    <div class="col-sm-1" style="max-width: 2px; min-height: 100%;">
+                                        <div class="vr" style="min-height: 100%;"></div>
+                                    </div>
+                                    <div class="col d-flex flex-column justify-content-between">
+                                        <div class="d-flex flex-column justify-content-start">
+                                            <div class="mt-2">
+                                                <h4 id="shoe-name" class="mb-0">[Name]</h4>
+                                                <span id="shoe-brand" class="text-muted">[Brand]</span>
+                                            </div>
+                                            <div class="my-2">
+                                                <div class="mb-1 fw-bold">Demographics</div>
+                                                <div id="modal-demographics-container"></div>
+
+                                                <div class="mt-1 mb-1 fw-bold">Categories</div>
+                                                <div id="modal-categories-container"></div>
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold">Variants</div>
+                                                <div id="modal-variant-container">
+                                                    
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row px-4">
+                                            <button class="btn btn-primary" type="button">
+                                                <i class="fa-solid fa-shopping-cart"></i>
+                                                Add to Cart
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
             </div>
         </div>
