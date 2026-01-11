@@ -264,7 +264,9 @@
         modal_elem.querySelector("#shoe-brand").textContent = product.brand_name;
         modal_elem.querySelector("#shoe-price").textContent = `P ${parseFloat(product.shoe_price).toFixed(2)}`;
         modal_elem.querySelector("#total-price").textContent = `P ${parseFloat(product.shoe_price).toFixed(2)}`;
+
         modal_elem.querySelector("input[name=quantity]").setAttribute("data-price", product.shoe_price);
+
 
         const demographicContainer = document.querySelector("#modal-demographics-container");
         demographicContainer.replaceChildren();
@@ -309,7 +311,7 @@
             const variant_radio = document.createElement("input");
             variant_radio.setAttribute("id", `variant-${variant.variant_id}`);
             variant_radio.setAttribute("type", "radio");
-            variant_radio.setAttribute("name", "variant");
+            variant_radio.setAttribute("name", "variant_id");
             variant_radio.setAttribute("value", variant.variant_id);
             variant_radio.checked = first;
 
@@ -338,12 +340,17 @@
     elements.product_form.addEventListener("submit", function (e) {
         e.preventDefault();
 
-        const formData = new FormData(this);
-        const data = Object.entries(formData);
+        const inputs = this.querySelectorAll("input");
 
-        console.log(this);
+        let data = {};
 
-        console.log(data);
+        inputs.forEach(input => {
+            data[input.name] = input.value;
+        })
+
+        cart.push(data);
+
+        console.log(cart);
 
     })
 
