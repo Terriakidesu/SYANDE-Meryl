@@ -490,7 +490,10 @@
         const variants_container = document.querySelector("#modal-variant-container");
         variants_container.replaceChildren();
 
+        const stock_display = document.getElementById("selected-variant-stock");
+
         let first = true;
+        let first_variant_stock = 0;
 
         product.variants.forEach(variant => {
 
@@ -508,6 +511,15 @@
             variant_radio.setAttribute("value", variant.variant_id);
             variant_radio.checked = first;
 
+            if (first) {
+                first_variant_stock = variant.variant_stock;
+            }
+
+            // Add event listener to update stock display
+            variant_radio.addEventListener('change', () => {
+                stock_display.textContent = `Stock: ${variant.variant_stock}`;
+            });
+
             variant_container.appendChild(variant_radio);
             variant_container.appendChild(variant_label);
             variants_container.appendChild(variant_container);
@@ -515,6 +527,13 @@
             first = false;
 
         });
+
+        // Set initial stock display
+        if (product.variants.length > 0) {
+            stock_display.textContent = `Stock: ${first_variant_stock}`;
+        } else {
+            stock_display.textContent = "No sizes available";
+        }
 
         const modal = new bootstrap.Modal(modal_elem);
         modal.show();
@@ -540,6 +559,20 @@
         inputs.forEach(input => {
             data[input.name] = input.value;
         })
+
+        // Check stock availability
+        const selectedVariant = this.querySelector('input[name="variant_id"]:checked');
+        if (selectedVariant) {
+            const variantId = selectedVariant.value;
+            const product = allProducts.find(p => p.variants.some(v => v.variant_id == variantId));
+            if (product) {
+                const variant = product.variants.find(v => v.variant_id == variantId);
+                if (variant && variant.variant_stock < data.quantity) {
+                    alert(`Insufficient stock. Available: ${variant.variant_stock}`);
+                    return;
+                }
+            }
+        }
 
         addToCart(data);
 

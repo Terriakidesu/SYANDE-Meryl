@@ -65,6 +65,15 @@ async def add_sale(request: Request,
                    items: str = Form()
                    ):
     try:
+        # Check stock availability first
+        for item in items.split(","):
+            item = item.strip().split(":")
+            variant_id, quantity = [int(it) for it in item]
+
+            if stock_result := db.fetchOne(r'SELECT variant_stock FROM variants WHERE variant_id = %s', (variant_id,)):
+                if stock_result["variant_stock"] < quantity:
+                    raise DatabaseException(f"Insufficient stock for variant {variant_id}. Available: {stock_result['variant_stock']}, Requested: {quantity}")
+
         cursor = db.commitOne(r'INSERT INTO sales (user_id, customer_name, total_amount, cash_received, change_amount) VALUES (%s, %s, %s, %s, %s)',
                               (user_id, customer_name, total_amount, cash_received, change_amount))
 
@@ -84,6 +93,10 @@ async def add_sale(request: Request,
 
                     db.commitOne(r'INSERT INTO sales_items (sale_id, variant_id, markup, quantity, price) VALUES (%s, %s, %s, %s, %s)',
                                  (sale_id, variant_id, markup, quantity, price))
+
+                    # Update stock
+                    db.commitOne(r'UPDATE variants SET variant_stock = variant_stock - %s WHERE variant_id = %s',
+                                 (quantity, variant_id))
 
         return JSONResponse({
             "success": True,
