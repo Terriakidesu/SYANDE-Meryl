@@ -74,18 +74,29 @@ async def login(request: Request, email: str = Form(), password: str = Form()):
             status_code=406
         )
 
-    # NOTE: TEMPORARY
-    # TODO: Will change to a more secure one
     if email == "superadmin":
-        request.session["authenticated"] = True
-        request.session["superadmin"] = True
-        request.session["username"] = "superadmin"
-        request.session["user_id"] = -1
-        request.session["logged_at"] = datetime.now().timestamp()
-        return {
-            "success": True,
-            "message": "User logged in successfully."
-        }
+        # Verify superadmin password using AccountManager
+        from ...helpers.account_manager import AccountManager
+        manager = AccountManager()
+        try:
+            manager.verify_superadmin_password(password)
+
+            request.session["authenticated"] = True
+            request.session["superadmin"] = True
+            request.session["username"] = "superadmin"
+            request.session["user_id"] = -1
+            request.session["logged_at"] = datetime.now().timestamp()
+            return {
+                "success": True,
+                "message": "User logged in successfully."
+            }
+        except ValueError as e:
+            return JSONResponse({
+                "success": False,
+                "message": str(e)
+            },
+                status_code=400
+            )
 
     try:
         user = db.fetchOne(

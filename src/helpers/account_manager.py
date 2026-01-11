@@ -8,8 +8,34 @@ from .. import utils
 class AccountManager:
     """Account manager class for superadmin operations."""
 
-    def __init__(self, db: Database):
-        self.db = db
+    def __init__(self,):
+        ...
+
+    def verify_superadmin_password(self, password: str) -> bool:
+        """Verify superadmin password.
+
+        Args:
+            password: Password to verify
+
+        Returns:
+            bool: True if password is correct
+
+        Raises:
+            ValueError: If password file not found or password incorrect
+        """
+        password_file = Path.cwd() / 'superadmin_password.json'
+
+        if not os.path.exists(password_file):
+            raise ValueError("Superadmin password not set")
+
+        with open(password_file, 'r') as f:
+            data = json.load(f)
+            current_hashed = data.get('password')
+
+        if not utils.verify_password(password, current_hashed):
+            raise ValueError("Incorrect password")
+
+        return True
 
     def change_superadmin_password(self, old_password: str, new_password: str) -> bool:
         """Change superadmin password with verification.
@@ -42,7 +68,8 @@ class AccountManager:
             raise ValueError("Old password is incorrect")
 
         if utils.verify_password(new_password, current_hashed):
-            raise ValueError("New password cannot be the same as the old password")
+            raise ValueError(
+                "New password cannot be the same as the old password")
 
         # Hash new password and save
         hashed_pw = utils.hash_password(new_password)
