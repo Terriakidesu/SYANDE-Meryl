@@ -31,7 +31,6 @@
     fetch('/api/inventory/shoes/all?limit=100')
         .then(res => res.json())
         .then(data => {
-            console.log(data)
             if (data.result) {
                 data.result.forEach(shoe => {
                     const option = document.createElement('option');
@@ -106,9 +105,9 @@
     });
 
     elements.shoe_list.addEventListener("click", function (e) {
-        const addVariantBtn = e.target.closest(".add-variant-for-shoe");
+        
         if (addVariantBtn) {
-            const shoeId = addVariantBtn.dataset.shoeId;
+            
             elements.variant_form.reset();
             elements.variant_id.value = "";
             elements.variant_shoe.value = shoeId;
@@ -159,6 +158,7 @@
             .catch(err => {
                 if (typeof showErrorToast === "function") {
                     showErrorToast(err);
+                    console.error(err);
                 } else {
                     console.error(err);
                 }
@@ -180,6 +180,7 @@
             .catch(err => {
                 if (typeof showErrorToast === "function") {
                     showErrorToast(err);
+                    console.error(err);
                 } else {
                     console.error(err);
                 }
@@ -209,19 +210,20 @@
         })
             .then(res => res.json())
             .then(data => {
-            if (data.success) {
-                variantModal.hide();
-                refreshCurrentPage();
-                if (typeof showSuccessToast === "function") {
-                    showSuccessToast(data.message || "Variant saved successfully");
+                if (data.success) {
+                    variantModal.hide();
+                    refreshCurrentPage();
+                    if (typeof showSuccessToast === "function") {
+                        showSuccessToast(data.message || "Variant saved successfully");
+                    }
+                } else {
+                    throw new Error(data.message || "Failed to save variant");
                 }
-            } else {
-                throw new Error(data.message || "Failed to save variant");
-            }
-        })
+            })
             .catch(err => {
                 if (typeof showErrorToast === "function") {
                     showErrorToast(err);
+                    console.error(err);
                 } else {
                     console.error(err);
                 }
@@ -256,6 +258,7 @@
             .catch(err => {
                 if (typeof showErrorToast === "function") {
                     showErrorToast(err);
+                    console.error(err);
                 } else {
                     console.error(err);
                 }
@@ -271,7 +274,6 @@
         const shoeInfo = shoeContainer.querySelector('.shoe-info');
         const variantsContainer = shoeContainer.querySelector('.variants-container');
         const collapsibleHeader = shoeContainer.querySelector('.collapsible-header');
-        const addVariantBtn = shoeContainer.querySelector('.add-variant-for-shoe');
 
 
 
@@ -282,8 +284,6 @@
         collapsibleHeader.setAttribute('aria-expanded', 'true');
         collapsibleHeader.setAttribute('aria-controls', collapseId);
 
-        // Set shoe ID for add variant button
-        addVariantBtn.dataset.shoeId = shoe.shoe_id;
 
         // Set shoe image
         shoeImage.src = `/shoe?shoe_id=${shoe.shoe_id}`;
