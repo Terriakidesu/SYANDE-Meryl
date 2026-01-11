@@ -36,7 +36,7 @@ A comprehensive inventory and sales management system built with FastAPI, design
 - **Database**: MySQL
 - **Frontend**: HTML, CSS, JavaScript, Bootstrap
 - **Templates**: Jinja2
-- **Email**: Resend API
+- **Email**: Resend API, Google APIs
 - **Image Processing**: Pillow
 - **Authentication**: Session-based with bcrypt
 
@@ -74,13 +74,14 @@ A comprehensive inventory and sales management system built with FastAPI, design
 
 ## Configuration
 
-### secrets.env
+### Environment Variables
+The application loads secrets from environment variables. Create a `.env` file (or `secrets.env` as specified in `properties.json`) with the following variables:
+
 ```env
 # Database Configuration
-DB_HOST=localhost
-DB_PORT=3306
-DB_NAME=your_database_name
-DB_USER=your_username
+DB_HOSTNAME=localhost
+DB_DATABASE=your_database_name
+DB_USERNAME=your_username
 DB_PASSWORD=your_password
 
 # Session Secret
@@ -88,15 +89,25 @@ SESSION_SECRET_KEY=your-secret-key-here
 
 # Email Configuration (Resend)
 RESEND_API_KEY=your-resend-api-key
-RESEND_FROM_EMAIL=your-email@example.com
 
-# Google OAuth (if used)
-GOOGLE_CLIENT_ID=your-google-client-id
-GOOGLE_CLIENT_SECRET=your-google-client-secret
+# Gmail Configuration (for email sending)
+GMAIL_CLIENT_ID=your-gmail-client-id
+GMAIL_CLIENT_SECRET=your-gmail-client-secret
+GMAIL_REFRESH_TOKEN=your-gmail-refresh-token
 ```
 
 ### Database Setup
-The application expects a MySQL database. Make sure to create the necessary tables and initial data. Database schema and migrations are not included in this repository.
+The application connects to a MySQL database using the following connection URL format:
+```
+mysql://username:password@hostname/database_name
+```
+
+**Requirements:**
+- MySQL Server 5.7+ or MariaDB 10.0+
+- A database user with appropriate permissions
+- The database must be created before running the application
+
+**Note:** Database schema and migrations are not included in this repository. You will need to create the necessary tables and initial data manually based on the models in `src/models/`.
 
 ## Running the Application
 
@@ -147,10 +158,18 @@ SYANDE-Meryl/
 ### Authentication
 - `POST /api/auth/login` - User login
 - `POST /api/auth/register` - User registration
-- `POST /api/auth/logout` - User logout
+- `GET /api/auth/logout` - User logout
+- `POST /api/auth/request_otp` - Request OTP for email verification
+- `POST /api/auth/verify_otp` - Verify OTP
+- `POST /api/auth/verify_email` - Verify email availability
 
 ### Inventory Management
-- `GET /api/inventory/brands` - List brands
+- `GET /api/inventory/brands` - List brands with pagination and search
+- `GET /api/inventory/brands/suggestions` - Get brand suggestions for autocomplete
+- `POST /api/inventory/brands/add` - Add new brand
+- `POST /api/inventory/brands/update` - Update brand
+- `DELETE /api/inventory/brands/delete/{brand_id}` - Delete brand
+- `GET /api/inventory/brands/{brand_id}` - Get specific brand
 - `GET /api/inventory/categories` - List categories
 - `GET /api/inventory/sizes` - List sizes
 - `GET /api/inventory/shoes` - List shoes
@@ -164,6 +183,8 @@ SYANDE-Meryl/
 ### Sales
 - `GET /api/sales` - List sales
 - `GET /api/sales/returns` - List returns
+
+**Note:** This is not an exhaustive list. The API includes additional endpoints for CRUD operations on all inventory entities, user management, and sales processing.
 
 ## Development
 
