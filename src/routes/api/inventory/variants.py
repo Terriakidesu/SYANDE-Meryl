@@ -1,6 +1,7 @@
-from typing import Annotated
+import math
+from typing import Annotated, Optional
 
-from fastapi import APIRouter, Depends, Form, Request
+from fastapi import APIRouter, Depends, Form, Query, Request
 from fastapi.responses import JSONResponse
 
 from .... import utils
@@ -17,16 +18,46 @@ db = Database()
 
 
 @variants_router.get("", response_class=JSONResponse)
-async def list_variants(request: Request, user_perms: list[str] = Depends(user_permissions)):
-    utils.check_user_permissions(
-        user_perms,
-        Permissions.inventory.manage_inventory,
-        Permissions.inventory.view_inventory,
-        Permissions.inventory.manage_variants,
-        Permissions.inventory.view_variants
-    )
+async def list_variants(request: Request,
+                        query: Annotated[Optional[str], Query()] = None,
+                        page: Annotated[Optional[int], Query()] = 1,
+                        limit: Annotated[Optional[int], Query()] = 10):
 
-    return db.fetchAll(r'SELECT * FROM variants')
+    count = db.fetchOne(r'SELECT COUNT(*) as count FROM shoes')["count"]
+    pages = math.ceil(count / limit)
+    offset = (page - 1) * limit
+
+    if query:
+        result = db.fetchAll(
+            r"""
+            SELECT *
+            FROM variants v
+            JOIN shoes s ON v.shoe_id = s.shoe_id
+            JOIN brands b ON b.brand_id = s.brand_id
+            WHERE s.shoe_id = %s OR s.shoe_name = %s OR b.brand_name = %s 
+            LIMIT %s OFFSET %s
+            """,
+            (query, f"{query}%", f"{query}%", limit, offset)
+        )
+    else:
+
+        result = db.fetchAll(
+            r"""
+            SELECT *
+            FROM variants v
+            JOIN shoes s ON v.shoe_id = s.shoe_id
+            JOIN brands b ON b.brand_id = s.brand_id 
+            LIMIT %s OFFSET %s
+            """,
+            (limit, offset)
+        )
+
+
+    return JSONResponse({
+        "result": result,
+        "count": count,
+        "pages": pages
+    })
 
 
 @variants_router.post("/add", response_class=JSONResponse)
