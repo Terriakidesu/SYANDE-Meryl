@@ -46,7 +46,7 @@
                             <th>Sales Date</th>
                             <th>User</th>
                             <th>Status</th>
-                            <th style="width: 120px;">Actions</th>
+                            <th style="width: 180px;">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="sale-list">
@@ -81,9 +81,46 @@
         </div>
     </div>
 
+    <!-- Return Sale Modal -->
+    <div class="modal fade" id="return-modal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Process Return</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="return-form">
+                        <div class="mb-3">
+                            <label for="return-sale-id" class="form-label">Sale ID</label>
+                            <input type="text" class="form-control" id="return-sale-id" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="return-customer-name" class="form-label">Customer Name</label>
+                            <input type="text" class="form-control" id="return-customer-name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="return-reason" class="form-label">Return Reason</label>
+                            <textarea class="form-control" id="return-reason" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="return-refund" class="form-label">Refund Amount (₱)</label>
+                            <input type="number" class="form-control" id="return-refund" step="0.01" min="0" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirm-return-btn">Process Return</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         (function () {
             const saleModal = new bootstrap.Modal(document.getElementById("sale-modal"));
+            const returnModal = new bootstrap.Modal(document.getElementById("return-modal"));
             const elements = {
                 sale_list: document.getElementById("sale-list"),
                 search_form: document.getElementById("search-form"),
@@ -115,11 +152,22 @@
 
             elements.sale_list.addEventListener("click", function (e) {
                 const viewBtn = e.target.closest(".view-btn");
+                const returnBtn = e.target.closest(".return-btn");
+
                 if (viewBtn) {
                     const tr = viewBtn.closest("tr");
                     const saleId = tr.dataset.saleId;
                     viewSale(saleId);
+                } else if (returnBtn) {
+                    const tr = returnBtn.closest("tr");
+                    const saleId = tr.dataset.saleId;
+                    openReturnModal(saleId);
                 }
+            });
+
+            // Handle return form submission
+            document.getElementById("confirm-return-btn").addEventListener("click", function () {
+                processReturn();
             });
 
             function viewSale(saleId) {
@@ -239,11 +287,25 @@
                 const tdActions = document.createElement('td');
                 const viewBtn = document.createElement('button');
                 viewBtn.type = 'button';
-                viewBtn.className = 'btn btn-warning btn-sm view-btn';
-                const icon = document.createElement('i');
-                icon.className = 'fa-solid fa-eye';
-                viewBtn.appendChild(icon);
+                viewBtn.className = 'btn btn-warning btn-sm view-btn me-1';
+                viewBtn.title = 'View Sale';
+                const viewIcon = document.createElement('i');
+                viewIcon.className = 'fa-solid fa-eye';
+                viewBtn.appendChild(viewIcon);
                 tdActions.appendChild(viewBtn);
+
+                // Only show return button if sale is not already returned
+                if (item.status !== 'Returned') {
+                    const returnBtn = document.createElement('button');
+                    returnBtn.type = 'button';
+                    returnBtn.className = 'btn btn-danger btn-sm return-btn';
+                    returnBtn.title = 'Process Return';
+                    const returnIcon = document.createElement('i');
+                    returnIcon.className = 'fa-solid fa-undo';
+                    returnBtn.appendChild(returnIcon);
+                    tdActions.appendChild(returnBtn);
+                }
+
                 tr.appendChild(tdActions);
 
                 elements.sale_list.appendChild(tr);
@@ -288,6 +350,75 @@
             function refreshCurrentPage() {
                 const formData = new FormData(elements.search_form);
                 searchSales(formData);
+            }
+
+            function openReturnModal(saleId) {
+                // Fetch sale details to pre-populate the form
+                fetch(`/api/sales/${saleId}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        document.getElementById('return-sale-id').value = data.sale_id;
+                        document.getElementById('return-customer-name').value = data.customer_name || '';
+                        document.getElementById('return-refund').value = data.total_amount || 0;
+
+                        // Clear other fields
+                        document.getElementById('return-reason').value = '';
+
+                        returnModal.show();
+                    })
+                    .catch(err => {
+                        if (typeof showErrorToast === "function") {
+                            showErrorToast(err);
+                        } else {
+                            console.error(err);
+                        }
+                    });
+            }
+
+            function processReturn() {
+                const form = document.getElementById('return-form');
+                if (!form.checkValidity()) {
+                    form.reportValidity();
+                    return;
+                }
+
+                const saleId = document.getElementById('return-sale-id').value;
+                const customerName = document.getElementById('return-customer-name').value;
+                const returnReason = document.getElementById('return-reason').value;
+                const refundAmount = document.getElementById('return-refund').value;
+
+                const formData = new FormData();
+                formData.append('sale_id', saleId);
+                formData.append('customer_name', customerName);
+                formData.append('return_reason', returnReason);
+                formData.append('total_refund', refundAmount);
+
+                fetch('/api/sales/returns/add', {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            returnModal.hide();
+                            if (typeof showSuccessToast === "function") {
+                                showSuccessToast('Return processed successfully');
+                            }
+                            // Refresh the current page to show updated status
+                            refreshCurrentPage();
+                        } else {
+                            if (typeof showErrorToast === "function") {
+                                showErrorToast(data.message || 'Failed to process return');
+                            }
+                        }
+                    })
+                    .catch(err => {
+                        if (typeof showErrorToast === "function") {
+                            showErrorToast(err);
+                        } else {
+                            console.error(err);
+                        }
+                    });
             }
 
             window.addEventListener("DOMContentLoaded", () => {
