@@ -453,7 +453,8 @@
 
 
         const modal_elem = document.querySelector("#product-modal");
-
+        
+        modal_elem.querySelector("#shoe-image").src = `/shoe?shoe_id=${product.shoe_id}`;
         modal_elem.querySelector("#shoe-name").textContent = product.shoe_name;
         modal_elem.querySelector("#shoe-brand").textContent = product.brand_name;
         modal_elem.querySelector("#shoe-price").textContent = `P ${parseFloat(markup_price).toFixed(2)}`;
