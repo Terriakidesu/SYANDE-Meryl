@@ -51,6 +51,17 @@
 
             <div id="content-container" class="px-2">
 
+                <template id="shoe-container-template">
+                    <div class="shoe-container mb-4">
+                        <div class="shoe-header bg-light p-2 border d-flex align-items-center">
+                            <img class="shoe-image me-3" style="width: 80px; height: 60px; object-fit: cover;" src="" alt="" onerror="this.src='/assets/public/products/default/default.jpeg'">
+                            <div class="shoe-info fw-bold"></div>
+                        </div>
+                        <div class="variants-container">
+                        </div>
+                    </div>
+                </template>
+
                 <template id="variant-item-template">
                     <div class="card mb-2 variant-item" data-variant-id="">
                         <div class="card-body d-flex align-items-center p-2">
@@ -153,6 +164,7 @@
             const variantModal = new bootstrap.Modal(document.getElementById("variant-modal"));
             const deleteModal = new bootstrap.Modal(document.getElementById("delete-modal"));
             const elements = {
+                shoe_container_template: document.getElementById("shoe-container-template"),
                 template: document.getElementById("variant-item-template"),
                 shoe_list: document.getElementById("shoe-list"),
                 search_form: document.getElementById("search-form"),
@@ -381,38 +393,20 @@
             }
 
             function addShoeToList(shoe) {
-                // Create shoe container
-                const shoeContainer = document.createElement('div');
-                shoeContainer.className = 'shoe-container mb-4';
+                // Clone the shoe container template
+                const shoeContainer = elements.shoe_container_template.content.cloneNode(true);
 
-                // Shoe header
-                const shoeHeader = document.createElement('div');
-                shoeHeader.className = 'shoe-header bg-light p-2 border d-flex align-items-center';
+                // Get elements from the cloned template
+                const shoeImage = shoeContainer.querySelector('.shoe-image');
+                const shoeInfo = shoeContainer.querySelector('.shoe-info');
+                const variantsContainer = shoeContainer.querySelector('.variants-container');
 
-                // Shoe image
-                const shoeImage = document.createElement('img');
+                // Set shoe image
                 shoeImage.src = shoe.image_url;
                 shoeImage.alt = shoe.shoe_name;
-                shoeImage.className = 'shoe-image me-3';
-                shoeImage.style.width = '80px';
-                shoeImage.style.height = '60px';
-                shoeImage.style.objectFit = 'cover';
-                shoeImage.onerror = function() {
-                    this.src = '/assets/public/products/default/default.jpeg';
-                };
 
-                // Shoe info
-                const shoeInfo = document.createElement('div');
-                shoeInfo.className = 'fw-bold';
+                // Set shoe info
                 shoeInfo.textContent = `Shoe: ${shoe.shoe_name} (Brand: ${shoe.brand_name})`;
-
-                shoeHeader.appendChild(shoeImage);
-                shoeHeader.appendChild(shoeInfo);
-                shoeContainer.appendChild(shoeHeader);
-
-                // Variants container
-                const variantsContainer = document.createElement('div');
-                variantsContainer.className = 'variants-container';
 
                 // Add each variant
                 shoe.variants.forEach(variant => {
@@ -428,7 +422,6 @@
                     variantsContainer.appendChild(elem);
                 });
 
-                shoeContainer.appendChild(variantsContainer);
                 elements.shoe_list.appendChild(shoeContainer);
             }
 
