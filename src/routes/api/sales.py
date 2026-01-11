@@ -286,15 +286,6 @@ async def delete_return(request: Request, return_id: int):
         )
 
 
-@sales_router.get("/returns/{return_id}", response_class=JSONResponse)
-async def fetch_return(request: Request, return_id: int):
-    result = db.fetchOne(r'SELECT * FROM returns r JOIN sales s ON s.sale_id = r.sale_id WHERE return_id = %s', (return_id,))
-    if result:
-        result["return_date"] = result["return_date"].isoformat()
-        result["sales_date"] = result["sales_date"].isoformat()
-    return result
-
-
 @sales_router.get("/returns/total", response_class=JSONResponse)
 async def total_returns(request: Request):
 
@@ -306,6 +297,16 @@ async def total_returns(request: Request):
     """)
 
     return JSONResponse(result)
+
+
+@sales_router.get("/returns/{return_id}", response_class=JSONResponse)
+async def fetch_return(request: Request, return_id: int):
+    result = db.fetchOne(
+        r'SELECT * FROM returns r JOIN sales s ON s.sale_id = r.sale_id WHERE return_id = %s', (return_id,))
+    if result:
+        result["return_date"] = result["return_date"].isoformat()
+        result["sales_date"] = result["sales_date"].isoformat()
+    return result
 
 
 @sales_router.get("/monthly", response_class=JSONResponse)
