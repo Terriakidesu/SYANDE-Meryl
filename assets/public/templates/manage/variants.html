@@ -387,8 +387,27 @@
 
                 // Shoe header
                 const shoeHeader = document.createElement('div');
-                shoeHeader.className = 'shoe-header bg-light p-2 fw-bold border';
-                shoeHeader.textContent = `Shoe: ${shoe.shoe_name} (Brand: ${shoe.brand_name})`;
+                shoeHeader.className = 'shoe-header bg-light p-2 border d-flex align-items-center';
+
+                // Shoe image
+                const shoeImage = document.createElement('img');
+                shoeImage.src = shoe.image_url;
+                shoeImage.alt = shoe.shoe_name;
+                shoeImage.className = 'shoe-image me-3';
+                shoeImage.style.width = '80px';
+                shoeImage.style.height = '60px';
+                shoeImage.style.objectFit = 'cover';
+                shoeImage.onerror = function() {
+                    this.src = '/assets/public/products/default/default.jpeg';
+                };
+
+                // Shoe info
+                const shoeInfo = document.createElement('div');
+                shoeInfo.className = 'fw-bold';
+                shoeInfo.textContent = `Shoe: ${shoe.shoe_name} (Brand: ${shoe.brand_name})`;
+
+                shoeHeader.appendChild(shoeImage);
+                shoeHeader.appendChild(shoeInfo);
                 shoeContainer.appendChild(shoeHeader);
 
                 // Variants container

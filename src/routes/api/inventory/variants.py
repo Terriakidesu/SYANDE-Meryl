@@ -66,6 +66,8 @@ async def list_variants(request: Request,
         shoe["variants"] = variants
         shoe["created_at"] = shoe["created_at"].isoformat()
         shoe["first_sale_at"] = shoe["first_sale_at"].isoformat()
+        # Add image URL
+        shoe["image_url"] = f"/assets/public/products/shoe-{shoe_id:05d}/shoe-{shoe_id:05d}.jpeg"
         result.append(shoe)
 
     return JSONResponse({
@@ -100,7 +102,7 @@ async def add_variant(request: Request,
         if variant_stock is None or variant_stock < 0:
             raise DatabaseException("variant_stock is invalid.")
 
-        if _ := db.fetchOne(r'SELECT * FROM variants WHERE size_id = %s AND shoe_id = %s', (size_id, shoe_id)):
+        if _ := db.fetchOne(r'SELECT * FROM variants WHERE size_id = %s AND shoe_id = %s AND variant_id != %s', (variant.size_id, variant.shoe_id, variant.variant_id)):
             return JSONResponse({
                 "success": False,
                 "message": "Variant already exists."
@@ -143,7 +145,7 @@ async def edit_variant(request: Request, variant: Annotated[Variant, Form()], us
         if variant.variant_stock is None or variant.variant_stock < 0:
             raise DatabaseException("variant_stock is invalid.")
 
-        if _ := db.fetchOne(r'SELECT * FROM variants WHERE size_id = %s AND shoe_id = %s', (size_id, shoe_id)):
+        if _ := db.fetchOne(r'SELECT * FROM variants WHERE size_id = %s AND shoe_id = %s AND variant_id != %s', (variant.size_id, variant.shoe_id, variant.variant_id)):
             return JSONResponse({
                 "success": False,
                 "message": "Variant already exists."
