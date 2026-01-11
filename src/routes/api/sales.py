@@ -28,10 +28,12 @@ async def list_sales(request: Request,
     if query:
         result = db.fetchAll(
             r"""
-            SELECT s.*, u.user_id, u.username, u.first_name, u.last_name
-            FROM sales s 
-            JOIN users u ON u.user_id = s.user_id 
-            WHERE s.sale_id = %s OR s.customer_name LIKE %s 
+            SELECT s.*, u.user_id, u.username, u.first_name, u.last_name,
+                   CASE WHEN r.return_id IS NOT NULL THEN 'Returned' ELSE 'Active' END as status
+            FROM sales s
+            JOIN users u ON u.user_id = s.user_id
+            LEFT JOIN returns r ON r.sale_id = s.sale_id
+            WHERE s.sale_id = %s OR s.customer_name LIKE %s
             LIMIT %s OFFSET %s
             """,
             (query, f"%{query}%", limit, offset)
@@ -40,9 +42,11 @@ async def list_sales(request: Request,
     else:
         result = db.fetchAll(
             r"""
-            SELECT s.*, u.user_id, u.username, u.first_name, u.last_name
-            FROM sales s 
-            JOIN users u ON u.user_id = s.user_id 
+            SELECT s.*, u.user_id, u.username, u.first_name, u.last_name,
+                   CASE WHEN r.return_id IS NOT NULL THEN 'Returned' ELSE 'Active' END as status
+            FROM sales s
+            JOIN users u ON u.user_id = s.user_id
+            LEFT JOIN returns r ON r.sale_id = s.sale_id
             LIMIT %s OFFSET %s
             """,
             (limit, offset)
@@ -286,7 +290,22 @@ async def fetch_return(request: Request, return_id: int):
 @sales_router.get("/{sale_id}", response_class=JSONResponse)
 async def fetch_sale(request: Request, sale_id: int):
 
-    return db.fetchOne(r'SELECT * FROM sales WHERE sale_id = %s', (sale_id,))
+    result = db.fetchOne(
+        r"""
+        SELECT s.*, u.username, u.first_name, u.last_name,
+               CASE WHEN r.return_id IS NOT NULL THEN 'Returned' ELSE 'Active' END as status
+        FROM sales s
+        JOIN users u ON u.user_id = s.user_id
+        LEFT JOIN returns r ON r.sale_id = s.sale_id
+        WHERE s.sale_id = %s
+        """,
+        (sale_id,)
+    )
+
+    if result:
+        result["sales_date"] = result["sales_date"].isoformat()
+
+    return result
 
 
 @sales_router.get("/{sale_id}/items", response_class=JSONResponse)
