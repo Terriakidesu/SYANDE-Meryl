@@ -151,6 +151,10 @@
         }
 
         products.forEach(product => {
+
+
+            const markup_price = parseFloat(product.shoe_price) * (1 + (parseInt(product.markup) / 100));
+
             const cardElement = elements.template.content.cloneNode(true);
 
             const img = cardElement.querySelector('.card-img-top');
@@ -233,7 +237,7 @@
                     } else {
                         size_elem.style.whiteSpace = "pre";
                         size_elem.textContent = ` `;
-                        
+
                         stock_elem.style.whiteSpace = "pre";
                         stock_elem.textContent = ` `;
                     }
@@ -257,7 +261,7 @@
             }
 
             const price = cardElement.querySelector('.price-text');
-            price.textContent = `₱${parseFloat(product.shoe_price).toFixed(2)}`;
+            price.textContent = `₱${parseFloat(markup_price).toFixed(2)}`;
 
             const button = cardElement.querySelector('.add-to-cart-btn');
             button.addEventListener('click', () => openModal(product));
@@ -267,14 +271,18 @@
     }
 
     function openModal(product) {
+
+        const markup_price = parseFloat(product.shoe_price) * (1 + (parseFloat(product.markup) / 100));
+
+
         const modal_elem = document.querySelector("#product-modal");
 
         modal_elem.querySelector("#shoe-name").textContent = product.shoe_name;
         modal_elem.querySelector("#shoe-brand").textContent = product.brand_name;
-        modal_elem.querySelector("#shoe-price").textContent = `P ${parseFloat(product.shoe_price).toFixed(2)}`;
-        modal_elem.querySelector("#total-price").textContent = `P ${parseFloat(product.shoe_price).toFixed(2)}`;
+        modal_elem.querySelector("#shoe-price").textContent = `P ${parseFloat(markup_price).toFixed(2)}`;
+        modal_elem.querySelector("#total-price").textContent = `P ${parseFloat(markup_price).toFixed(2)}`;
 
-        modal_elem.querySelector("input[name=quantity]").setAttribute("data-price", product.shoe_price);
+        modal_elem.querySelector("input[name=quantity]").setAttribute("data-price", markup_price);
 
 
         const demographicContainer = document.querySelector("#modal-demographics-container");

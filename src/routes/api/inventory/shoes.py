@@ -107,8 +107,6 @@ async def list_shoes(request: Request,
             WHERE sd.shoe_id = %s """, (shoe_id,)
         )
 
-    print(result)
-
     return JSONResponse({
         "result": result,
         "count": count,
