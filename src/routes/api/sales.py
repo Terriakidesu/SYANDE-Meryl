@@ -28,7 +28,7 @@ async def list_sales(request: Request,
     if query:
         result = db.fetchAll(
             r"""
-            SELECT * 
+            SELECT s.*, u.user_id, u.username, u.first_name, u.last_name
             FROM sales s 
             JOIN users u ON u.user_id = s.user_id 
             WHERE s.sale_id = %s OR s.customer_name LIKE %s 
@@ -40,13 +40,16 @@ async def list_sales(request: Request,
     else:
         result = db.fetchAll(
             r"""
-            SELECT * 
+            SELECT s.*, u.user_id, u.username, u.first_name, u.last_name
             FROM sales s 
             JOIN users u ON u.user_id = s.user_id 
             LIMIT %s OFFSET %s
             """,
             (limit, offset)
         )
+
+    for sale in result:
+        sale["sales_date"] = sale["sales_date"].isoformat()
 
     return JSONResponse({
         "result": result,
@@ -72,7 +75,8 @@ async def add_sale(request: Request,
 
             if stock_result := db.fetchOne(r'SELECT variant_stock FROM variants WHERE variant_id = %s', (variant_id,)):
                 if stock_result["variant_stock"] < quantity:
-                    raise DatabaseException(f"Insufficient stock for variant {variant_id}. Available: {stock_result['variant_stock']}, Requested: {quantity}")
+                    raise DatabaseException(
+                        f"Insufficient stock for variant {variant_id}. Available: {stock_result['variant_stock']}, Requested: {quantity}")
 
         cursor = db.commitOne(r'INSERT INTO sales (user_id, customer_name, total_amount, cash_received, change_amount) VALUES (%s, %s, %s, %s, %s)',
                               (user_id, customer_name, total_amount, cash_received, change_amount))
@@ -91,8 +95,8 @@ async def add_sale(request: Request,
                     markup = shoe["markup"]
                     price = shoe_price * (1 + markup / 100) * quantity
 
-                    db.commitOne(r'INSERT INTO sales_items (sale_id, variant_id, markup, quantity, price) VALUES (%s, %s, %s, %s, %s)',
-                                 (sale_id, variant_id, markup, quantity, price))
+                    db.commitOne(r'INSERT INTO sales_items (sale_id, variant_id, quantity, price) VALUES (%s, %s, %s, %s)',
+                                 (sale_id, variant_id, quantity, price))
 
                     # Update stock
                     db.commitOne(r'UPDATE variants SET variant_stock = variant_stock - %s WHERE variant_id = %s',

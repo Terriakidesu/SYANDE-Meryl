@@ -20,6 +20,7 @@
         checkout_btn: document.getElementById('checkout-btn'),
         checkout_modal: document.getElementById('checkout-modal'),
         checkout_form: document.getElementById('checkout-form'),
+        customer_name: document.getElementById('customer-name'),
         total_amount: document.getElementById('total-amount'),
         cash_received: document.getElementById('cash-received'),
         change_amount: document.getElementById('change-amount')
