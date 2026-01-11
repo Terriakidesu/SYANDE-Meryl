@@ -213,10 +213,32 @@
             // Variants
             const variantsText = cardElement.querySelector('.variants-text');
             if (product.variants && product.variants.length > 0) {
-                const variantInfo = product.variants.map(variant =>
-                    `US:${variant.us_size} (Stock:${variant.variant_stock})`
-                ).join(', ');
-                variantsText.textContent = `Variants: ${variantInfo}`;
+
+                for (let i = 0; i < Math.min(2, product.variants.length); i++) {
+                    const variant = product.variants[i];
+                    const variant_elem = document.createElement("div");
+
+                    variant_elem.className = "d-flex flex-row justify-content-between";
+
+                    const size_elem = document.createElement("span");
+                    const stock_elem = document.createElement("span");
+
+                    size_elem.textContent = `US:${variant.us_size} UK:${variant.uk_size} EU:${variant.eu_size}`;
+                    stock_elem.textContent = `Stock:${variant.variant_stock}`
+
+                    variant_elem.appendChild(size_elem);
+                    variant_elem.appendChild(stock_elem);
+                    variantsText.appendChild(variant_elem);
+                }
+
+                const variant_elem = document.createElement("div");
+                variant_elem.style.whiteSpace = "pre";
+                variant_elem.style.fontSize = "10pt";
+                variant_elem.textContent = product.variants.length > 2 ? `+${Math.abs(product.variants.length - 2)} more` : ` `;
+                variantsText.appendChild(variant_elem);
+
+
+
             } else {
                 variantsText.textContent = 'Variants: None';
             }
