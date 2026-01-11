@@ -76,11 +76,13 @@
                             <div class="shoe-id text-muted small" style="width: 80px;">ID: -</div>
                             <div class="shoe-brand fw-medium small" style="width: 100px;">-</div>
                             <div class="shoe-name fw-medium" style="flex: 1;">-</div>
-                            <div class="shoe-meta" style="width: 200px;">
+                            <div class="shoe-meta" style="width: 190px;">
                                 <div class="shoe-categories small text-muted">-</div>
                                 <div class="shoe-demographics small text-muted">-</div>
                             </div>
-                            <div class="shoe-price text-muted" style="width: 100px;">-</div>
+                            <div class="shoe-price text-muted" style="width: 80px; margin-right: 30px;">-</div>
+                            <div class="shoe-markup text-muted" style="width: 40px; margin-right: 40px;">-</div>
+                            <div class="shoe-markup-price text-muted" style="width: 100px;">-</div>
 
                             <div style="width: 120px;" class="d-flex gap-2">
                                 <button type="button" class="btn btn-warning btn-sm edit-btn" {% if "manage_shoes" not
@@ -120,7 +122,9 @@
                     <div style="width: 100px;">Brand</div>
                     <div style="flex: 1;">Shoe Name</div>
                     <div style="width: 200px;">Meta</div>
-                    <div style="width: 100px;">Price</div>
+                    <div style="width: 80px;">Price</div>
+                    <div style="width: 80px; margin-right: 40px;">Markup %</div>
+                    <div style="width: 100px;">Markup Price</div>
                     <div style="width: 120px;">Actions</div>
                 </div>
 
@@ -131,8 +135,7 @@
                 </div>
 
                 <!-- Pagination -->
-                <div id="pagination"
-                    class="d-flex justify-content-center mt-4 gap-1 pb-3 bg-body-tertiary">
+                <div id="pagination" class="d-flex justify-content-center mt-4 gap-1 pb-3 bg-body-tertiary">
                 </div>
             </div>
 

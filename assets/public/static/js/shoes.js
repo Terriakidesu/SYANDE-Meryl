@@ -532,6 +532,8 @@
         const idEl = elem.querySelector(".shoe-id");
         const nameEl = elem.querySelector(".shoe-name");
         const priceEl = elem.querySelector(".shoe-price");
+        const markupEl = elem.querySelector(".shoe-markup");
+        const markupPriceEl = elem.querySelector(".shoe-markup-price");
         const brandsEl = elem.querySelector(".shoe-brand");
         const categoriesEl = elem.querySelector(".shoe-categories");
         const demographicsEl = elem.querySelector(".shoe-demographics");
@@ -544,6 +546,8 @@
         idEl.textContent = `ID: ${item.shoe_id}`;
         nameEl.textContent = item.shoe_name;
         priceEl.textContent = `₱${parseFloat(item.shoe_price).toFixed(2)}`;
+        markupEl.textContent = `${item.markup}%`;
+        markupPriceEl.textContent = `₱${(parseFloat(item.shoe_price) * (1 + parseFloat(item.markup) / 100)).toFixed(2)}`;
 
         // Get brand, categories and demographics
         const brand = item.brand_name || "-";
