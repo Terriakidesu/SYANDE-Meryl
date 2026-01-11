@@ -1,10 +1,13 @@
-from fastapi import APIRouter, Request, Form
+import math
+from typing import Annotated, Optional
+
+from fastapi import APIRouter, Form, Query, Request
 from fastapi.responses import JSONResponse
 
-from ...helpers import Database
 from ...exceptions import DatabaseException
-from ...models.sales import Sale, Return
+from ...helpers import Database
 from ...models.inventory import Variant
+from ...models.sales import Return, Sale
 
 sales_router = APIRouter(prefix="/sales")
 
@@ -12,8 +15,49 @@ db = Database()
 
 
 @sales_router.get("/", response_class=JSONResponse)
-async def list_sales(request: Request):
-    return db.fetchAll(r'SELECT * FROM sales')
+async def list_sales(request: Request,
+                     query: Annotated[Optional[str], Query()] = None,
+                     page: Annotated[Optional[int], Query()] = 1,
+                     limit: Annotated[Optional[int], Query()] = 10
+                     ):
+
+    count = db.fetchOne(r'SELECT COUNT(*) as count FROM sales')["count"]
+    pages = math.ceil(count / limit)
+    offset = (page - 1) * limit
+
+    if query:
+        result = db.fetchAll(
+            r"""
+            SELECT * 
+            FROM sales s 
+            JOIN users u ON u.user_id = s.user_id 
+            WHERE s.sales_id = %s OR s.customer_name LIKE %s 
+            LIMIT %s OFFSET %s
+            """,
+            (query, f"%{query}%", limit, offset)
+        )
+
+        return JSONResponse({
+            "result": result,
+            "count": count,
+            "pages": pages
+        })
+
+    result = db.fetchAll(
+        r"""
+        SELECT * 
+        FROM sales s 
+        JOIN users u ON u.user_id = s.user_id 
+        LIMIT %s OFFSET %s
+        """,
+        (limit, offset)
+    )
+
+    return JSONResponse({
+        "result": result,
+        "count": count,
+        "pages": pages
+    })
 
 
 @sales_router.post("/add", response_class=JSONResponse)
@@ -93,7 +137,8 @@ async def delete_sale(request: Request, sale_id: int):
         # Delete sales_items first
         db.commitOne(r'DELETE FROM sales_items WHERE sale_id = %s', (sale_id,))
 
-        rowCount = db.commitOne(r'DELETE FROM sales WHERE sale_id = %s', (sale_id,)).rowcount
+        rowCount = db.commitOne(
+            r'DELETE FROM sales WHERE sale_id = %s', (sale_id,)).rowcount
 
         if rowCount <= 0:
             raise DatabaseException("sale_id doesn't exist.")
@@ -124,8 +169,41 @@ async def list_sales_items(request: Request, sale_id: int):
 
 
 @sales_router.get("/returns", response_class=JSONResponse)
-async def list_returns(request: Request):
-    return db.fetchAll(r'SELECT * FROM returns')
+async def list_returns(request: Request,
+                       query: Annotated[Optional[str], Query()] = None,
+                       page: Annotated[Optional[int], Query()] = 1,
+                       limit: Annotated[Optional[int], Query()] = 10
+                       ):
+
+    count = db.fetchOne(r'SELECT COUNT(*) as count FROM sales')["count"]
+    pages = math.ceil(count / limit)
+    offset = (page - 1) * limit
+
+    if query:
+        result = db.fetchAll(
+            r"""
+            SELECT * 
+            FROM returns r
+            JOIN sales s ON s.sale_id = r.sale_id
+            WHERE s.sale_id = % OR r.return_id = %s OR s.customer_name = %s
+            LIMIT %s OFFSET %s
+            """,
+            (query, query, f"{query}%", limit, offset))
+    else:
+        result = db.fetchAll(
+            r"""
+            SELECT * 
+            FROM returns
+            JOIN sales s ON s.sale_id = r.sale_id
+            LIMIT %s OFFSET %s
+            """,
+            (limit, offset))
+
+    return JSONResponse({
+        "result": result,
+        "count": count,
+        "pages": pages
+    })
 
 
 @sales_router.post("/returns/add", response_class=JSONResponse)
@@ -181,7 +259,8 @@ async def update_return(request: Request,
 @sales_router.delete("/returns/delete/{return_id}", response_class=JSONResponse)
 async def delete_return(request: Request, return_id: int):
     try:
-        rowCount = db.commitOne(r'DELETE FROM returns WHERE return_id = %s', (return_id,)).rowcount
+        rowCount = db.commitOne(
+            r'DELETE FROM returns WHERE return_id = %s', (return_id,)).rowcount
 
         if rowCount <= 0:
             raise DatabaseException("return_id doesn't exist.")
