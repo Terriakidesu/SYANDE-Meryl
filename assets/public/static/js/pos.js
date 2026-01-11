@@ -1,4 +1,7 @@
 (function () {
+
+    let cart = [];
+
     const elements = {
         template: document.getElementById('product-card-template'),
         search_input: document.getElementById('search-input'),
@@ -6,7 +9,8 @@
         categories_filter: document.getElementById('categories-filter'),
         demographics_filter: document.getElementById('demographics-filter'),
         clear_filters: document.getElementById('clear-filters'),
-        products_container: document.getElementById('products-container')
+        products_container: document.getElementById('products-container'),
+        product_form: document.getElementById(`product-form`)
     };
 
     let allProducts = [];
@@ -258,10 +262,14 @@
 
         modal_elem.querySelector("#shoe-name").textContent = product.shoe_name;
         modal_elem.querySelector("#shoe-brand").textContent = product.brand_name;
+        modal_elem.querySelector("#shoe-price").textContent = `P ${parseFloat(product.shoe_price).toFixed(2)}`;
+        modal_elem.querySelector("#total-price").textContent = `P ${parseFloat(product.shoe_price).toFixed(2)}`;
+        modal_elem.querySelector("input[name=quantity]").setAttribute("data-price", product.shoe_price);
+
+        const demographicContainer = document.querySelector("#modal-demographics-container");
+        demographicContainer.replaceChildren();
 
         product.demographics.forEach(demo => {
-
-            const demographicContainer = document.querySelector("#modal-demographics-container");
 
             const demographic_elem = document.createElement("span");
             demographic_elem.className = "badge bg-success me-1 mb-1";
@@ -271,9 +279,10 @@
 
         });
 
-        product.categories.forEach(category => {
+        const categoryContainer = document.querySelector("#modal-categories-container");
+        categoryContainer.replaceChildren();
 
-            const categoryContainer = document.querySelector("#modal-categories-container");
+        product.categories.forEach(category => {
 
             const category_elem = document.createElement("span");
             category_elem.className = "badge bg-primary me-1 mb-1";
@@ -283,9 +292,48 @@
 
         });
 
+        const variants_container = document.querySelector("#modal-variant-container");
+        variants_container.replaceChildren();
+
+        let first = true;
+
+        product.variants.forEach(variant => {
+
+            const variant_container = document.createElement("div");
+            variant_container.className = "variant-radio";
+
+            const variant_label = document.createElement("label");
+            variant_label.setAttribute("for", `variant-${variant.variant_id}`);
+            variant_label.textContent = `US: ${variant.us_size} UK: ${variant.uk_size} EU: ${variant.eu_size}`;
+
+            const variant_radio = document.createElement("input");
+            variant_radio.setAttribute("id", `variant-${variant.variant_id}`);
+            variant_radio.setAttribute("type", "radio");
+            variant_radio.setAttribute("name", "variant");
+            variant_radio.setAttribute("value", variant.variant_id);
+            variant_radio.checked = first;
+
+            variant_container.appendChild(variant_radio);
+            variant_container.appendChild(variant_label);
+            variants_container.appendChild(variant_container);
+            
+            first = false;
+
+        });
+
         const modal = new bootstrap.Modal(modal_elem);
         modal.show();
     }
+
+    elements.product_form.querySelector("input[name=quantity]").addEventListener("change", function (e) {
+
+        const price = parseFloat(this.getAttribute("data-price"));
+        const total_price = price * this.value
+
+        const total_price_elem = document.getElementById('total-price');
+        total_price_elem.textContent = `P ${total_price.toFixed(2)}`;
+
+    });
 
     // Search input handler
     elements.search_input.addEventListener('input', (e) => {
