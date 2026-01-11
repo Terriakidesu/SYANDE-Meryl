@@ -23,45 +23,55 @@ async def list_variants(request: Request,
                         page: Annotated[Optional[int], Query()] = 1,
                         limit: Annotated[Optional[int], Query()] = 10):
 
-    count = db.fetchOne(r'SELECT COUNT(*) as count FROM shoes')["count"]
-    pages = math.ceil(count / limit)
-    offset = (page - 1) * limit
+    # First, get the shoes for the current page
+    shoe_count = db.fetchOne(r'SELECT COUNT(*) as count FROM shoes')["count"]
+    shoe_pages = math.ceil(shoe_count / limit)
+    shoe_offset = (page - 1) * limit
 
     if query:
-        result = db.fetchAll(
+        shoes = db.fetchAll(
             r"""
-            SELECT *
-            FROM variants v
-            JOIN sizes sz ON sz.size_id = v.size_id
-            JOIN shoes s ON v.shoe_id = s.shoe_id
+            SELECT s.*, b.brand_name
+            FROM shoes s
             JOIN brands b ON b.brand_id = s.brand_id
-            WHERE s.shoe_id = %s OR s.shoe_name = %s OR b.brand_name = %s 
+            WHERE s.shoe_id = %s OR s.shoe_name LIKE %s OR b.brand_name LIKE %s
             LIMIT %s OFFSET %s
             """,
-            (query, f"{query}%", f"{query}%", limit, offset)
+            (query, f"%{query}%", f"%{query}%", limit, shoe_offset)
         )
     else:
-
-        result = db.fetchAll(
+        shoes = db.fetchAll(
             r"""
-            SELECT *
-            FROM variants v
-            JOIN sizes sz ON sz.size_id = v.size_id
-            JOIN shoes s ON v.shoe_id = s.shoe_id
-            JOIN brands b ON b.brand_id = s.brand_id 
+            SELECT s.*, b.brand_name
+            FROM shoes s
+            JOIN brands b ON b.brand_id = s.brand_id
             LIMIT %s OFFSET %s
             """,
-            (limit, offset)
+            (limit, shoe_offset)
         )
 
-    for variant in result:
-        variant["created_at"] = variant["created_at"].isoformat() 
-        variant["first_sale_at"] = variant["first_sale_at"].isoformat() 
+    # For each shoe, get its variants
+    result = []
+    for shoe in shoes:
+        shoe_id = shoe["shoe_id"]
+        variants = db.fetchAll(
+            r"""
+            SELECT v.*, sz.us_size, sz.uk_size, sz.eu_size
+            FROM variants v
+            JOIN sizes sz ON sz.size_id = v.size_id
+            WHERE v.shoe_id = %s
+            """,
+            (shoe_id,)
+        )
+        shoe["variants"] = variants
+        shoe["created_at"] = shoe["created_at"].isoformat()
+        shoe["first_sale_at"] = shoe["first_sale_at"].isoformat()
+        result.append(shoe)
 
     return JSONResponse({
         "result": result,
-        "count": count,
-        "pages": pages
+        "count": shoe_count,
+        "pages": shoe_pages
     })
 
 
@@ -89,6 +99,12 @@ async def add_variant(request: Request,
 
         if variant_stock is None or variant_stock < 0:
             raise DatabaseException("variant_stock is invalid.")
+
+        if _ := db.fetchOne(r'SELECT * FROM variants WHERE size_id = %s AND shoe_id = %s', (size_id, shoe_id)):
+            return JSONResponse({
+                "success": False,
+                "message": "Variant already exists."
+            }, status_code=201)
 
         db.commitOne(
             r'INSERT INTO variants (shoe_id, size_id, variant_stock) VALUES (%s, %s, %s)', (shoe_id, size_id, variant_stock))
@@ -126,6 +142,12 @@ async def edit_variant(request: Request, variant: Annotated[Variant, Form()], us
 
         if variant.variant_stock is None or variant.variant_stock < 0:
             raise DatabaseException("variant_stock is invalid.")
+
+        if _ := db.fetchOne(r'SELECT * FROM variants WHERE size_id = %s AND shoe_id = %s', (size_id, shoe_id)):
+            return JSONResponse({
+                "success": False,
+                "message": "Variant already exists."
+            }, status_code=201)
 
         db.commitOne(
             r'UPDATE variants SET shoe_id = %s, size_id = %s, variant_stock = %s WHERE variant_id = %s',
