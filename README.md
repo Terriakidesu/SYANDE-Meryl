@@ -221,21 +221,6 @@ Application logs are stored in the `logs/` directory with rotation based on file
    - Regular backups
    - Monitor performance
 
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-## License
-
-This project is proprietary software. See LICENSE file for details.
-
-## Support
-
-For support and questions, please contact the development team or create an issue in the repository.
 
 ## Changelog
 
