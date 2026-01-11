@@ -10,3 +10,7 @@ class Secrets(BaseModel):
     session_secret_key: str
 
     resend_api_key: str
+
+    gmail_client_id: str
+    gmail_client_secret: str
+    gmail_refresh_token: str

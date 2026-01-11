@@ -7,4 +7,5 @@ logs/**
 assets/public/profiles/**/*
 assets/public/products/**/*
 
+secrets/**/*
 *.env

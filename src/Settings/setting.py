@@ -104,6 +104,9 @@ class SettingsClass:
         session_secret_key = os.getenv(
             "SESSION_SECRET_KEY", "your-session-secret-change-in-production")
         resend_api_key = os.getenv("RESEND_API_KEY", "")
+        gmail_client_id = os.getenv("GMAIL_CLIENT_ID", "")
+        gmail_client_secret = os.getenv("GMAIL_CLIENT_SECRET", "")
+        gmail_refresh_token = os.getenv("GMAIL_REFRESH_TOKEN", "")
 
         # Validate required secrets
         if not db_username or not db_database:
@@ -117,7 +120,10 @@ class SettingsClass:
                 db_password=db_password,
                 db_database=db_database,
                 session_secret_key=session_secret_key,
-                resend_api_key=resend_api_key
+                resend_api_key=resend_api_key,
+                gmail_client_id=gmail_client_id,
+                gmail_client_secret=gmail_client_secret,
+                gmail_refresh_token=gmail_refresh_token
             )
         except ValidationError as e:
             logger.error(f"Invalid secrets configuration: {e}")
