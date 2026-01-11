@@ -287,6 +287,19 @@ async def fetch_return(request: Request, return_id: int):
     return db.fetchOne(r'SELECT * FROM returns WHERE return_id = %s', (return_id,))
 
 
+@sales_router.get("/returns/total", response_class=JSONResponse)
+async def total_returns(request: Request):
+
+    result = db.fetchOne(r"""
+        SELECT
+            COUNT(*) AS total_count,
+            SUM(total_refund) AS total_refund
+        FROM returns
+    """)
+
+    return JSONResponse(result)
+
+
 @sales_router.get("/monthly", response_class=JSONResponse)
 async def monthly_sales(request: Request):
 
@@ -340,6 +353,19 @@ async def yearly_sales(request: Request):
         GROUP BY YEAR(sales_date)
         ORDER BY year DESC
         LIMIT 5
+    """)
+
+    return JSONResponse(result)
+
+
+@sales_router.get("/total", response_class=JSONResponse)
+async def total_sales(request: Request):
+
+    result = db.fetchOne(r"""
+        SELECT
+            SUM(total_amount) AS total_amount,
+            COUNT(*) AS total_count
+        FROM sales
     """)
 
     return JSONResponse(result)

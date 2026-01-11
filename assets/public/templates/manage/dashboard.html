@@ -21,6 +21,42 @@
                 <h1>Dashboard</h1>
                 <p>Welcome to the management dashboard.</p>
 
+                <!-- Summary Cards Row -->
+                <div class="row mt-4 mb-4">
+                    <!-- Total Shoes -->
+                    <div class="col-md-4 mb-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h5 class="card-title">Total Shoes</h5>
+                                <h2 class="text-primary" id="totalShoes">0</h2>
+                                <p class="card-text text-muted">Products in inventory</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total Sales -->
+                    <div class="col-md-4 mb-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h5 class="card-title">Total Sales</h5>
+                                <h2 class="text-success" id="totalSales">$0.00</h2>
+                                <p class="card-text text-muted">All-time revenue</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total Returns -->
+                    <div class="col-md-4 mb-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h5 class="card-title">Total Returns</h5>
+                                <h2 class="text-warning" id="totalReturns">0</h2>
+                                <p class="card-text text-muted">Return transactions</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Sales Charts Row -->
                 <div class="row mt-4">
                     <!-- Monthly Sales Chart -->
@@ -189,6 +225,29 @@
             }
         }
 
+        // Load Summary Totals
+        async function loadSummaryTotals() {
+            try {
+                // Load total shoes
+                const shoesResponse = await fetch('/api/inventory/shoes/total/count');
+                const shoesData = await shoesResponse.json();
+                document.getElementById('totalShoes').textContent = shoesData.total_count || 0;
+
+                // Load total sales
+                const salesResponse = await fetch('/api/sales/total');
+                const salesData = await salesResponse.json();
+                document.getElementById('totalSales').textContent = `$${(salesData.total_amount || 0).toLocaleString()}`;
+
+                // Load total returns
+                const returnsResponse = await fetch('/api/sales/returns/total');
+                const returnsData = await returnsResponse.json();
+                document.getElementById('totalReturns').textContent = returnsData.total_count || 0;
+
+            } catch (error) {
+                console.error('Error loading summary totals:', error);
+            }
+        }
+
         // Low Stock Products List
         async function loadLowStock() {
             try {
@@ -228,12 +287,21 @@
             }
         }
 
+        // Load all data
+        async function loadAllData() {
+            await loadSummaryTotals();
+            await loadMonthlySales();
+            await loadYearlySales();
+            await loadPopularProducts();
+            await loadLowStock();
+        }
+
         // Load all charts on page load
         document.addEventListener('DOMContentLoaded', function() {
-            loadMonthlySales();
-            loadYearlySales();
-            loadPopularProducts();
-            loadLowStock();
+            loadAllData();
+
+            // Update data every 5 minutes (300,000 milliseconds)
+            setInterval(loadAllData, 300000);
         });
     </script>
 </body>

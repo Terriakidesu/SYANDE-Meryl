@@ -362,7 +362,7 @@ async def fetch_shoe(request: Request, shoe_id: int, user_perms: list[str] = Dep
 async def fetch_shoe_all_details(request: Request, shoe_id: int, user_perms: list[str] = Depends(user_permissions)):
 
     if all_shoe_details := db.fetchOne(r"""
-                    SELECT * 
+                    SELECT *
                     FROM shoes s
                     JOIN brands b ON b.brand_id = s.brand_id
                     WHERE s.shoe_id = %s
@@ -387,3 +387,11 @@ async def fetch_shoe_all_details(request: Request, shoe_id: int, user_perms: lis
         return all_shoe_details
 
     return None
+
+
+@shoes_router.get("/total/count", response_class=JSONResponse)
+async def total_shoes(request: Request, user_perms: list[str] = Depends(user_permissions)):
+
+    result = db.fetchOne(r"SELECT COUNT(*) AS total_count FROM shoes")
+
+    return JSONResponse(result)
