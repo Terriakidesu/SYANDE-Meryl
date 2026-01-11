@@ -74,6 +74,9 @@ async def add_sale(request: Request,
 
         user_id = request.session["user_id"]
 
+        if user_id <= 0:
+            user_id = 1
+
         # Check stock availability first
         for item in items.split(","):
             item = item.strip().split(":")
