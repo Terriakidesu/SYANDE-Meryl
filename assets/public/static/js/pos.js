@@ -350,7 +350,9 @@
 
         cart.push(data);
 
-        console.log(cart);
+        const modal_elem = document.querySelector("#product-modal");
+        const modal = new bootstrap.Modal(modal_elem);
+        modal.hide();
 
     })
 
