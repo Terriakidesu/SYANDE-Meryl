@@ -118,6 +118,7 @@ mysql://username:password@hostname/database_name
 
 2. **Access the application:**
    - Open your browser and navigate to `http://localhost:8080`
+   - Default superadmin credentials: username `superadmin`, password `superadmin123`
    - Default login credentials (if set up): Check your database
 
 ## Project Structure
@@ -220,7 +221,6 @@ Application logs are stored in the `logs/` directory with rotation based on file
    - Use connection pooling for production
    - Regular backups
    - Monitor performance
-
 
 ## Changelog
 
