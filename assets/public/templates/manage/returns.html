@@ -136,13 +136,30 @@
                 fetch(`/api/sales/returns/${returnId}`)
                     .then(res => res.json())
                     .then(data => {
-                        elements.return_details.innerHTML = `
-                            <p><strong>Return ID:</strong> ${data.return_id}</p>
-                            <p><strong>Order ID:</strong> ${data.order_id}</p>
-                            <p><strong>Reason:</strong> ${data.reason || 'N/A'}</p>
-                            <p><strong>Status:</strong> ${data.status || 'N/A'}</p>
-                            <p><strong>Date:</strong> ${data.created_at || 'N/A'}</p>
-                        `;
+                        elements.return_details.innerHTML = '';
+
+                        const fields = [
+                            { label: 'Return ID', value: data.return_id },
+                            { label: 'Sale ID', value: data.sale_id },
+                            { label: 'Customer Name', value: data.customer_name },
+                            { label: 'Return Reason', value: data.return_reason || 'N/A' },
+                            { label: 'Total Refund', value: data.total_refund },
+                            { label: 'Return Date', value: data.return_date },
+                            { label: 'User ID', value: data.user_id },
+                            { label: 'Total Amount', value: data.total_amount },
+                            { label: 'Cash Received', value: data.cash_received },
+                            { label: 'Change Amount', value: data.change_amount },
+                            { label: 'Sales Date', value: data.sales_date }
+                        ];
+
+                        fields.forEach(field => {
+                            const p = document.createElement('p');
+                            const strong = document.createElement('strong');
+                            strong.textContent = field.label + ': ';
+                            p.appendChild(strong);
+                            p.appendChild(document.createTextNode(field.value));
+                            elements.return_details.appendChild(p);
+                        });
                         returnModal.show();
                     })
                     .catch(err => {
@@ -199,7 +216,7 @@
 
                 card.dataset.returnId = item.return_id;
                 idEl.textContent = `ID: ${item.return_id}`;
-                detailsEl.textContent = `Order #${item.order_id} - ${item.reason || 'No reason provided'}`;
+                detailsEl.textContent = `Sale #${item.sale_id} - ${item.return_reason || 'No reason provided'}`;
 
                 elements.return_list.appendChild(elem);
             }

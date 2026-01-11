@@ -203,6 +203,10 @@ async def list_returns(request: Request,
             """,
             (limit, offset))
 
+    for ret in result:
+        ret["return_date"] = ret["return_date"].isoformat()
+        ret["sales_date"] = ret["sales_date"].isoformat()
+
     return JSONResponse({
         "result": result,
         "count": count,
@@ -284,7 +288,11 @@ async def delete_return(request: Request, return_id: int):
 
 @sales_router.get("/returns/{return_id}", response_class=JSONResponse)
 async def fetch_return(request: Request, return_id: int):
-    return db.fetchOne(r'SELECT * FROM returns WHERE return_id = %s', (return_id,))
+    result = db.fetchOne(r'SELECT * FROM returns r JOIN sales s ON s.sale_id = r.sale_id WHERE return_id = %s', (return_id,))
+    if result:
+        result["return_date"] = result["return_date"].isoformat()
+        result["sales_date"] = result["sales_date"].isoformat()
+    return result
 
 
 @sales_router.get("/returns/total", response_class=JSONResponse)
