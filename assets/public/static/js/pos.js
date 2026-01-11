@@ -316,7 +316,7 @@
             variant_container.appendChild(variant_radio);
             variant_container.appendChild(variant_label);
             variants_container.appendChild(variant_container);
-            
+
             first = false;
 
         });
@@ -334,6 +334,18 @@
         total_price_elem.textContent = `P ${total_price.toFixed(2)}`;
 
     });
+
+    elements.product_form.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        const data = Object.entries(formData);
+
+        console.log(this);
+
+        console.log(data);
+
+    })
 
     // Search input handler
     elements.search_input.addEventListener('input', (e) => {
