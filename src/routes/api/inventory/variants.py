@@ -54,6 +54,10 @@ async def list_variants(request: Request,
             (limit, offset)
         )
 
+    for variant in result:
+        variant["created_at"] = variant["created_at"].isoformat() 
+        variant["first_sale_at"] = variant["first_sale_at"].isoformat() 
+
     return JSONResponse({
         "result": result,
         "count": count,
