@@ -1,0 +1,281 @@
+(function () {
+    const elements = {
+        template: document.getElementById('product-card-template'),
+        search_input: document.getElementById('search-input'),
+        brands_filter: document.getElementById('brands-filter'),
+        categories_filter: document.getElementById('categories-filter'),
+        demographics_filter: document.getElementById('demographics-filter'),
+        clear_filters: document.getElementById('clear-filters'),
+        products_container: document.getElementById('products-container')
+    };
+
+    let allProducts = [];
+    let selectedBrands = new Set();
+    let selectedCategories = new Set();
+    let selectedDemographics = new Set();
+    let currentSearch = '';
+
+    // Load brands
+    fetch('/api/inventory/brands/suggestions')
+        .then(res => res.json())
+        .then(data => {
+            if (data.brands) {
+                populateFilter(data.brands, elements.brands_filter, 'brand', selectedBrands);
+            }
+        })
+        .catch(err => console.error('Error loading brands:', err));
+
+    // Load suggestions data (categories and demographics)
+    fetch('/api/inventory/shoes/suggestions')
+        .then(res => res.json())
+        .then(data => {
+            if (data.categories) {
+                populateFilter(data.categories, elements.categories_filter, 'category', selectedCategories);
+            }
+            if (data.demographics) {
+                populateFilter(data.demographics, elements.demographics_filter, 'demographic', selectedDemographics);
+            }
+        })
+        .catch(err => console.error('Error loading filters:', err));
+
+    // Load products
+    loadProducts();
+
+    function loadProducts() {
+        fetch('/api/inventory/variants/?limit=100')
+            .then(res => res.json())
+            .then(data => {
+                if (data.result) {
+                    // Add categories and demographics to each product
+                    Promise.all(data.result.map(product =>
+                        fetch(`/api/inventory/shoes/${product.shoe_id}/all`)
+                            .then(res => res.json())
+                            .then(details => {
+                                product.categories = details.categories || [];
+                                product.demographics = details.demographics || [];
+                                return product;
+                            })
+                            .catch(err => {
+                                console.error('Error loading product details:', err);
+                                product.categories = [];
+                                product.demographics = [];
+                                return product;
+                            })
+                    )).then(products => {
+                        allProducts = products;
+                        displayProducts(allProducts);
+                    });
+                }
+            })
+            .catch(err => console.error('Error loading products:', err));
+    }
+
+    function populateFilter(items, container, type, selectedSet) {
+        items.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'form-check';
+
+            const input = document.createElement('input');
+            input.className = 'form-check-input';
+            input.type = 'checkbox';
+            input.id = `${type}-${item[`${type}_id`]}`;
+            input.value = item[`${type}_id`];
+
+            const label = document.createElement('label');
+            label.className = 'form-check-label';
+            label.htmlFor = input.id;
+            label.textContent = item[`${type}_name`] || item[`${type}_Code`];
+
+            input.addEventListener('change', () => {
+                if (input.checked) {
+                    selectedSet.add(parseInt(input.value));
+                } else {
+                    selectedSet.delete(parseInt(input.value));
+                }
+                filterProducts();
+            });
+
+            div.appendChild(input);
+            div.appendChild(label);
+            container.appendChild(div);
+        });
+    }
+
+    function filterProducts() {
+        let filtered = allProducts;
+
+        // Filter by search
+        if (currentSearch) {
+            filtered = filtered.filter(product =>
+                product.shoe_name.toLowerCase().includes(currentSearch.toLowerCase()) ||
+                product.brand_name.toLowerCase().includes(currentSearch.toLowerCase())
+            );
+        }
+
+        // Filter by brands
+        if (selectedBrands.size > 0) {
+            filtered = filtered.filter(product => selectedBrands.has(product.brand_id));
+        }
+
+        // Filter by categories (AND logic - product must have ALL selected categories)
+        if (selectedCategories.size > 0) {
+            filtered = filtered.filter(product =>
+                product.categories &&
+                selectedCategories.size === product.categories.filter(cat => selectedCategories.has(cat.category_id)).length
+            );
+        }
+
+        // Filter by demographics (AND logic - product must have ALL selected demographics)
+        if (selectedDemographics.size > 0) {
+            filtered = filtered.filter(product =>
+                product.demographics &&
+                [...selectedDemographics].every(selectedId =>
+                    product.demographics.some(productDemo => productDemo.demographic_id === selectedId)
+                )
+            );
+        }
+
+        displayProducts(filtered);
+    }
+
+    function displayProducts(products) {
+        elements.products_container.innerHTML = '';
+
+        if (products.length === 0) {
+            elements.products_container.innerHTML = '<div class="col-12 text-center py-4 text-muted">No products found</div>';
+            return;
+        }
+
+        products.forEach(product => {
+            const cardElement = elements.template.content.cloneNode(true);
+
+            const img = cardElement.querySelector('.card-img-top');
+            img.src = `/shoe?shoe_id=${product.shoe_id}`;
+            img.alt = product.shoe_name;
+            img.onerror = function () {
+                this.src = '/assets/public/products/default/default.jpeg';
+            };
+
+            const title = cardElement.querySelector('.card-title');
+            title.textContent = product.shoe_name;
+
+            const brand = cardElement.querySelector('.brand-text');
+            brand.textContent = product.brand_name;
+
+            // Categories
+            const categoriesText = cardElement.querySelector('.categories-text');
+            categoriesText.innerHTML = '';
+            if (product.categories && product.categories.length > 0) {
+                product.categories.forEach(cat => {
+                    const badge = document.createElement('span');
+                    badge.className = 'badge bg-primary me-1 mb-1';
+                    badge.textContent = cat.category_name;
+                    badge.style.cursor = 'pointer';
+                    badge.title = 'Click to filter by this category';
+                    badge.addEventListener('click', () => {
+                        const checkbox = document.getElementById(`category-${cat.category_id}`);
+                        if (checkbox) {
+                            checkbox.checked = true;
+                            selectedCategories.add(cat.category_id);
+                            filterProducts();
+                        }
+                    });
+                    categoriesText.appendChild(badge);
+                });
+            } else {
+                categoriesText.textContent = 'None';
+            }
+
+            // Demographics
+            const demographicsText = cardElement.querySelector('.demographics-text');
+            demographicsText.innerHTML = '';
+            if (product.demographics && product.demographics.length > 0) {
+                product.demographics.forEach(demo => {
+                    const badge = document.createElement('span');
+                    badge.className = 'badge bg-success me-1 mb-1';
+                    badge.textContent = demo.demographic_Code;
+                    badge.style.cursor = 'pointer';
+                    badge.title = 'Click to filter by this demographic';
+                    badge.addEventListener('click', () => {
+                        const checkbox = document.getElementById(`demographic-${demo.demographic_id}`);
+                        if (checkbox) {
+                            checkbox.checked = true;
+                            selectedDemographics.add(demo.demographic_id);
+                            filterProducts();
+                        }
+                    });
+                    demographicsText.appendChild(badge);
+                });
+            } else {
+                demographicsText.textContent = 'None';
+            }
+
+            // Variants
+            const variantsText = cardElement.querySelector('.variants-text');
+            if (product.variants && product.variants.length > 0) {
+                const variantInfo = product.variants.map(variant =>
+                    `US:${variant.us_size} (Stock:${variant.variant_stock})`
+                ).join(', ');
+                variantsText.textContent = `Variants: ${variantInfo}`;
+            } else {
+                variantsText.textContent = 'Variants: None';
+            }
+
+            const price = cardElement.querySelector('.price-text');
+            price.textContent = `₱${parseFloat(product.shoe_price).toFixed(2)}`;
+
+            const button = cardElement.querySelector('.add-to-cart-btn');
+            button.addEventListener('click', () => addToCart(product));
+
+            elements.products_container.appendChild(cardElement);
+        });
+    }
+
+    function addToCart(product) {
+        // Placeholder for add to cart functionality
+        alert(`Added ${product.shoe_name} to cart!`);
+    }
+
+    // Search input handler
+    elements.search_input.addEventListener('input', (e) => {
+        currentSearch = e.target.value.trim();
+        filterProducts();
+    });
+
+    // Clear filters
+    elements.clear_filters.addEventListener('click', () => {
+        selectedBrands.clear();
+        selectedCategories.clear();
+        selectedDemographics.clear();
+        currentSearch = '';
+        elements.search_input.value = '';
+
+        // Uncheck all checkboxes
+        document.querySelectorAll('#brands-filter input[type="checkbox"]').forEach(cb => cb.checked = false);
+        document.querySelectorAll('#categories-filter input[type="checkbox"]').forEach(cb => cb.checked = false);
+        document.querySelectorAll('#demographics-filter input[type="checkbox"]').forEach(cb => cb.checked = false);
+
+        displayProducts(allProducts);
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+        // Initial load is done above
+
+        // Handle collapsible filter sections
+        document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(button => {
+            const targetId = button.getAttribute('data-bs-target');
+            const target = document.querySelector(targetId);
+            const icon = button.querySelector('.toggle-icon');
+
+            if (target && icon) {
+                target.addEventListener('show.bs.collapse', () => {
+                    icon.classList.remove('collapsed');
+                });
+
+                target.addEventListener('hide.bs.collapse', () => {
+                    icon.classList.add('collapsed');
+                });
+            }
+        });
+    });
+})();
