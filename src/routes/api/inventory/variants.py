@@ -32,6 +32,7 @@ async def list_variants(request: Request,
             r"""
             SELECT *
             FROM variants v
+            JOIN sizes sz ON sz.size_id = v.size_id
             JOIN shoes s ON v.shoe_id = s.shoe_id
             JOIN brands b ON b.brand_id = s.brand_id
             WHERE s.shoe_id = %s OR s.shoe_name = %s OR b.brand_name = %s 
@@ -45,13 +46,13 @@ async def list_variants(request: Request,
             r"""
             SELECT *
             FROM variants v
+            JOIN sizes sz ON sz.size_id = v.size_id
             JOIN shoes s ON v.shoe_id = s.shoe_id
             JOIN brands b ON b.brand_id = s.brand_id 
             LIMIT %s OFFSET %s
             """,
             (limit, offset)
         )
-
 
     return JSONResponse({
         "result": result,
