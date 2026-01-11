@@ -20,9 +20,222 @@
             <div class="p-4">
                 <h1>Dashboard</h1>
                 <p>Welcome to the management dashboard.</p>
+
+                <!-- Sales Charts Row -->
+                <div class="row mt-4">
+                    <!-- Monthly Sales Chart -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Monthly Sales</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="monthlySalesChart" style="max-height: 300px;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Yearly Sales Chart -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Yearly Sales</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="yearlySalesChart" style="max-height: 300px;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Second Row: Popular Products Pie Chart and Low Stock List -->
+                <div class="row">
+                    <!-- Popular Products Pie Chart -->
+                    <div class="col-md-8 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Top 5 Popular Products</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="popularProductsChart" style="max-height: 250px;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Low Stock Products List -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Low Stock Alert</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="lowStockList" class="list-group">
+                                    <!-- Items will be populated by JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+
+    <script>
+        // Monthly Sales Chart
+        async function loadMonthlySales() {
+            try {
+                const response = await fetch('/api/sales/monthly');
+                const data = await response.json();
+
+                const labels = data.map(item => item.month_name);
+                const sales = data.map(item => item.total_sales);
+
+                const ctx = document.getElementById('monthlySalesChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Total Sales',
+                            data: sales,
+                            backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading monthly sales:', error);
+            }
+        }
+
+        // Popular Products Pie Chart
+        async function loadPopularProducts() {
+            try {
+                const response = await fetch('/api/inventory/shoes/popular?limit=5');
+                const data = await response.json();
+
+                const labels = data.map(item => item.shoe_name);
+                const quantities = data.map(item => item.total_quantity);
+
+                const ctx = document.getElementById('popularProductsChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Total Quantity Sold',
+                            data: quantities,
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.8)',
+                                'rgba(54, 162, 235, 0.8)',
+                                'rgba(255, 206, 86, 0.8)',
+                                'rgba(75, 192, 192, 0.8)',
+                                'rgba(153, 102, 255, 0.8)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading popular products:', error);
+            }
+        }
+
+        // Yearly Sales Chart
+        async function loadYearlySales() {
+            try {
+                const response = await fetch('/api/sales/yearly');
+                const data = await response.json();
+
+                const labels = data.map(item => item.year.toString());
+                const sales = data.map(item => item.total_sales);
+
+                const ctx = document.getElementById('yearlySalesChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Total Sales',
+                            data: sales,
+                            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading yearly sales:', error);
+            }
+        }
+
+        // Low Stock Products List
+        async function loadLowStock() {
+            try {
+                const response = await fetch('/api/inventory/variants/low-stock');
+                const data = await response.json();
+
+                const lowStockList = document.getElementById('lowStockList');
+                lowStockList.innerHTML = ''; // Clear existing items
+
+                if (data.length === 0) {
+                    const noItems = document.createElement('div');
+                    noItems.className = 'list-group-item text-muted';
+                    noItems.textContent = 'No low stock items';
+                    lowStockList.appendChild(noItems);
+                    return;
+                }
+
+                data.forEach(item => {
+                    const listItem = document.createElement('div');
+                    listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+
+                    const itemText = document.createElement('div');
+                    itemText.innerHTML = `<strong>${item.shoe_name}</strong><br><small>Size: ${item.us_size} (${item.eu_size})</small>`;
+
+                    const badge = document.createElement('span');
+                    badge.className = 'badge bg-danger rounded-pill';
+                    badge.textContent = item.variant_stock;
+
+                    listItem.appendChild(itemText);
+                    listItem.appendChild(badge);
+                    lowStockList.appendChild(listItem);
+                });
+            } catch (error) {
+                console.error('Error loading low stock:', error);
+                const lowStockList = document.getElementById('lowStockList');
+                lowStockList.innerHTML = '<div class="list-group-item text-danger">Error loading low stock data</div>';
+            }
+        }
+
+        // Load all charts on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadMonthlySales();
+            loadYearlySales();
+            loadPopularProducts();
+            loadLowStock();
+        });
+    </script>
 </body>
 
 </html>

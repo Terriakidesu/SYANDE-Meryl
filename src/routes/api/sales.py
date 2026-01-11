@@ -287,6 +287,64 @@ async def fetch_return(request: Request, return_id: int):
     return db.fetchOne(r'SELECT * FROM returns WHERE return_id = %s', (return_id,))
 
 
+@sales_router.get("/monthly", response_class=JSONResponse)
+async def monthly_sales(request: Request):
+
+    # Get current year
+    from datetime import datetime
+    current_year = datetime.now().year
+
+    # Get all months with sales data
+    sales_data = db.fetchAll(r"""
+        SELECT
+            MONTH(sales_date) AS month_num,
+            DATE_FORMAT(sales_date, '%M') AS month_name,
+            SUM(total_amount) AS total_sales,
+            COUNT(*) AS num_sales
+        FROM sales
+        WHERE YEAR(sales_date) = %s
+        GROUP BY MONTH(sales_date), DATE_FORMAT(sales_date, '%M')
+        ORDER BY month_num
+    """, (current_year,))
+
+    # Create complete list of 12 months
+    month_names = ['January', 'February', 'March', 'April', 'May', 'June',
+                   'July', 'August', 'September', 'October', 'November', 'December']
+
+    result = []
+    sales_dict = {item['month_num']: item for item in sales_data}
+
+    for i in range(1, 13):
+        if i in sales_dict:
+            result.append(sales_dict[i])
+        else:
+            result.append({
+                'month_num': i,
+                'month_name': month_names[i-1],
+                'total_sales': 0,
+                'num_sales': 0
+            })
+
+    return JSONResponse(result)
+
+
+@sales_router.get("/yearly", response_class=JSONResponse)
+async def yearly_sales(request: Request):
+
+    result = db.fetchAll(r"""
+        SELECT
+            YEAR(sales_date) AS year,
+            SUM(total_amount) AS total_sales,
+            COUNT(*) AS num_sales
+        FROM sales
+        GROUP BY YEAR(sales_date)
+        ORDER BY year DESC
+        LIMIT 5
+    """)
+
+    return JSONResponse(result)
+
+
 @sales_router.get("/{sale_id}", response_class=JSONResponse)
 async def fetch_sale(request: Request, sale_id: int):
 

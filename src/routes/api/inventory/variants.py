@@ -198,6 +198,33 @@ async def delete_variant(request: Request, variant_id: int, user_perms: list[str
         )
 
 
+@variants_router.get("/low-stock", response_class=JSONResponse)
+async def low_stock_variants(request: Request, threshold: int = 5, user_perms: list[str] = Depends(user_permissions)):
+    utils.check_user_permissions(
+        user_perms,
+        Permissions.inventory.view_inventory,
+        Permissions.inventory.view_variants
+    )
+
+    result = db.fetchAll(r"""
+        SELECT
+            v.variant_id,
+            s.shoe_name,
+            sz.us_size,
+            sz.uk_size,
+            sz.eu_size,
+            v.variant_stock
+        FROM variants v
+        JOIN shoes s ON v.shoe_id = s.shoe_id
+        JOIN sizes sz ON v.size_id = sz.size_id
+        WHERE v.variant_stock <= %s
+        ORDER BY v.variant_stock ASC
+        LIMIT 10
+    """, (threshold,))
+
+    return JSONResponse(result)
+
+
 @variants_router.get("/{variant_id}", response_class=JSONResponse)
 async def fetch_variant(request: Request, variant_id: int, user_perms: list[str] = Depends(user_permissions)):
     utils.check_user_permissions(
