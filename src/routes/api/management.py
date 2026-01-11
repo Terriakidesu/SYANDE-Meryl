@@ -161,7 +161,7 @@ async def add_role(request: Request, role_name: str = Form(), permission_ids: Op
 
 
 @management_router.post("/roles/update", response_class=JSONResponse)
-async def edit_role(request: Request, role_id: int = Form(), role_name: str = Form()):
+async def edit_role(request: Request, role_id: int = Form(), role_name: str = Form(), permission_ids: Optional[str] = Form(None)):
     try:
         if role_id < 0:
             raise DatabaseException("role_id cannot be negative")
@@ -171,6 +171,43 @@ async def edit_role(request: Request, role_id: int = Form(), role_name: str = Fo
 
         db.commitOne(
             r'UPDATE roles SET role_name = %s WHERE role_id = %s', (role_name, role_id))
+
+        # Delete existing permissions
+        db.commitOne(r'DELETE FROM role_permissions WHERE role_id = %s', (role_id,))
+
+        if permission_ids:
+            # Parse and validate permission_ids
+            permission_list = []
+            for pid in permission_ids.split(","):
+                pid = pid.strip()
+                if pid:
+                    try:
+                        perm_id = int(pid)
+                        permission_list.append(perm_id)
+                    except ValueError:
+                        raise DatabaseException(
+                            f"Invalid permission ID: {pid}")
+
+            # Check if permissions exist
+            if permission_list:
+                placeholders = ','.join(['%s'] * len(permission_list))
+                existing_perms = db.fetchAll(
+                    f'SELECT permission_id FROM permissions WHERE permission_id IN ({placeholders})',
+                    tuple(permission_list)
+                )
+                existing_perm_ids = {p['permission_id']
+                                     for p in existing_perms}
+
+                if len(existing_perm_ids) != len(permission_list):
+                    missing = set(permission_list) - existing_perm_ids
+                    raise DatabaseException(
+                        f"Permissions do not exist: {list(missing)}")
+
+                # Insert role_permissions efficiently
+                permissions = tuple((role_id, perm_id)
+                                    for perm_id in permission_list)
+                db.commitMany(
+                    r'INSERT INTO role_permissions (role_id, permission_id) VALUES (%s, %s)', permissions)
 
         return {
             "success": True,
@@ -218,7 +255,8 @@ async def list_role_permissions(request: Request, role_id: int):
                     SELECT p.*
                     FROM role_permissions rp
                     JOIN permissions p ON rp.permission_id = p.permission_id
-                    """)
+                    WHERE rp.role_id = %s
+                    """, (role_id,))
 
 # @management_router.post("/roles/{role_id}/permissions/add")
 # async def add_role_permission(request: Request, role_id:int, permission_id: int):

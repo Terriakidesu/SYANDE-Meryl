@@ -13,11 +13,16 @@
             transition: all 0.2s ease-in-out;
             cursor: pointer;
         }
-        
+
         .category-item:hover, .brand-item:hover, .size-item:hover, .shoe-item:hover, .variant-item:hover, .user-item:hover, .role-item:hover {
             background-color: rgba(0, 0, 0, 0.05);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             transform: translateY(-1px);
+        }
+
+        #permissions-container {
+            column-count: 2;
+            column-gap: 1rem;
         }
     </style>
 
@@ -29,7 +34,7 @@
         {% include "components/sidebar.html" with context %}
         <div class="col">
             <div class="p-4 d-flex flex-row justify-content-between align-items-center">
-                <form id="search-form" action="/api/roles/" method="GET"
+                <form id="search-form" action="/api/roles/all" method="GET"
                     class="d-flex flex-row gap-5 flex-fill" style="max-width: 50rem;">
                     <input type="hidden" name="page" id="page-input" value="1">
                     <div
@@ -93,7 +98,7 @@
 
     <!-- Role Modal -->
     <div class="modal fade" id="role-modal" tabindex="-1">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="role-modal-title">Add Role</h5>
@@ -105,6 +110,14 @@
                         <div class="mb-3">
                             <label for="role-name" class="form-label">Role Name</label>
                             <input type="text" class="form-control" id="role-name" name="role_name" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <label class="form-label">Permissions</label>
+                                    <div id="permissions-container"></div>
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -152,6 +165,7 @@
                 role_name: document.getElementById("role-name"),
                 role_modal_title: document.getElementById("role-modal-title"),
                 save_role_btn: document.getElementById("save-role-btn"),
+                permissions_container: document.getElementById("permissions-container"),
                 delete_role_id: document.getElementById("delete-role-id"),
                 confirm_delete_btn: document.getElementById("confirm-delete-btn")
             };
@@ -188,7 +202,7 @@
                 elements.role_form.reset();
                 elements.role_id.value = "";
                 elements.role_modal_title.textContent = "Add Role";
-                roleModal.show();
+                loadPermissions().then(() => roleModal.show());
             });
 
             elements.role_list.addEventListener("click", function (e) {
@@ -246,7 +260,7 @@
                         elements.role_id.value = data.role_id;
                         elements.role_name.value = data.role_name;
                         elements.role_modal_title.textContent = "Edit Role";
-                        roleModal.show();
+                        loadPermissions().then(() => loadRolePermissions(roleId)).then(() => roleModal.show());
                     })
                     .catch(err => {
                         if (typeof showErrorToast === "function") {
@@ -265,6 +279,11 @@
 
                 const formData = new FormData();
                 formData.append("role_name", elements.role_name.value);
+
+                const checkedPerms = Array.from(document.querySelectorAll('input[name="permissions"]:checked')).map(cb => cb.value);
+                if (checkedPerms.length > 0) {
+                    formData.append("permission_ids", checkedPerms.join(','));
+                }
 
                 const isEdit = !!elements.role_id.value;
                 const url = isEdit ? "/api/roles/update" : "/api/roles/add";
@@ -339,7 +358,19 @@
 
                 card.dataset.roleId = item.role_id;
                 idEl.textContent = `ID: ${item.role_id}`;
+
+                const perms = item.permissions || [];
+                let permsText = perms.slice(0, 3).map(p => p.permission_code).join(', ');
+                if (perms.length > 3) {
+                    permsText += ` +${perms.length - 3}`;
+                }
                 nameEl.textContent = item.role_name;
+                const br = document.createElement('br');
+                nameEl.appendChild(br);
+                const small = document.createElement('small');
+                small.className = 'text-muted';
+                small.textContent = permsText;
+                nameEl.appendChild(small);
 
                 elements.role_list.appendChild(elem);
             }
@@ -378,6 +409,63 @@
                 const formData = new FormData(elements.search_form);
                 searchRoles(formData);
                 window.scrollTo({ top: 0, behavior: "smooth" });
+            }
+
+            function loadPermissions() {
+                return fetch('/api/permissions')
+                    .then(res => res.json())
+                    .then(perms => {
+                        const grouped = {};
+                        perms.forEach(p => {
+                            if (!grouped[p.category]) grouped[p.category] = [];
+                            grouped[p.category].push(p);
+                        });
+                        elements.permissions_container.innerHTML = '';
+                        for (const cat in grouped) {
+                            const catDiv = document.createElement('div');
+                            catDiv.className = 'mb-3';
+                            catDiv.style.breakInside = 'avoid';
+                            const h6 = document.createElement('h6');
+                            h6.textContent = cat;
+                            catDiv.appendChild(h6);
+                            grouped[cat].forEach(p => {
+                                const checkDiv = document.createElement('div');
+                                checkDiv.className = 'form-check form-switch';
+                                const input = document.createElement('input');
+                                input.className = 'form-check-input';
+                                input.type = 'checkbox';
+                                input.role = 'switch';
+                                input.id = `perm_${p.permission_id}`;
+                                input.name = 'permissions';
+                                input.value = p.permission_id;
+                                const label = document.createElement('label');
+                                label.className = 'form-check-label';
+                                label.htmlFor = `perm_${p.permission_id}`;
+                                label.textContent = p.description || p.permission_code;
+                                checkDiv.appendChild(input);
+                                checkDiv.appendChild(label);
+                                catDiv.appendChild(checkDiv);
+                            });
+                            elements.permissions_container.appendChild(catDiv);
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                    });
+            }
+
+            function loadRolePermissions(roleId) {
+                return fetch(`/api/roles/${roleId}/permissions/`)
+                    .then(res => res.json())
+                    .then(perms => {
+                        perms.forEach(p => {
+                            const checkbox = document.getElementById(`perm_${p.permission_id}`);
+                            if (checkbox) checkbox.checked = true;
+                        });
+                    })
+                    .catch(err => {
+                        console.error(err);
+                    });
             }
 
             function refreshCurrentPage() {
