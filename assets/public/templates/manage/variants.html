@@ -91,7 +91,7 @@
                     <div class="shoe-container mb-4">
                         <div class="shoe-header bg-light p-2 border d-flex align-items-center collapsible-header"
                             data-bs-toggle="collapse" role="button">
-                            <i class="fa-solid fa-chevron-down me-2 toggle-icon"></i>
+                            <i class="fa-solid fa-chevron-down me-2 toggle-icon rotated"></i>
                             <img class="shoe-image me-3" style="width: 80px; height: 60px; object-fit: cover;" src=""
                                 alt="" onerror="this.src='/assets/public/products/default/default.jpeg'">
                             <div class="shoe-info fw-bold"></div>
@@ -288,6 +288,7 @@
                 elements.variant_form.reset();
                 elements.variant_id.value = "";
                 elements.variant_modal_title.textContent = "Add Variant";
+                showAllSizes();
                 variantModal.show();
             });
 
@@ -306,6 +307,36 @@
                     const card = deleteBtn.closest(".variant-item");
                     const variantId = card.dataset.variantId;
                     openDeleteModal(variantId);
+                }
+            });
+
+            elements.shoe_list.addEventListener("click", function (e) {
+                const addVariantBtn = e.target.closest(".add-variant-for-shoe");
+                if (addVariantBtn) {
+                    const shoeId = addVariantBtn.dataset.shoeId;
+                    elements.variant_form.reset();
+                    elements.variant_id.value = "";
+                    elements.variant_shoe.value = shoeId;
+                    elements.variant_modal_title.textContent = "Add Variant";
+                    // Hide already used sizes for this shoe
+                    fetch(`/api/inventory/variants/?shoe_id=${shoeId}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            const usedSizes = new Set(data.result.map(v => v.size_id));
+                            const sizeOptions = elements.variant_size.querySelectorAll('option');
+                            sizeOptions.forEach(option => {
+                                if (option.value && usedSizes.has(parseInt(option.value))) {
+                                    option.style.display = 'none';
+                                } else {
+                                    option.style.display = '';
+                                }
+                            });
+                            variantModal.show();
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            variantModal.show();
+                        });
                 }
             });
 
@@ -348,6 +379,7 @@
                         elements.variant_size.value = data.size_id;
                         elements.variant_stock.value = data.variant_stock;
                         elements.variant_modal_title.textContent = "Edit Variant";
+                        showAllSizes();
                         variantModal.show();
                     })
                     .catch(err => {
@@ -444,8 +476,7 @@
                 const shoeInfo = shoeContainer.querySelector('.shoe-info');
                 const variantsContainer = shoeContainer.querySelector('.variants-container');
                 const collapsibleHeader = shoeContainer.querySelector('.collapsible-header');
-
-
+                // const addVariantBtn = shoeContainer.querySelector('.add-variant-for-shoe');
 
                 // Set unique ID for collapse
                 const collapseId = `collapse-${shoe.shoe_id}`;
@@ -453,6 +484,9 @@
                 collapsibleHeader.setAttribute('data-bs-target', `#${collapseId}`);
                 collapsibleHeader.setAttribute('aria-expanded', 'true');
                 collapsibleHeader.setAttribute('aria-controls', collapseId);
+
+                // Set shoe ID for add variant button
+                // addVariantBtn.dataset.shoeId = shoe.shoe_id;
 
                 // Set shoe image
                 shoeImage.src = `/shoe?shoe_id=${shoe.shoe_id}`;
@@ -464,13 +498,13 @@
                 // Add collapse event listeners
                 variantsContainer.addEventListener('show.bs.collapse', () => {
                     const toggleIcon = collapsibleHeader.querySelector('.toggle-icon');
-                    toggleIcon.classList.remove('rotated');
+                    toggleIcon.classList.add('rotated');
 
                 });
 
                 variantsContainer.addEventListener('hide.bs.collapse', function () {
                     const toggleIcon = collapsibleHeader.querySelector('.toggle-icon');
-                    toggleIcon.classList.add('rotated');
+                    toggleIcon.classList.remove('rotated');
 
                 });
 
@@ -525,6 +559,13 @@
                 const formData = new FormData(elements.search_form);
                 searchVariants(formData);
                 window.scrollTo({ top: 0, behavior: "smooth" });
+            }
+
+            function showAllSizes() {
+                const sizeOptions = elements.variant_size.querySelectorAll('option');
+                sizeOptions.forEach(option => {
+                    option.style.display = '';
+                });
             }
 
             function refreshCurrentPage() {
