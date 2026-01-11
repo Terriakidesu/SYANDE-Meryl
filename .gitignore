@@ -9,4 +9,4 @@ assets/public/products/**/*
 
 secrets/**/*
 *.env
-# superadmin_password.json
+superadmin_password.json
