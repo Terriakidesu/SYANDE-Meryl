@@ -146,12 +146,12 @@
             </div>
 
             <!-- Main Content -->
-            <div class="col-md-9 col-lg-10 p-3">
+            <div class="col-md-6 col-lg-7 p-3">
                 <h4>Products</h4>
 
                 <!-- Product Card Template -->
                 <template id="product-card-template">
-                    <div class="col-md-4 col-lg-3 mb-3">
+                    <div class="col-md-6 col-lg-4 mb-3">
                         <div class="card h-100">
                             <img class="card-img-top" style="height: 200px; object-fit: cover;" alt="">
                             <div class="card-body d-flex flex-column">
@@ -180,6 +180,30 @@
 
                 <div id="products-container" class="row">
 
+                </div>
+            </div>
+
+            <!-- Cart Sidebar -->
+            <div class="col-md-3 col-lg-3 bg-light p-3" style="min-height: 80vh;">
+                <h5>Shopping Cart</h5>
+                <div id="cart-container" class="d-flex flex-column" style="max-height: 60vh; overflow-y: auto;">
+                    <div id="cart-empty" class="text-center text-muted py-4">
+                        Your cart is empty
+                    </div>
+                    <div id="cart-items" style="display: none;">
+                        <!-- Cart items will be populated here -->
+                    </div>
+                </div>
+                <div id="cart-footer" class="mt-3" style="display: none;">
+                    <hr>
+                    <div class="d-flex justify-content-between fw-bold fs-5">
+                        <span>Total:</span>
+                        <span id="cart-total">₱0.00</span>
+                    </div>
+                    <button class="btn btn-success w-100 mt-3" id="checkout-btn">
+                        <i class="fa-solid fa-credit-card"></i>
+                        Checkout
+                    </button>
                 </div>
             </div>
 
@@ -259,6 +283,42 @@
                             </div>
                         </div>
 
+                    </div>
+                </div>
+            </div>
+
+            <!-- Checkout Modal -->
+            <div id="checkout-modal" class="modal fade" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Checkout</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form id="checkout-form">
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label for="customer-name" class="form-label">Customer Name</label>
+                                    <input type="text" class="form-control" id="customer-name" name="customer_name" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="total-amount" class="form-label">Total Amount</label>
+                                    <input type="text" class="form-control" id="total-amount" readonly>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="cash-received" class="form-label">Cash Received</label>
+                                    <input type="number" class="form-control" id="cash-received" name="cash_received" min="0" step="0.01" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="change-amount" class="form-label">Change</label>
+                                    <input type="text" class="form-control" id="change-amount" readonly>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-success">Complete Sale</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>

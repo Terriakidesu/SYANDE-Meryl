@@ -1,6 +1,7 @@
 (function () {
 
     let cart = [];
+    let allProducts = [];
 
     const elements = {
         template: document.getElementById('product-card-template'),
@@ -10,10 +11,19 @@
         demographics_filter: document.getElementById('demographics-filter'),
         clear_filters: document.getElementById('clear-filters'),
         products_container: document.getElementById('products-container'),
-        product_form: document.getElementById(`product-form`)
+        product_form: document.getElementById(`product-form`),
+        cart_container: document.getElementById('cart-container'),
+        cart_empty: document.getElementById('cart-empty'),
+        cart_items: document.getElementById('cart-items'),
+        cart_footer: document.getElementById('cart-footer'),
+        cart_total: document.getElementById('cart-total'),
+        checkout_btn: document.getElementById('checkout-btn'),
+        checkout_modal: document.getElementById('checkout-modal'),
+        checkout_form: document.getElementById('checkout-form'),
+        total_amount: document.getElementById('total-amount'),
+        cash_received: document.getElementById('cash-received'),
+        change_amount: document.getElementById('change-amount')
     };
-
-    let allProducts = [];
     let selectedBrands = new Set();
     let selectedCategories = new Set();
     let selectedDemographics = new Set();
@@ -42,8 +52,173 @@
         })
         .catch(err => console.error('Error loading filters:', err));
 
+    // Load cart from localStorage
+    loadCart();
+
     // Load products
     loadProducts();
+
+    // Cart management functions
+    function loadCart() {
+        const savedCart = localStorage.getItem('pos_cart');
+        if (savedCart) {
+            cart = JSON.parse(savedCart);
+        }
+        displayCart();
+    }
+
+    function saveCart() {
+        localStorage.setItem('pos_cart', JSON.stringify(cart));
+    }
+
+    function addToCart(productData) {
+        // Find if item already exists in cart
+        const existingItem = cart.find(item =>
+            item.variant_id === productData.variant_id
+        );
+
+        if (existingItem) {
+            existingItem.quantity = parseInt(existingItem.quantity) + parseInt(productData.quantity);
+        } else {
+            cart.push(productData);
+        }
+
+        saveCart();
+        displayCart();
+    }
+
+    function removeFromCart(index) {
+        cart.splice(index, 1);
+        saveCart();
+        displayCart();
+    }
+
+    function updateCartQuantity(index, newQuantity) {
+        if (newQuantity <= 0) {
+            removeFromCart(index);
+            return;
+        }
+        cart[index].quantity = newQuantity;
+        saveCart();
+        displayCart();
+    }
+
+    function displayCart() {
+        elements.cart_items.innerHTML = '';
+
+        if (cart.length === 0) {
+            elements.cart_empty.style.display = 'block';
+            elements.cart_items.style.display = 'none';
+            elements.cart_footer.style.display = 'none';
+            return;
+        }
+
+        elements.cart_empty.style.display = 'none';
+        elements.cart_items.style.display = 'block';
+        elements.cart_footer.style.display = 'block';
+
+        let total = 0;
+
+        cart.forEach((item, index) => {
+
+            let product;
+            let variant;
+            for (let p of allProducts) {
+                p.variants.forEach(v => {
+                    if (v.variant_id === parseInt(item.variant_id)) {
+                        product = p;
+                        variant = v;
+                    }
+                });
+                if (product) break;
+            }
+
+            if (!product) return;
+
+            const markup_price = parseFloat(product.shoe_price) * (1 + (parseFloat(product.markup) / 100));
+            const itemTotal = markup_price * parseInt(item.quantity);
+            total += itemTotal;
+
+            const cartItem = document.createElement('div');
+            cartItem.className = 'd-flex flex-column mb-3 p-2 border rounded';
+
+            const itemHeader = document.createElement('div');
+            itemHeader.className = 'd-flex justify-content-between align-items-start';
+
+            const itemInfo = document.createElement('div');
+            itemInfo.className = 'flex-grow-1';
+
+            const itemTitle = document.createElement('h6');
+            itemTitle.className = 'mb-1';
+            itemTitle.textContent = product.shoe_name;
+
+            const itemBrand = document.createElement('small');
+            itemBrand.className = 'text-muted';
+            itemBrand.textContent = product.brand_name;
+
+            const itemSize = document.createElement('small');
+            itemSize.className = 'text-muted d-block';
+            itemSize.textContent = `Size: ${variant.us_size} US / ${variant.uk_size} UK / ${variant.eu_size} EU`;
+
+            itemInfo.appendChild(itemTitle);
+            itemInfo.appendChild(itemBrand);
+            itemInfo.appendChild(document.createElement('br'));
+            itemInfo.appendChild(itemSize);
+
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'btn btn-sm btn-outline-danger';
+            removeBtn.onclick = () => removeFromCart(index);
+
+            const removeIcon = document.createElement('i');
+            removeIcon.className = 'fa-solid fa-trash';
+            removeBtn.appendChild(removeIcon);
+
+            itemHeader.appendChild(itemInfo);
+            itemHeader.appendChild(removeBtn);
+
+            const itemFooter = document.createElement('div');
+            itemFooter.className = 'd-flex justify-content-between align-items-center mt-2';
+
+            const quantityControls = document.createElement('div');
+            quantityControls.className = 'd-flex align-items-center';
+
+            const decreaseBtn = document.createElement('button');
+            decreaseBtn.className = 'btn btn-sm btn-outline-secondary';
+            decreaseBtn.onclick = () => updateCartQuantity(index, parseInt(item.quantity) - 1);
+            decreaseBtn.textContent = '-';
+
+            const quantitySpan = document.createElement('span');
+            quantitySpan.className = 'mx-2';
+            quantitySpan.textContent = `Qty: ${item.quantity}`;
+
+            const increaseBtn = document.createElement('button');
+            increaseBtn.className = 'btn btn-sm btn-outline-secondary';
+            increaseBtn.onclick = () => updateCartQuantity(index, parseInt(item.quantity) + 1);
+            increaseBtn.textContent = '+';
+
+            quantityControls.appendChild(decreaseBtn);
+            quantityControls.appendChild(quantitySpan);
+            quantityControls.appendChild(increaseBtn);
+
+            const itemPrice = document.createElement('div');
+            itemPrice.className = 'fw-bold';
+            itemPrice.textContent = `₱${itemTotal.toFixed(2)}`;
+
+            itemFooter.appendChild(quantityControls);
+            itemFooter.appendChild(itemPrice);
+
+            cartItem.appendChild(itemHeader);
+            cartItem.appendChild(itemFooter);
+
+            elements.cart_items.appendChild(cartItem);
+        });
+
+        elements.cart_total.textContent = `₱${total.toFixed(2)}`;
+    }
+
+    // Make functions global for onclick handlers
+    window.removeFromCart = removeFromCart;
+    window.updateCartQuantity = updateCartQuantity;
 
     function loadProducts() {
         fetch('/api/inventory/variants/?limit=100')
@@ -68,6 +243,7 @@
                     )).then(products => {
                         allProducts = products;
                         displayProducts(allProducts);
+                        displayCart(); // Update cart display with product details
                     });
                 }
             })
@@ -365,13 +541,124 @@
             data[input.name] = input.value;
         })
 
-        cart.push(data);
+        addToCart(data);
 
-        const modal_elem = document.querySelector("#product-modal");
-        const modal = new bootstrap.Modal(modal_elem);
-        modal.hide();
+        // Hide the modal
+        const modalElem = document.getElementById('product-modal');
+        const modal = bootstrap.Modal.getInstance(modalElem);
+        if (modal) {
+            modal.hide();
+        } else {
+            // Fallback: directly hide the modal
+            modalElem.style.display = 'none';
+            modalElem.classList.remove('show');
+            document.body.classList.remove('modal-open');
+            const backdrop = document.querySelector('.modal-backdrop');
+            if (backdrop) {
+                backdrop.remove();
+            }
+        }
 
     })
+
+    // Checkout functionality
+    elements.checkout_btn.addEventListener('click', () => {
+        if (cart.length === 0) {
+            alert('Your cart is empty!');
+            return;
+        }
+
+        // Calculate total
+        let total = 0;
+        cart.forEach((item, index) => {
+            let product;
+            let variant;
+            for (let p of allProducts) {
+                p.variants.forEach(v => {
+                    if (v.variant_id === parseInt(item.variant_id)) {
+                        product = p;
+                        variant = v;
+                    }
+                });
+                if (product) break;
+            }
+
+            if (product) {
+                const markup_price = parseFloat(product.shoe_price) * (1 + (parseFloat(product.markup) / 100));
+                total += markup_price * parseInt(item.quantity);
+            }
+        });
+
+        elements.total_amount.value = `₱${total.toFixed(2)}`;
+        elements.cash_received.value = '';
+        elements.change_amount.value = '₱0.00';
+
+        const checkoutModal = new bootstrap.Modal(elements.checkout_modal);
+        checkoutModal.show();
+    });
+
+    elements.cash_received.addEventListener('input', (e) => {
+        const cash = parseFloat(e.target.value) || 0;
+        const totalText = elements.total_amount.value.replace('₱', '');
+        const total = parseFloat(totalText) || 0;
+        const change = cash - total;
+
+        if (cash >= total) {
+            elements.change_amount.value = `₱${change.toFixed(2)}`;
+        } else {
+            elements.change_amount.value = `₱${Math.abs(change).toFixed(2)} (Due)`;
+        }
+    });
+
+    elements.checkout_form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const customerName = elements.customer_name.value.trim();
+        const cashReceived = parseFloat(elements.cash_received.value) || 0;
+        const totalText = elements.total_amount.value.replace('₱', '');
+        const total = parseFloat(totalText) || 0;
+
+        if (cashReceived < total) {
+            alert('Cash received is less than total amount!');
+            return;
+        }
+
+        // Prepare sale data
+        const items = cart.map(item => `${item.variant_id}:${item.quantity}`).join(',');
+
+        try {
+            const response = await fetch('/api/sales/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    user_id: 1, // TODO: Get from session
+                    customer_name: customerName,
+                    total_amount: total,
+                    cash_received: cashReceived,
+                    change_amount: cashReceived - total,
+                    items: items
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert('Sale completed successfully!');
+                cart = [];
+                saveCart();
+
+                // Redirect to sales management page
+                window.location.href = '/manage/sales';
+            } else {
+                alert('Error completing sale: ' + result.message);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error completing sale. Please try again.');
+        }
+    });
 
     // Search input handler
     elements.search_input.addEventListener('input', (e) => {
