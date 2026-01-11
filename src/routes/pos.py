@@ -10,11 +10,18 @@ from ..utils import Permissions
 pos_router = APIRouter(prefix="/pos",
                        dependencies=[Depends(is_authenticated)])
 
-templates = Jinja2Templates("assets/public/templates/pos")
+templates = Jinja2Templates("assets/public/templates/")
 
 
 @pos_router.get("/")
 async def POS(request: Request, user_perms: Annotated[list[str], Depends(user_permissions)]):
-    utils.check_user_permissions(user_perms, Permissions.pos.use_pos)
+    utils.check_user_permissions(user_perms,
+                                 Permissions.management.admin_all,
+                                 Permissions.pos.use_pos)
 
-    return templates.TemplateResponse(request, "pos.html",)
+    return templates.TemplateResponse(request, "pos/index.html",
+                                      {
+                                          "user_id": request.session["user_id"],
+                                          "username": request.session["username"],
+                                      }
+                                      )
