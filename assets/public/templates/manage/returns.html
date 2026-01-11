@@ -158,6 +158,8 @@
                 const url = new URL(elements.search_form.action, window.location.origin);
                 url.search = new URLSearchParams(formData).toString();
 
+                console.log(url)
+
                 fetch(url, {
                     method: "GET",
                     headers: { "Accept": "application/json" }
@@ -165,6 +167,7 @@
                     .then(res => res.json())
                     .then(response => {
                         try {
+                            console.log(response)
                             const { result: items, count, pages } = response;
                             elements.return_list.replaceChildren();
 

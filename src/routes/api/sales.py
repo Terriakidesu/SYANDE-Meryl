@@ -31,27 +31,22 @@ async def list_sales(request: Request,
             SELECT * 
             FROM sales s 
             JOIN users u ON u.user_id = s.user_id 
-            WHERE s.sales_id = %s OR s.customer_name LIKE %s 
+            WHERE s.sale_id = %s OR s.customer_name LIKE %s 
             LIMIT %s OFFSET %s
             """,
             (query, f"%{query}%", limit, offset)
         )
 
-        return JSONResponse({
-            "result": result,
-            "count": count,
-            "pages": pages
-        })
-
-    result = db.fetchAll(
-        r"""
-        SELECT * 
-        FROM sales s 
-        JOIN users u ON u.user_id = s.user_id 
-        LIMIT %s OFFSET %s
-        """,
-        (limit, offset)
-    )
+    else:
+        result = db.fetchAll(
+            r"""
+            SELECT * 
+            FROM sales s 
+            JOIN users u ON u.user_id = s.user_id 
+            LIMIT %s OFFSET %s
+            """,
+            (limit, offset)
+        )
 
     return JSONResponse({
         "result": result,
@@ -156,18 +151,6 @@ async def delete_sale(request: Request, sale_id: int):
         )
 
 
-@sales_router.get("/{sale_id}", response_class=JSONResponse)
-async def fetch_sale(request: Request, sale_id: int):
-
-    return db.fetchOne(r'SELECT * FROM sales WHERE sale_id = %s', (sale_id,))
-
-
-@sales_router.get("/{sale_id}/items", response_class=JSONResponse)
-async def list_sales_items(request: Request, sale_id: int):
-
-    return db.fetchAll(r'SELECT * FROM sales_items WHERE sale_id = %s', (sale_id,))
-
-
 @sales_router.get("/returns", response_class=JSONResponse)
 async def list_returns(request: Request,
                        query: Annotated[Optional[str], Query()] = None,
@@ -175,7 +158,7 @@ async def list_returns(request: Request,
                        limit: Annotated[Optional[int], Query()] = 10
                        ):
 
-    count = db.fetchOne(r'SELECT COUNT(*) as count FROM sales')["count"]
+    count = db.fetchOne(r'SELECT COUNT(*) as count FROM returns')["count"]
     pages = math.ceil(count / limit)
     offset = (page - 1) * limit
 
@@ -193,7 +176,7 @@ async def list_returns(request: Request,
         result = db.fetchAll(
             r"""
             SELECT * 
-            FROM returns
+            FROM returns r
             JOIN sales s ON s.sale_id = r.sale_id
             LIMIT %s OFFSET %s
             """,
@@ -281,3 +264,15 @@ async def delete_return(request: Request, return_id: int):
 @sales_router.get("/returns/{return_id}", response_class=JSONResponse)
 async def fetch_return(request: Request, return_id: int):
     return db.fetchOne(r'SELECT * FROM returns WHERE return_id = %s', (return_id,))
+
+
+@sales_router.get("/{sale_id}", response_class=JSONResponse)
+async def fetch_sale(request: Request, sale_id: int):
+
+    return db.fetchOne(r'SELECT * FROM sales WHERE sale_id = %s', (sale_id,))
+
+
+@sales_router.get("/{sale_id}/items", response_class=JSONResponse)
+async def list_sales_items(request: Request, sale_id: int):
+
+    return db.fetchAll(r'SELECT * FROM sales_items WHERE sale_id = %s', (sale_id,))
