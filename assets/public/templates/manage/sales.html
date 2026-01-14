@@ -280,129 +280,118 @@
             });
 
             function viewSale(saleId) {
-                fetch(`/api/sales/${saleId}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        // Populate receipt header
-                        elements.sale_date_time.textContent = data.sales_date || 'N/A';
-                        elements.sale_customer_name.textContent = data.customer_name || 'N/A';
-                        elements.sale_id_display.textContent = data.sale_id;
-                        elements.sale_user_name.textContent = `${data.first_name || ''} ${data.last_name || ''} (${data.username || 'N/A'})`.trim();
+                // Fetch sale details and items
+                Promise.all([
+                    fetch(`/api/sales/${saleId}`).then(res => res.json()),
+                    fetch(`/api/sales/${saleId}/items`).then(res => res.json())
+                ])
+                .then(([saleData, itemsData]) => {
+                    // Populate receipt header
+                    elements.sale_date_time.textContent = saleData.sales_date || 'N/A';
+                    elements.sale_customer_name.textContent = saleData.customer_name || 'N/A';
+                    elements.sale_id_display.textContent = saleData.sale_id;
+                    elements.sale_user_name.textContent = `${saleData.first_name || ''} ${saleData.last_name || ''} (${saleData.username || 'N/A'})`.trim();
 
-                        const statusBadge = document.createElement('span');
-                        statusBadge.className = data.status === 'Returned' ? 'badge bg-danger' : 'badge bg-success';
-                        statusBadge.textContent = data.status;
-                        elements.sale_status_badge.innerHTML = '';
-                        elements.sale_status_badge.appendChild(statusBadge);
+                    const statusBadge = document.createElement('span');
+                    statusBadge.className = saleData.status === 'Returned' ? 'badge bg-danger' : 'badge bg-success';
+                    statusBadge.textContent = saleData.status;
+                    elements.sale_status_badge.innerHTML = '';
+                    elements.sale_status_badge.appendChild(statusBadge);
 
-                        // Clear and populate items table
-                        elements.sale_items.innerHTML = '';
+                    // Clear and populate items table
+                    elements.sale_items.innerHTML = '';
 
-                        // Check if items are available in the response
-                        if (data.items && Array.isArray(data.items)) {
-                            // If API returns detailed items
-                            data.items.forEach(item => {
+                    if (itemsData && Array.isArray(itemsData) && itemsData.length > 0) {
+                        // Process each item to get full product details
+                        const itemPromises = itemsData.map(item =>
+                            fetch(`/api/inventory/variants/${item.variant_id}`).then(res => res.json())
+                            .catch(() => null) // If variant fetch fails, return null
+                        );
+
+                        Promise.all(itemPromises).then(variantDetails => {
+                            itemsData.forEach((item, index) => {
+                                const variant = variantDetails[index];
                                 const row = document.createElement('tr');
 
+                                // Item name and brand
                                 const itemCell = document.createElement('td');
-                                const itemName = document.createElement('div');
-                                itemName.textContent = item.product_name || 'N/A';
-                                const brandName = document.createElement('small');
-                                brandName.className = 'text-muted';
-                                brandName.textContent = item.brand_name || '';
-                                itemCell.appendChild(itemName);
-                                itemCell.appendChild(document.createElement('br'));
-                                itemCell.appendChild(brandName);
+                                if (variant && variant.shoe_name) {
+                                    const itemName = document.createElement('div');
+                                    itemName.textContent = variant.shoe_name || 'N/A';
+                                    const brandName = document.createElement('small');
+                                    brandName.className = 'text-muted';
+                                    brandName.textContent = variant.brand_name || '';
+                                    itemCell.appendChild(itemName);
+                                    itemCell.appendChild(document.createElement('br'));
+                                    itemCell.appendChild(brandName);
+                                } else {
+                                    itemCell.textContent = `Item ID: ${item.variant_id}`;
+                                }
                                 row.appendChild(itemCell);
 
+                                // Size information
                                 const sizeCell = document.createElement('td');
-                                sizeCell.textContent = `US ${item.us_size || 'N/A'} / UK ${item.uk_size || 'N/A'} / EU ${item.eu_size || 'N/A'}`;
+                                if (variant && variant.us_size) {
+                                    sizeCell.textContent = `US ${variant.us_size} / UK ${variant.uk_size} / EU ${variant.eu_size}`;
+                                } else {
+                                    sizeCell.textContent = 'Size details not available';
+                                }
                                 row.appendChild(sizeCell);
 
+                                // Quantity
                                 const qtyCell = document.createElement('td');
                                 qtyCell.className = 'text-center';
                                 qtyCell.textContent = item.quantity || 0;
                                 row.appendChild(qtyCell);
 
+                                // Unit price
                                 const priceCell = document.createElement('td');
                                 priceCell.className = 'text-end';
-                                priceCell.textContent = `₱${(item.price || 0).toFixed(2)}`;
+                                const unitPrice = (item.price || 0) / (item.quantity || 1);
+                                priceCell.textContent = `₱${unitPrice.toFixed(2)}`;
                                 row.appendChild(priceCell);
 
+                                // Total price
                                 const totalCell = document.createElement('td');
                                 totalCell.className = 'text-end';
-                                totalCell.textContent = `₱${((item.price || 0) * (item.quantity || 0)).toFixed(2)}`;
+                                totalCell.textContent = `₱${(item.price || 0).toFixed(2)}`;
                                 row.appendChild(totalCell);
 
                                 elements.sale_items.appendChild(row);
                             });
-                        } else if (data.items_string) {
-                            // Parse items from stored string format (variant_id:quantity,variant_id:quantity)
-                            const itemPairs = data.items_string.split(',');
-                            itemPairs.forEach(pair => {
-                                const [variantId, quantity] = pair.split(':');
-                                if (variantId && quantity) {
-                                    // For now, show basic info since we don't have product details in this context
-                                    const row = document.createElement('tr');
 
-                                    const itemCell = document.createElement('td');
-                                    const itemId = document.createElement('div');
-                                    itemId.textContent = `Item ID: ${variantId}`;
-                                    const noDetails = document.createElement('small');
-                                    noDetails.className = 'text-muted';
-                                    noDetails.textContent = 'Product details not available';
-                                    itemCell.appendChild(itemId);
-                                    itemCell.appendChild(document.createElement('br'));
-                                    itemCell.appendChild(noDetails);
-                                    row.appendChild(itemCell);
+                            // Populate totals
+                            elements.sale_total.textContent = `₱${(saleData.total_amount || 0).toFixed(2)}`;
+                            elements.sale_cash_received.textContent = `₱${(saleData.cash_received || 0).toFixed(2)}`;
+                            elements.sale_change.textContent = `₱${(saleData.change_amount || 0).toFixed(2)}`;
 
-                                    const sizeCell = document.createElement('td');
-                                    sizeCell.textContent = 'Size details not available';
-                                    row.appendChild(sizeCell);
-
-                                    const qtyCell = document.createElement('td');
-                                    qtyCell.className = 'text-center';
-                                    qtyCell.textContent = quantity;
-                                    row.appendChild(qtyCell);
-
-                                    const priceCell = document.createElement('td');
-                                    priceCell.className = 'text-end';
-                                    priceCell.textContent = 'Price not available';
-                                    row.appendChild(priceCell);
-
-                                    const totalCell = document.createElement('td');
-                                    totalCell.className = 'text-end';
-                                    totalCell.textContent = 'Total not available';
-                                    row.appendChild(totalCell);
-
-                                    elements.sale_items.appendChild(row);
-                                }
-                            });
-                        } else {
-                            // No items data available
-                            const row = document.createElement('tr');
-                            const noItemsCell = document.createElement('td');
-                            noItemsCell.colSpan = 5;
-                            noItemsCell.className = 'text-center text-muted';
-                            noItemsCell.textContent = 'Item details not available';
-                            row.appendChild(noItemsCell);
-                            elements.sale_items.appendChild(row);
-                        }
+                            saleModal.show();
+                        });
+                    } else {
+                        // No items data available
+                        const row = document.createElement('tr');
+                        const noItemsCell = document.createElement('td');
+                        noItemsCell.colSpan = 5;
+                        noItemsCell.className = 'text-center text-muted';
+                        noItemsCell.textContent = 'No items found for this sale';
+                        row.appendChild(noItemsCell);
+                        elements.sale_items.appendChild(row);
 
                         // Populate totals
-                        elements.sale_total.textContent = `₱${(data.total_amount || 0).toFixed(2)}`;
-                        elements.sale_cash_received.textContent = `₱${(data.cash_received || 0).toFixed(2)}`;
-                        elements.sale_change.textContent = `₱${(data.change_amount || 0).toFixed(2)}`;
+                        elements.sale_total.textContent = `₱${(saleData.total_amount || 0).toFixed(2)}`;
+                        elements.sale_cash_received.textContent = `₱${(saleData.cash_received || 0).toFixed(2)}`;
+                        elements.sale_change.textContent = `₱${(saleData.change_amount || 0).toFixed(2)}`;
 
                         saleModal.show();
-                    })
-                    .catch(err => {
-                        if (typeof showErrorToast === "function") {
-                            showErrorToast(err);
-                        } else {
-                            console.error(err);
-                        }
-                    });
+                    }
+                })
+                .catch(err => {
+                    if (typeof showErrorToast === "function") {
+                        showErrorToast(err);
+                    } else {
+                        console.error(err);
+                    }
+                });
             }
 
             function searchSales(formData) {

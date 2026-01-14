@@ -246,4 +246,17 @@ async def fetch_variant(request: Request, variant_id: int, user_perms: list[str]
         Permissions.inventory.view_variants
     )
 
-    return db.fetchOne(r'SELECT * FROM variants WHERE variant_id = %s', (variant_id,))
+    result = db.fetchOne(r'''
+        SELECT
+            v.variant_id, v.shoe_id, v.size_id, v.variant_stock,
+            sz.us_size, sz.uk_size, sz.eu_size,
+            s.shoe_name, s.shoe_price, s.markup,
+            b.brand_name
+        FROM variants v
+        JOIN sizes sz ON sz.size_id = v.size_id
+        JOIN shoes s ON s.shoe_id = v.shoe_id
+        JOIN brands b ON b.brand_id = s.brand_id
+        WHERE v.variant_id = %s
+    ''', (variant_id,))
+
+    return result
