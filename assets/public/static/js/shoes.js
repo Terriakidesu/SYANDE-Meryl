@@ -403,6 +403,7 @@
 
     function openEditModal(shoeId) {
         clearImagePreview();
+        elements.current_shoe_image.src = '';
         fetch(`/api/inventory/shoes/${shoeId}/all`)
             .then(res => res.json())
             .then(data => {
