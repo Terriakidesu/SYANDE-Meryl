@@ -33,7 +33,15 @@
         customer_name: document.getElementById('customer-name'),
         total_amount: document.getElementById('total-amount'),
         cash_received: document.getElementById('cash-received'),
-        change_amount: document.getElementById('change-amount')
+        change_amount: document.getElementById('change-amount'),
+        receipt_modal: document.getElementById('receipt-modal'),
+        receipt_date_time: document.getElementById('receipt-date-time'),
+        receipt_customer_name: document.getElementById('receipt-customer-name'),
+        receipt_sale_id: document.getElementById('receipt-sale-id'),
+        receipt_items: document.getElementById('receipt-items'),
+        receipt_total: document.getElementById('receipt-total'),
+        receipt_cash_received: document.getElementById('receipt-cash-received'),
+        receipt_change: document.getElementById('receipt-change')
     };
 
     // Load brands
@@ -675,6 +683,75 @@
 
     })
 
+    // Receipt functionality
+    function showReceipt(saleData, cartItems, customerName, total, cashReceived, change) {
+        // Set date and time
+        const now = new Date();
+        elements.receipt_date_time.textContent = now.toLocaleString();
+
+        // Set customer name and sale ID
+        elements.receipt_customer_name.textContent = customerName;
+        elements.receipt_sale_id.textContent = saleData.sale_id || 'N/A';
+
+        // Clear and populate receipt items
+        elements.receipt_items.innerHTML = '';
+
+        cartItems.forEach(item => {
+            let product;
+            let variant;
+            for (let p of allProducts) {
+                p.variants.forEach(v => {
+                    if (v.variant_id === parseInt(item.variant_id)) {
+                        product = p;
+                        variant = v;
+                    }
+                });
+                if (product) break;
+            }
+
+            if (!product) return;
+
+            const markup_price = parseFloat(product.shoe_price) * (1 + (parseFloat(product.markup) / 100));
+            const itemTotal = markup_price * parseInt(item.quantity);
+
+            const row = document.createElement('tr');
+
+            const itemCell = document.createElement('td');
+            itemCell.innerHTML = `${product.shoe_name}<br><small class="text-muted">${product.brand_name}</small>`;
+            row.appendChild(itemCell);
+
+            const sizeCell = document.createElement('td');
+            sizeCell.textContent = `US ${variant.us_size} / UK ${variant.uk_size} / EU ${variant.eu_size}`;
+            row.appendChild(sizeCell);
+
+            const qtyCell = document.createElement('td');
+            qtyCell.className = 'text-center';
+            qtyCell.textContent = item.quantity;
+            row.appendChild(qtyCell);
+
+            const priceCell = document.createElement('td');
+            priceCell.className = 'text-end';
+            priceCell.textContent = `₱${markup_price.toFixed(2)}`;
+            row.appendChild(priceCell);
+
+            const totalCell = document.createElement('td');
+            totalCell.className = 'text-end';
+            totalCell.textContent = `₱${itemTotal.toFixed(2)}`;
+            row.appendChild(totalCell);
+
+            elements.receipt_items.appendChild(row);
+        });
+
+        // Set totals
+        elements.receipt_total.textContent = `₱${total.toFixed(2)}`;
+        elements.receipt_cash_received.textContent = `₱${cashReceived.toFixed(2)}`;
+        elements.receipt_change.textContent = `₱${change.toFixed(2)}`;
+
+        // Show receipt modal
+        const receiptModal = new bootstrap.Modal(elements.receipt_modal);
+        receiptModal.show();
+    }
+
     // Checkout functionality
     elements.checkout_btn.addEventListener('click', () => {
         if (cart.length === 0) {
@@ -758,13 +835,24 @@
             const result = await response.json();
 
             if (result.success) {
-                alert('Sale completed successfully!');
+                // Store current cart items for receipt
+                const cartSnapshot = [...cart];
+                const customerNameSnapshot = customerName;
+                const totalSnapshot = total;
+                const cashReceivedSnapshot = cashReceived;
+                const changeSnapshot = cashReceived - total;
+
+                // Clear cart
                 cart = [];
                 saveCart();
                 displayCart(); // Refresh cart display
+
                 // Close the checkout modal
                 const checkoutModal = bootstrap.Modal.getInstance(elements.checkout_modal);
                 if (checkoutModal) checkoutModal.hide();
+
+                // Show receipt
+                showReceipt(result, cartSnapshot, customerNameSnapshot, totalSnapshot, cashReceivedSnapshot, changeSnapshot);
             } else {
                 alert('Error completing sale: ' + result.message);
             }

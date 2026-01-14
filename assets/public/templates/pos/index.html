@@ -62,6 +62,51 @@
             }
 
         }
+
+        /* Print styles for receipt */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #receipt-modal,
+            #receipt-modal * {
+                visibility: visible;
+            }
+            #receipt-modal {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                margin: 0;
+                padding: 20px;
+                box-shadow: none;
+                border: none;
+                background: white;
+            }
+            #receipt-modal .modal-dialog {
+                max-width: none;
+                margin: 0;
+            }
+            #receipt-modal .modal-content {
+                border: none;
+                box-shadow: none;
+            }
+            #receipt-modal .modal-header,
+            #receipt-modal .modal-footer {
+                display: none;
+            }
+            #receipt-modal .modal-body {
+                padding: 0;
+            }
+            .table {
+                font-size: 12px;
+            }
+            .table th,
+            .table td {
+                padding: 4px 8px;
+                border: 1px solid #dee2e6;
+            }
+        }
     </style>
 
 </head>
@@ -329,6 +374,65 @@
                                 <button type="submit" class="btn btn-success">Complete Sale</button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Receipt Modal -->
+            <div id="receipt-modal" class="modal fade" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Sale Receipt</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="text-center mb-3">
+                                <h4>Meryl POS System</h4>
+                                <p class="mb-1">Sale Receipt</p>
+                                <p id="receipt-date-time" class="text-muted small"></p>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <strong>Customer:</strong> <span id="receipt-customer-name"></span>
+                                </div>
+                                <div class="col-6 text-end">
+                                    <strong>Sale ID:</strong> <span id="receipt-sale-id"></span>
+                                </div>
+                            </div>
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Size</th>
+                                        <th class="text-center">Qty</th>
+                                        <th class="text-end">Price</th>
+                                        <th class="text-end">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="receipt-items">
+                                    <!-- Items will be populated here -->
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="4" class="text-end"><strong>Total:</strong></td>
+                                        <td class="text-end"><strong id="receipt-total"></strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4" class="text-end">Cash Received:</td>
+                                        <td class="text-end" id="receipt-cash-received"></td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4" class="text-end"><strong>Change:</strong></td>
+                                        <td class="text-end"><strong id="receipt-change"></strong></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary" onclick="window.print()">Print Receipt</button>
+                        </div>
                     </div>
                 </div>
             </div>

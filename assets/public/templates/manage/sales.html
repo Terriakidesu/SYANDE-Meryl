@@ -8,6 +8,53 @@
 
     {% include "components/dependencies.html" %}
 
+    <style>
+        /* Print styles for receipt */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #sale-modal,
+            #sale-modal * {
+                visibility: visible;
+            }
+            #sale-modal {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                margin: 0;
+                padding: 20px;
+                box-shadow: none;
+                border: none;
+                background: white;
+            }
+            #sale-modal .modal-dialog {
+                max-width: none;
+                margin: 0;
+            }
+            #sale-modal .modal-content {
+                border: none;
+                box-shadow: none;
+            }
+            #sale-modal .modal-header,
+            #sale-modal .modal-footer {
+                display: none;
+            }
+            #sale-modal .modal-body {
+                padding: 0;
+            }
+            .table {
+                font-size: 12px;
+            }
+            .table th,
+            .table td {
+                padding: 4px 8px;
+                border: 1px solid #dee2e6;
+            }
+        }
+    </style>
+
 </head>
 
 <body class="bg-body-tertiary min-vh-100">
@@ -67,17 +114,68 @@
 
     <!-- View Sale Modal -->
     <div class="modal fade" id="sale-modal" tabindex="-1">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="sale-modal-title">Sale Details</h5>
+                    <h5 class="modal-title" id="sale-modal-title">Sale Receipt</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div id="sale-details"></div>
+                    <div id="sale-details">
+                        <div class="text-center mb-3">
+                            <h4>Meryl POS System</h4>
+                            <p class="mb-1">Sale Receipt</p>
+                            <p id="sale-date-time" class="text-muted small"></p>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <strong>Customer:</strong> <span id="sale-customer-name"></span>
+                            </div>
+                            <div class="col-6 text-end">
+                                <strong>Sale ID:</strong> <span id="sale-id-display"></span>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <strong>Cashier:</strong> <span id="sale-user-name"></span>
+                            </div>
+                            <div class="col-6 text-end">
+                                <strong>Status:</strong> <span id="sale-status-badge"></span>
+                            </div>
+                        </div>
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Size</th>
+                                    <th class="text-center">Qty</th>
+                                    <th class="text-end">Price</th>
+                                    <th class="text-end">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sale-items">
+                                <!-- Items will be populated here -->
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="4" class="text-end"><strong>Total:</strong></td>
+                                    <td class="text-end"><strong id="sale-total"></strong></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="4" class="text-end">Cash Received:</td>
+                                    <td class="text-end" id="sale-cash-received"></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="4" class="text-end"><strong>Change:</strong></td>
+                                    <td class="text-end"><strong id="sale-change"></strong></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="window.print()">Print Receipt</button>
                 </div>
             </div>
         </div>
@@ -128,7 +226,16 @@
                 search_form: document.getElementById("search-form"),
                 page_input: document.getElementById("page-input"),
                 pagination: document.getElementById("pagination"),
-                sale_details: document.getElementById("sale-details")
+                sale_details: document.getElementById("sale-details"),
+                sale_date_time: document.getElementById("sale-date-time"),
+                sale_customer_name: document.getElementById("sale-customer-name"),
+                sale_id_display: document.getElementById("sale-id-display"),
+                sale_user_name: document.getElementById("sale-user-name"),
+                sale_status_badge: document.getElementById("sale-status-badge"),
+                sale_items: document.getElementById("sale-items"),
+                sale_total: document.getElementById("sale-total"),
+                sale_cash_received: document.getElementById("sale-cash-received"),
+                sale_change: document.getElementById("sale-change")
             };
 
             elements.search_form.addEventListener("submit", function (event) {
@@ -176,25 +283,116 @@
                 fetch(`/api/sales/${saleId}`)
                     .then(res => res.json())
                     .then(data => {
-                        elements.sale_details.replaceChildren();
+                        // Populate receipt header
+                        elements.sale_date_time.textContent = data.sales_date || 'N/A';
+                        elements.sale_customer_name.textContent = data.customer_name || 'N/A';
+                        elements.sale_id_display.textContent = data.sale_id;
+                        elements.sale_user_name.textContent = `${data.first_name || ''} ${data.last_name || ''} (${data.username || 'N/A'})`.trim();
 
-                        function createDetail(label, value) {
-                            const p = document.createElement('p');
-                            const strong = document.createElement('strong');
-                            strong.textContent = label + ': ';
-                            p.appendChild(strong);
-                            p.appendChild(document.createTextNode(value));
-                            return p;
+                        const statusBadge = document.createElement('span');
+                        statusBadge.className = data.status === 'Returned' ? 'badge bg-danger' : 'badge bg-success';
+                        statusBadge.textContent = data.status;
+                        elements.sale_status_badge.innerHTML = '';
+                        elements.sale_status_badge.appendChild(statusBadge);
+
+                        // Clear and populate items table
+                        elements.sale_items.innerHTML = '';
+
+                        // Check if items are available in the response
+                        if (data.items && Array.isArray(data.items)) {
+                            // If API returns detailed items
+                            data.items.forEach(item => {
+                                const row = document.createElement('tr');
+
+                                const itemCell = document.createElement('td');
+                                const itemName = document.createElement('div');
+                                itemName.textContent = item.product_name || 'N/A';
+                                const brandName = document.createElement('small');
+                                brandName.className = 'text-muted';
+                                brandName.textContent = item.brand_name || '';
+                                itemCell.appendChild(itemName);
+                                itemCell.appendChild(document.createElement('br'));
+                                itemCell.appendChild(brandName);
+                                row.appendChild(itemCell);
+
+                                const sizeCell = document.createElement('td');
+                                sizeCell.textContent = `US ${item.us_size || 'N/A'} / UK ${item.uk_size || 'N/A'} / EU ${item.eu_size || 'N/A'}`;
+                                row.appendChild(sizeCell);
+
+                                const qtyCell = document.createElement('td');
+                                qtyCell.className = 'text-center';
+                                qtyCell.textContent = item.quantity || 0;
+                                row.appendChild(qtyCell);
+
+                                const priceCell = document.createElement('td');
+                                priceCell.className = 'text-end';
+                                priceCell.textContent = `₱${(item.price || 0).toFixed(2)}`;
+                                row.appendChild(priceCell);
+
+                                const totalCell = document.createElement('td');
+                                totalCell.className = 'text-end';
+                                totalCell.textContent = `₱${((item.price || 0) * (item.quantity || 0)).toFixed(2)}`;
+                                row.appendChild(totalCell);
+
+                                elements.sale_items.appendChild(row);
+                            });
+                        } else if (data.items_string) {
+                            // Parse items from stored string format (variant_id:quantity,variant_id:quantity)
+                            const itemPairs = data.items_string.split(',');
+                            itemPairs.forEach(pair => {
+                                const [variantId, quantity] = pair.split(':');
+                                if (variantId && quantity) {
+                                    // For now, show basic info since we don't have product details in this context
+                                    const row = document.createElement('tr');
+
+                                    const itemCell = document.createElement('td');
+                                    const itemId = document.createElement('div');
+                                    itemId.textContent = `Item ID: ${variantId}`;
+                                    const noDetails = document.createElement('small');
+                                    noDetails.className = 'text-muted';
+                                    noDetails.textContent = 'Product details not available';
+                                    itemCell.appendChild(itemId);
+                                    itemCell.appendChild(document.createElement('br'));
+                                    itemCell.appendChild(noDetails);
+                                    row.appendChild(itemCell);
+
+                                    const sizeCell = document.createElement('td');
+                                    sizeCell.textContent = 'Size details not available';
+                                    row.appendChild(sizeCell);
+
+                                    const qtyCell = document.createElement('td');
+                                    qtyCell.className = 'text-center';
+                                    qtyCell.textContent = quantity;
+                                    row.appendChild(qtyCell);
+
+                                    const priceCell = document.createElement('td');
+                                    priceCell.className = 'text-end';
+                                    priceCell.textContent = 'Price not available';
+                                    row.appendChild(priceCell);
+
+                                    const totalCell = document.createElement('td');
+                                    totalCell.className = 'text-end';
+                                    totalCell.textContent = 'Total not available';
+                                    row.appendChild(totalCell);
+
+                                    elements.sale_items.appendChild(row);
+                                }
+                            });
+                        } else {
+                            // No items data available
+                            const row = document.createElement('tr');
+                            const noItemsCell = document.createElement('td');
+                            noItemsCell.colSpan = 5;
+                            noItemsCell.className = 'text-center text-muted';
+                            noItemsCell.textContent = 'Item details not available';
+                            row.appendChild(noItemsCell);
+                            elements.sale_items.appendChild(row);
                         }
 
-                        elements.sale_details.appendChild(createDetail('Sale ID', data.sale_id));
-                        elements.sale_details.appendChild(createDetail('Customer', data.customer_name || 'N/A'));
-                        elements.sale_details.appendChild(createDetail('Total Amount', `₱${data.total_amount || '0.00'}`));
-                        elements.sale_details.appendChild(createDetail('Cash Received', `₱${data.cash_received || '0.00'}`));
-                        elements.sale_details.appendChild(createDetail('Change Amount', `₱${data.change_amount || '0.00'}`));
-                        elements.sale_details.appendChild(createDetail('Sales Date', data.sales_date || 'N/A'));
-                        elements.sale_details.appendChild(createDetail('User', `${data.first_name || ''} ${data.last_name || ''} (${data.username || 'N/A'})`.trim()));
-                        elements.sale_details.appendChild(createDetail('Status', data.status));
+                        // Populate totals
+                        elements.sale_total.textContent = `₱${(data.total_amount || 0).toFixed(2)}`;
+                        elements.sale_cash_received.textContent = `₱${(data.cash_received || 0).toFixed(2)}`;
+                        elements.sale_change.textContent = `₱${(data.change_amount || 0).toFixed(2)}`;
 
                         saleModal.show();
                     })
