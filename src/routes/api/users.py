@@ -284,7 +284,7 @@ async def update_user_password(request: Request, user_id: int = Form(), password
         )
 
 
-@users_router.delete("/delete", response_class=JSONResponse)
+@users_router.delete("/delete/{user_id}", response_class=JSONResponse)
 async def delete_user(request: Request, user_id: int, user_perms: list[str] = Depends(user_permissions)):
     utils.check_user_permissions(
         user_perms,
@@ -307,7 +307,6 @@ async def delete_user(request: Request, user_id: int, user_perms: list[str] = De
         if rowCount <= 0:
             raise DatabaseException("user_id doesn't exist.")
 
-        db.commitOne(r'DELETE FROM phones WHERE user_id = %s', (user_id,))
         db.commitOne(r'DELETE FROM emails WHERE user_id = %s', (user_id,))
 
         profile_path = os.path.join(
@@ -351,15 +350,6 @@ async def fetch_user(request: Request, user_id: Optional[int] = None, user_perms
     return user
 
 
-@users_router.get("/{user_id}/phones", response_class=JSONResponse)
-async def list_user_phone(request: Request, user_id: int, user_perms: list[str] = Depends(user_permissions)):
-    utils.check_user_permissions(
-        user_perms,
-        Permissions.users.manage_users,
-        Permissions.users.view_users
-    )
-
-    return db.fetchAll(r'SELECT * FROM phones WHERE user_id = %s', (user_id, ))
 
 
 @users_router.get("/{user_id}/emails", response_class=JSONResponse)
