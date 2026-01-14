@@ -199,7 +199,7 @@ async def delete_variant(request: Request, variant_id: int, user_perms: list[str
 
 
 @variants_router.get("/low-stock", response_class=JSONResponse)
-async def low_stock_variants(request: Request, threshold: int = 5, user_perms: list[str] = Depends(user_permissions)):
+async def low_stock_variants(request: Request, threshold: int = 20, user_perms: list[str] = Depends(user_permissions)):
     utils.check_user_permissions(
         user_perms,
         Permissions.inventory.view_inventory,
