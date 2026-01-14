@@ -136,9 +136,8 @@
                 </div>
 
                 <!-- Pagination -->
-                <div id="pagination"
-                    class="d-flex justify-content-center mt-4 gap-1 pb-3 bg-body-tertiary"></div>
-                </div>
+                <div id="pagination" class="d-flex justify-content-center mt-4 gap-1 pb-3 bg-body-tertiary"></div>
+            </div>
 
         </div>
     </div>
@@ -305,15 +304,10 @@
             elements.user_roles_input.addEventListener("input", function () {
                 const query = this.value.trim().toLowerCase();
 
-                if (!query) {
-                    elements.user_roles_suggestions.style.display = 'none';
-                    return;
-                }
-
-                // Filter roles based on query
+                // Filter roles based on query (show all if query empty)
                 const filtered = allRoles.filter(role =>
                     !selectedRoles[role.role_id] &&
-                    role.role_name.toLowerCase().includes(query)
+                    (query === '' || role.role_name.toLowerCase().includes(query))
                 );
 
                 if (filtered.length === 0) {
@@ -489,7 +483,7 @@
                     })
                     .then(data => {
                         isInitializing = true; // Prevent auto-save during init
-                        
+
                         elements.user_id.value = data.user_id;
                         elements.user_email.value = data.email;
                         elements.user_username.value = data.username || '';
@@ -507,7 +501,7 @@
 
                         elements.user_password.required = false;
                         elements.user_modal_title.textContent = "Edit User";
-                        
+
                         isInitializing = false; // Allow auto-save after init
                         userModal.show();
                     })

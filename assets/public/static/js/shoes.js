@@ -113,11 +113,6 @@
     elements.brand_input.addEventListener("input", function () {
         const query = this.value.trim().toLowerCase();
 
-        if (!query) {
-            elements.brand_suggestions.style.display = 'none';
-            return;
-        }
-
         const filtered = allBrands.filter(brand =>
             brand.brand_name.toLowerCase().includes(query)
         );
@@ -172,14 +167,9 @@
     elements.category_input.addEventListener("input", function () {
         const query = this.value.trim().toLowerCase();
 
-        if (!query) {
-            elements.category_suggestions.style.display = 'none';
-            return;
-        }
-
         const filtered = allCategories.filter(cat =>
             !selectedCategories[cat.category_id] &&
-            cat.category_name.toLowerCase().includes(query)
+            (query === '' || cat.category_name.toLowerCase().includes(query))
         );
 
         if (filtered.length === 0) {
@@ -232,11 +222,6 @@
     elements.demographic_input.addEventListener("input", function () {
         const query = this.value.trim().toLowerCase();
 
-        if (!query) {
-            elements.demographic_suggestions.style.display = 'none';
-            return;
-        }
-
         if (!allDemographics || allDemographics.length === 0) {
             elements.demographic_suggestions.style.display = 'none';
             return;
@@ -245,7 +230,7 @@
         const filtered = allDemographics.filter(demo => {
             const demoName = demo.demographic_Code || '';
             return !selectedDemographics[demo.demographic_id] &&
-                demoName.toLowerCase().includes(query);
+                (query === '' || demoName.toLowerCase().includes(query));
         });
 
         if (filtered.length === 0) {
