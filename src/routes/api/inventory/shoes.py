@@ -1,20 +1,19 @@
+
 import math
-import datetime
 import os
 import shutil
 from io import BytesIO
-from typing import Annotated, Optional, List
+from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, File, Form, Query, Request, UploadFile
 from fastapi.responses import JSONResponse
-from PIL import Image
 
 from .... import utils
 from ....depedencies import is_authenticated, user_permissions
 from ....exceptions import DatabaseException
 from ....helpers import Database
-from ....models.inventory import Shoe
-from ....utils import Permissions
+from ....Settings import Settings
+from ....utils import Permissions, image
 
 shoes_router = APIRouter(
     prefix="/shoes", dependencies=[Depends(is_authenticated)])
@@ -219,32 +218,7 @@ async def add_shoe(request: Request,
                     status_code=415
                 )
 
-            # Create shoe directory
-            from ....Settings import Settings
-            shoe_dir = os.path.join(
-                Settings.shoes.path, f"shoe-{shoe_id:05d}")
-            os.makedirs(shoe_dir, exist_ok=True)
-
-            # Process image
-            image = Image.open(file.file)
-            if image.mode in ('RGBA', 'P'):
-                image = image.convert("RGB")
-
-            # Resize to fit within target size while maintaining aspect ratio (fit-to-screen)
-            target_size = Settings.shoes.size
-            image.thumbnail((target_size, target_size),
-                            Image.Resampling.LANCZOS)
-
-            # Create square canvas and center the image (fit-to-screen in square)
-            square_image = Image.new(
-                'RGB', (target_size, target_size), (255, 255, 255))
-
-            # Calculate position to center the image
-            x = (target_size - image.width) // 2
-            y = (target_size - image.height) // 2
-
-            # Paste the resized image onto the square canvas
-            square_image.paste(image, (x, y))
+            square_image, shoe_dir = image.create_square_image(shoe_id, file)
 
             # Save the square image
             buffer = BytesIO()
@@ -346,31 +320,8 @@ async def edit_shoe(request: Request,
                 )
 
             # Create/update shoe directory
-            from ....Settings import Settings
-            shoe_dir = os.path.join(
-                Settings.shoes.path, f"shoe-{shoe_id:05d}")
-            os.makedirs(shoe_dir, exist_ok=True)
 
-            # Process image
-            image = Image.open(file.file)
-            if image.mode in ('RGBA', 'P'):
-                image = image.convert("RGB")
-
-            # Resize to fit within target size while maintaining aspect ratio (fit-to-screen)
-            target_size = Settings.shoes.size
-            image.thumbnail((target_size, target_size),
-                            Image.Resampling.LANCZOS)
-
-            # Create square canvas and center the image (fit-to-screen in square)
-            square_image = Image.new(
-                'RGB', (target_size, target_size), (255, 255, 255))
-
-            # Calculate position to center the image
-            x = (target_size - image.width) // 2
-            y = (target_size - image.height) // 2
-
-            # Paste the resized image onto the square canvas
-            square_image.paste(image, (x, y))
+            square_image, shoe_dir = image.create_square_image(shoe_id, file)
 
             # Save the square image
             buffer = BytesIO()
