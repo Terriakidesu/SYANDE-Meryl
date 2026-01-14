@@ -31,7 +31,10 @@
         delete_shoe_id: document.getElementById("delete-shoe-id"),
         confirm_delete_btn: document.getElementById("confirm-delete-btn"),
         current_image_container: document.getElementById("current-image-container"),
-        current_shoe_image: document.getElementById("current-shoe-image")
+        current_shoe_image: document.getElementById("current-shoe-image"),
+        image_preview_container: document.getElementById("image-preview-container"),
+        image_preview: document.getElementById("image-preview"),
+        remove_image_btn: document.getElementById("remove-image-btn")
     };
 
     // Store for managing selected categories and demographics
@@ -105,6 +108,7 @@
         renderSelectedDemographics();
         elements.current_image_container.style.display = 'none';
         elements.current_shoe_image.src = '';
+        clearImagePreview();
         elements.shoe_modal_title.textContent = "Add Shoe";
         shoeModal.show();
     });
@@ -291,6 +295,31 @@
             elements.demographic_suggestions.style.display = 'none';
         }
     });
+
+    // Image preview functionality
+    elements.shoe_file.addEventListener('change', function (e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                elements.image_preview.src = e.target.result;
+                elements.image_preview_container.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        } else {
+            clearImagePreview();
+        }
+    });
+
+    elements.remove_image_btn.addEventListener('click', function () {
+        clearImagePreview();
+        elements.shoe_file.value = '';
+    });
+
+    function clearImagePreview() {
+        elements.image_preview.src = '';
+        elements.image_preview_container.style.display = 'none';
+    }
 
     elements.shoe_list.addEventListener("click", function (e) {
         const editBtn = e.target.closest(".edit-btn");

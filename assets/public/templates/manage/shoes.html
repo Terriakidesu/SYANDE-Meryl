@@ -162,15 +162,30 @@
                         <div class="row">
                             <div class="mb-3">
                                 <label for="shoe-file" class="form-label">Shoe Image</label>
-                                <div class="d-flex flex-row gap-3 align-items-end">
+                                <div class="d-flex flex-column gap-3">
+                                    <!-- Current Image Display -->
                                     <div id="current-image-container" class="mt-2" style="display: none;">
                                         <label class="form-label">Current Image:</label>
                                         <img id="current-shoe-image" src="" alt="Current Shoe Image"
-                                            class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
+                                            class="img-thumbnail" style="max-width: 200px; max-height: 200px; object-fit: contain;">
                                     </div>
-                                    <div class="flex-fill">
+
+                                    <!-- New Image Upload -->
+                                    <div>
+                                        <label class="form-label">Upload New Image (optional):</label>
                                         <input type="file" class="form-control" id="shoe-file" name="file"
                                             accept="image/*">
+                                        <div class="form-text">Supported formats: JPEG, PNG, GIF, WebP. Images will maintain aspect ratio.</div>
+                                    </div>
+
+                                    <!-- Image Preview -->
+                                    <div id="image-preview-container" class="mt-2" style="display: none;">
+                                        <label class="form-label">Preview:</label>
+                                        <img id="image-preview" src="" alt="Image Preview"
+                                            class="img-thumbnail" style="max-width: 200px; max-height: 200px; object-fit: contain;">
+                                        <button type="button" class="btn btn-sm btn-outline-danger mt-1" id="remove-image-btn">
+                                            <i class="fa-solid fa-times"></i> Remove
+                                        </button>
                                     </div>
                                 </div>
                             </div>
