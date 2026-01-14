@@ -223,13 +223,25 @@ async def add_shoe(request: Request,
             image = Image.open(file.file)
             if image.mode in ('RGBA', 'P'):
                 image = image.convert("RGB")
-            image = image.resize(
-                (Settings.shoes.size, Settings.shoes.size))
+
+            # Resize while maintaining aspect ratio
+            target_size = Settings.shoes.size
+            image.thumbnail((target_size, target_size), Image.Resampling.LANCZOS)
+
+            # Create a square canvas with white background
+            square_image = Image.new('RGB', (target_size, target_size), (255, 255, 255))
+
+            # Calculate position to center the image
+            x = (target_size - image.width) // 2
+            y = (target_size - image.height) // 2
+
+            # Paste the resized image onto the square canvas
+            square_image.paste(image, (x, y))
 
             # Save image
             buffer = BytesIO()
-            image.save(buffer, format="JPEG",
-                       quality=Settings.shoes.quality)
+            square_image.save(buffer, format="JPEG",
+                             quality=Settings.shoes.quality)
             buffer.seek(0)
 
             image_path = os.path.join(
