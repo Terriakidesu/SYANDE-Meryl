@@ -212,18 +212,22 @@ async def update_user(request: Request, user_id: int = Form(), username: str = F
 
         # For superadmin (user_id = -1), ensure Account Manager role is assigned
         if user_id == -1:
-            account_manager_role = db.fetchOne(r'SELECT role_id FROM roles WHERE role_name = %s', ("Account Manager",))
+            account_manager_role = db.fetchOne(
+                r'SELECT role_id FROM roles WHERE role_name = %s', ("Account Manager",))
             if not account_manager_role:
                 # Create the Account Manager role if it doesn't exist
-                cursor = db.commitOne(r'INSERT INTO roles (role_name) VALUES (%s)', ("Account Manager",))
+                cursor = db.commitOne(
+                    r'INSERT INTO roles (role_name) VALUES (%s)', ("Account Manager",))
                 role_id = cursor.lastrowid
             else:
                 role_id = account_manager_role['role_id']
 
             # Check if superadmin already has this role
-            existing = db.fetchOne(r'SELECT * FROM user_roles WHERE user_id = %s AND role_id = %s', (user_id, role_id))
+            existing = db.fetchOne(
+                r'SELECT * FROM user_roles WHERE user_id = %s AND role_id = %s', (user_id, role_id))
             if not existing:
-                db.commitOne(r'INSERT INTO user_roles (user_id, role_id) VALUES (%s, %s)', (user_id, role_id))
+                db.commitOne(
+                    r'INSERT INTO user_roles (user_id, role_id) VALUES (%s, %s)', (user_id, role_id))
 
         return {
             "success": True,
@@ -266,10 +270,12 @@ async def update_user_password(request: Request, user_id: int = Form(), password
                 password_hash: str = result['password']
 
                 if utils.verify_password(password, password_hash):
-                    raise Exception("New password is the same as the last password.")
+                    raise Exception(
+                        "New password is the same as the last password.")
 
             hashed_pw = utils.hash_password(password)
-            db.commitOne(r'UPDATE users SET password = %s WHERE user_id = %s', (hashed_pw, user_id))
+            db.commitOne(
+                r'UPDATE users SET password = %s WHERE user_id = %s', (hashed_pw, user_id))
 
         return {
             "success": True,
@@ -300,6 +306,10 @@ async def delete_user(request: Request, user_id: int, user_perms: list[str] = De
         )
 
     try:
+
+        db.commitOne(r'DELETE FROM emails WHERE user_id = %s', (user_id,))
+        db.commitOne(r'DELETE FROM user_roles WHERE user_id = %s', (user_id,))
+
         cursor = db.commitOne(
             r'DELETE FROM users WHERE user_id = %s', (user_id,))
 
@@ -307,12 +317,11 @@ async def delete_user(request: Request, user_id: int, user_perms: list[str] = De
         if rowCount <= 0:
             raise DatabaseException("user_id doesn't exist.")
 
-        db.commitOne(r'DELETE FROM emails WHERE user_id = %s', (user_id,))
-
         profile_path = os.path.join(
             Settings.profiles.path, f"user-{user_id:05d}")
 
-        shutil.rmtree(profile_path)
+        if os.path.exists(profile_path):
+            shutil.rmtree(profile_path)
 
         return {
             "success": True,
@@ -348,8 +357,6 @@ async def fetch_user(request: Request, user_id: Optional[int] = None, user_perms
 
     user["roles"] = roles
     return user
-
-
 
 
 @users_router.get("/{user_id}/emails", response_class=JSONResponse)
