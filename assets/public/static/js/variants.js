@@ -331,27 +331,43 @@
 
         if (totalPages <= 1) return;
 
-        const prevBtn = document.createElement("button");
-        prevBtn.className = `btn btn-sm ${currentPage === 1 ? "btn-secondary" : "btn-outline-primary"}`;
-        prevBtn.textContent = "Prev";
-        prevBtn.disabled = currentPage === 1;
-        prevBtn.addEventListener("click", () => goToPage(currentPage - 1));
-        elements.pagination.appendChild(prevBtn);
+        // Previous button
+        const prevLi = document.createElement("li");
+        prevLi.className = "page-item";
+        if (currentPage === 1) prevLi.classList.add("disabled");
+        const prevA = document.createElement("a");
+        prevA.className = "page-link";
+        prevA.href = "#";
+        prevA.textContent = "Prev";
+        prevA.addEventListener("click", (e) => { e.preventDefault(); goToPage(currentPage - 1); });
+        prevLi.appendChild(prevA);
+        elements.pagination.appendChild(prevLi);
 
+        // Page numbers
         for (let i = 1; i <= totalPages; i++) {
-            const pageBtn = document.createElement("button");
-            pageBtn.className = `btn btn-sm ${i === currentPage ? "btn-primary" : "btn-outline-primary"}`;
-            pageBtn.textContent = i;
-            pageBtn.addEventListener("click", () => goToPage(i));
-            elements.pagination.appendChild(pageBtn);
+            const pageLi = document.createElement("li");
+            pageLi.className = "page-item";
+            if (i === currentPage) pageLi.classList.add("active");
+            const pageA = document.createElement("a");
+            pageA.className = "page-link";
+            pageA.href = "#";
+            pageA.textContent = i;
+            pageA.addEventListener("click", (e) => { e.preventDefault(); goToPage(i); });
+            pageLi.appendChild(pageA);
+            elements.pagination.appendChild(pageLi);
         }
 
-        const nextBtn = document.createElement("button");
-        nextBtn.className = `btn btn-sm ${currentPage === totalPages ? "btn-secondary" : "btn-outline-primary"}`;
-        nextBtn.textContent = "Next";
-        nextBtn.disabled = currentPage === totalPages;
-        nextBtn.addEventListener("click", () => goToPage(currentPage + 1));
-        elements.pagination.appendChild(nextBtn);
+        // Next button
+        const nextLi = document.createElement("li");
+        nextLi.className = "page-item";
+        if (currentPage === totalPages) nextLi.classList.add("disabled");
+        const nextA = document.createElement("a");
+        nextA.className = "page-link";
+        nextA.href = "#";
+        nextA.textContent = "Next";
+        nextA.addEventListener("click", (e) => { e.preventDefault(); goToPage(currentPage + 1); });
+        nextLi.appendChild(nextA);
+        elements.pagination.appendChild(nextLi);
     }
 
     function goToPage(page) {
