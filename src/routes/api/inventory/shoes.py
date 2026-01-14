@@ -232,10 +232,12 @@ async def add_shoe(request: Request,
 
             # Resize to fit within target size while maintaining aspect ratio (fit-to-screen)
             target_size = Settings.shoes.size
-            image.thumbnail((target_size, target_size), Image.Resampling.LANCZOS)
+            image.thumbnail((target_size, target_size),
+                            Image.Resampling.LANCZOS)
 
             # Create square canvas and center the image (fit-to-screen in square)
-            square_image = Image.new('RGB', (target_size, target_size), (255, 255, 255))
+            square_image = Image.new(
+                'RGB', (target_size, target_size), (255, 255, 255))
 
             # Calculate position to center the image
             x = (target_size - image.width) // 2
@@ -247,7 +249,7 @@ async def add_shoe(request: Request,
             # Save the square image
             buffer = BytesIO()
             square_image.save(buffer, format="JPEG",
-                             quality=Settings.shoes.quality)
+                              quality=Settings.shoes.quality)
             buffer.seek(0)
 
             image_path = os.path.join(
@@ -356,10 +358,12 @@ async def edit_shoe(request: Request,
 
             # Resize to fit within target size while maintaining aspect ratio (fit-to-screen)
             target_size = Settings.shoes.size
-            image.thumbnail((target_size, target_size), Image.Resampling.LANCZOS)
+            image.thumbnail((target_size, target_size),
+                            Image.Resampling.LANCZOS)
 
             # Create square canvas and center the image (fit-to-screen in square)
-            square_image = Image.new('RGB', (target_size, target_size), (255, 255, 255))
+            square_image = Image.new(
+                'RGB', (target_size, target_size), (255, 255, 255))
 
             # Calculate position to center the image
             x = (target_size - image.width) // 2
@@ -371,7 +375,7 @@ async def edit_shoe(request: Request,
             # Save the square image
             buffer = BytesIO()
             square_image.save(buffer, format="JPEG",
-                             quality=Settings.shoes.quality)
+                              quality=Settings.shoes.quality)
             buffer.seek(0)
 
             image_path = os.path.join(
@@ -407,6 +411,9 @@ async def delete_shoe(request: Request, shoe_id: int, user_perms: list[str] = De
             r'DELETE FROM shoe_categories WHERE shoe_id = %s', (shoe_id,))
         db.commitOne(
             r'DELETE FROM shoe_demographics WHERE shoe_id = %s', (shoe_id,))
+
+        db.commitOne(
+            r'DELETE FROM variants WHERE shoe_id = %s', (shoe_id,))
 
         rowCount = db.commitOne(
             r'DELETE FROM shoes WHERE shoe_id = %s', (shoe_id,)).rowcount
