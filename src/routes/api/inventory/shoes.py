@@ -56,34 +56,65 @@ async def list_shoes(request: Request,
 @shoes_router.get("/all", response_class=JSONResponse)
 async def list_shoes(request: Request,
                      query: Annotated[Optional[str], Query()] = None,
+                     brand_ids: Annotated[Optional[str], Query()] = None,
+                     category_ids: Annotated[Optional[str], Query()] = None,
+                     demographic_ids: Annotated[Optional[str], Query()] = None,
                      page: Annotated[Optional[int], Query()] = 1,
                      limit: Annotated[Optional[int], Query()] = 10
                      ):
 
-    count = db.fetchOne(r'SELECT COUNT(*) as count FROM shoes')["count"]
-    pages = math.ceil(count / limit)
-    offset = (page - 1) * limit
+    # Build WHERE conditions
+    where_conditions = []
+    params = []
 
     if query:
-        result = db.fetchAll(
-            r"""
-            SELECT * 
-            FROM shoes s
-            JOIN brands b ON b.brand_id = s.brand_id
-            WHERE s.shoe_id = %s OR s.shoe_name LIKE %s 
-            LIMIT %s OFFSET %s""",
-            (query, f"%{query}%", limit, offset)
-        )
+        where_conditions.append("(s.shoe_id = %s OR s.shoe_name LIKE %s)")
+        params.extend([query, f"%{query}%"])
 
-    else:
-        result = db.fetchAll(
-            r"""
-            SELECT * 
-            FROM shoes s
-            JOIN brands b ON b.brand_id = s.brand_id
-            LIMIT %s OFFSET %s""",
-            (limit, offset)
-        )
+    if brand_ids:
+        brand_list = [int(bid.strip()) for bid in brand_ids.split(',') if bid.strip()]
+        if brand_list:
+            placeholders = ','.join(['%s'] * len(brand_list))
+            where_conditions.append(f"s.brand_id IN ({placeholders})")
+            params.extend(brand_list)
+
+    if category_ids:
+        category_list = [int(cid.strip()) for cid in category_ids.split(',') if cid.strip()]
+        if category_list:
+            placeholders = ','.join(['%s'] * len(category_list))
+            where_conditions.append(f"EXISTS (SELECT 1 FROM shoe_categories sc WHERE sc.shoe_id = s.shoe_id AND sc.category_id IN ({placeholders}))")
+            params.extend(category_list)
+
+    if demographic_ids:
+        demographic_list = [int(did.strip()) for did in demographic_ids.split(',') if did.strip()]
+        if demographic_list:
+            for demo_id in demographic_list:
+                where_conditions.append(f"EXISTS (SELECT 1 FROM shoe_demographics sd WHERE sd.shoe_id = s.shoe_id AND sd.demographic_id = %s)")
+                params.append(demo_id)
+
+    where_clause = " AND ".join(where_conditions) if where_conditions else "1=1"
+
+    # Count query
+    count_query = f"""
+    SELECT COUNT(*) as count
+    FROM shoes s
+    JOIN brands b ON b.brand_id = s.brand_id
+    WHERE {where_clause}
+    """
+    count = db.fetchOne(count_query, tuple(params))["count"]
+    pages = math.ceil(count / limit) if count > 0 else 1
+    offset = (page - 1) * limit
+
+    # Data query
+    data_query = f"""
+    SELECT *
+    FROM shoes s
+    JOIN brands b ON b.brand_id = s.brand_id
+    WHERE {where_clause}
+    LIMIT %s OFFSET %s
+    """
+    params.extend([limit, offset])
+    result = db.fetchAll(data_query, tuple(params))
 
     for shoe in result:
         shoe_id = shoe["shoe_id"]

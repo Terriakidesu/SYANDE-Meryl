@@ -275,7 +275,29 @@
 
         showLoadingSpinner();
 
-        fetch(`/api/inventory/shoes/all?page=${page}&limit=${itemsPerPage}`)
+        // Build query parameters
+        const params = new URLSearchParams({
+            page: page,
+            limit: itemsPerPage
+        });
+
+        if (currentSearch) {
+            params.append('query', currentSearch);
+        }
+
+        if (selectedBrands.size > 0) {
+            params.append('brand_ids', Array.from(selectedBrands).join(','));
+        }
+
+        if (selectedCategories.size > 0) {
+            params.append('category_ids', Array.from(selectedCategories).join(','));
+        }
+
+        if (selectedDemographics.size > 0) {
+            params.append('demographic_ids', Array.from(selectedDemographics).join(','));
+        }
+
+        fetch(`/api/inventory/shoes/all?${params.toString()}`)
             .then(res => res.json())
             .then(data => {
                 hideLoadingSpinner();
@@ -358,9 +380,7 @@
     }
 
     function filterProducts() {
-        // For now, with server-side pagination, filtering is disabled
-        // In a full implementation, this would send filter parameters to the API
-        // For now, just reset to page 1 when filters change
+        // Reset to page 1 when filters change
         currentPage = 1;
         loadProducts(1);
     }
