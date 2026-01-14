@@ -230,21 +230,40 @@ async def add_shoe(request: Request,
             if image.mode in ('RGBA', 'P'):
                 image = image.convert("RGB")
 
-            # Resize while maintaining aspect ratio
+            # Resize and crop to fit target size while maintaining aspect ratio
             target_size = Settings.shoes.size
-            image.thumbnail((target_size, target_size),
-                            Image.Resampling.LANCZOS)
 
-            # Create a square canvas with white background
-            square_image = Image.new(
-                'RGB', (target_size, target_size), (255, 255, 255))
+            # Calculate aspect ratio
+            aspect_ratio = image.width / image.height
 
-            # Calculate position to center the image
-            x = (target_size - image.width) // 2
-            y = (target_size - image.height) // 2
+            if aspect_ratio > 1:
+                # Landscape: resize so height fits, then crop width
+                new_height = target_size
+                new_width = int(target_size * aspect_ratio)
+            else:
+                # Portrait/Square: resize so width fits, then crop height
+                new_width = target_size
+                new_height = int(target_size / aspect_ratio)
 
-            # Paste the resized image onto the square canvas
-            square_image.paste(image, (x, y))
+            # Resize the image
+            image = image.resize((new_width, new_height), Image.Resampling.LANCZOS)
+
+            # Crop to square
+            if aspect_ratio > 1:
+                # Landscape: crop width to center
+                left = (new_width - target_size) // 2
+                right = left + target_size
+                top = 0
+                bottom = target_size
+            else:
+                # Portrait: crop height to center
+                left = 0
+                right = target_size
+                top = (new_height - target_size) // 2
+                bottom = top + target_size
+
+            # Create the final square image by cropping
+            square_image = image.crop((left, top, right, bottom))
 
             # Save image
             buffer = BytesIO()
@@ -356,21 +375,40 @@ async def edit_shoe(request: Request,
             if image.mode in ('RGBA', 'P'):
                 image = image.convert("RGB")
 
-            # Resize while maintaining aspect ratio
+            # Resize and crop to fit target size while maintaining aspect ratio
             target_size = Settings.shoes.size
-            image.thumbnail((target_size, target_size),
-                            Image.Resampling.LANCZOS)
 
-            # Create a square canvas with white background
-            square_image = Image.new(
-                'RGB', (target_size, target_size), (255, 255, 255))
+            # Calculate aspect ratio
+            aspect_ratio = image.width / image.height
 
-            # Calculate position to center the image
-            x = (target_size - image.width) // 2
-            y = (target_size - image.height) // 2
+            if aspect_ratio > 1:
+                # Landscape: resize so height fits, then crop width
+                new_height = target_size
+                new_width = int(target_size * aspect_ratio)
+            else:
+                # Portrait/Square: resize so width fits, then crop height
+                new_width = target_size
+                new_height = int(target_size / aspect_ratio)
 
-            # Paste the resized image onto the square canvas
-            square_image.paste(image, (x, y))
+            # Resize the image
+            image = image.resize((new_width, new_height), Image.Resampling.LANCZOS)
+
+            # Crop to square
+            if aspect_ratio > 1:
+                # Landscape: crop width to center
+                left = (new_width - target_size) // 2
+                right = left + target_size
+                top = 0
+                bottom = target_size
+            else:
+                # Portrait: crop height to center
+                left = 0
+                right = target_size
+                top = (new_height - target_size) // 2
+                bottom = top + target_size
+
+            # Create the final square image by cropping
+            square_image = image.crop((left, top, right, bottom))
 
             # Save image
             buffer = BytesIO()
