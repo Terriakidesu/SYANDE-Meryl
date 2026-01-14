@@ -87,7 +87,7 @@ async def list_shoes(request: Request,
 
     for shoe in result:
         shoe_id = shoe["shoe_id"]
-        
+
         shoe["created_at"] = shoe["created_at"].isoformat()
         shoe["first_sale_at"] = shoe["first_sale_at"].isoformat()
 
@@ -106,6 +106,15 @@ async def list_shoes(request: Request,
             JOIN demographics d ON sd.demographic_id = d.demographic_id
             WHERE sd.shoe_id = %s """, (shoe_id,)
         )
+
+        shoe["variants"] = db.fetchAll(
+            r"""
+            SELECT v.*, sz.us_size, sz.uk_size, sz.eu_size
+            FROM variants v
+            JOIN sizes sz ON sz.size_id = v.size_id
+            WHERE v.shoe_id = %s
+            ORDER BY sz.us_size
+            """, (shoe_id,))
 
     return JSONResponse({
         "result": result,
@@ -146,7 +155,8 @@ async def add_shoe(request: Request,
 
         # Add categories
         if category_ids.strip():
-            category_list = [int(cat_id.strip()) for cat_id in category_ids.split(",") if cat_id.strip()]
+            category_list = [int(cat_id.strip())
+                             for cat_id in category_ids.split(",") if cat_id.strip()]
             for cat_id in category_list:
                 db.commitOne(
                     r'INSERT INTO shoe_categories (shoe_id, category_id) VALUES (%s, %s)',
@@ -155,7 +165,8 @@ async def add_shoe(request: Request,
 
         # Add demographics
         if demographic_ids.strip():
-            demographic_list = [int(demo_id.strip()) for demo_id in demographic_ids.split(",") if demo_id.strip()]
+            demographic_list = [int(demo_id.strip()) for demo_id in demographic_ids.split(
+                ",") if demo_id.strip()]
             for demo_id in demographic_list:
                 db.commitOne(
                     r'INSERT INTO shoe_demographics (shoe_id, demographic_id) VALUES (%s, %s)',
@@ -248,12 +259,15 @@ async def edit_shoe(request: Request,
         )
 
         # Delete existing categories and demographics
-        db.commitOne(r'DELETE FROM shoe_categories WHERE shoe_id = %s', (shoe_id,))
-        db.commitOne(r'DELETE FROM shoe_demographics WHERE shoe_id = %s', (shoe_id,))
+        db.commitOne(
+            r'DELETE FROM shoe_categories WHERE shoe_id = %s', (shoe_id,))
+        db.commitOne(
+            r'DELETE FROM shoe_demographics WHERE shoe_id = %s', (shoe_id,))
 
         # Add categories
         if category_ids.strip():
-            category_list = [int(cat_id.strip()) for cat_id in category_ids.split(",") if cat_id.strip()]
+            category_list = [int(cat_id.strip())
+                             for cat_id in category_ids.split(",") if cat_id.strip()]
             for cat_id in category_list:
                 db.commitOne(
                     r'INSERT INTO shoe_categories (shoe_id, category_id) VALUES (%s, %s)',
@@ -262,7 +276,8 @@ async def edit_shoe(request: Request,
 
         # Add demographics
         if demographic_ids.strip():
-            demographic_list = [int(demo_id.strip()) for demo_id in demographic_ids.split(",") if demo_id.strip()]
+            demographic_list = [int(demo_id.strip()) for demo_id in demographic_ids.split(
+                ",") if demo_id.strip()]
             for demo_id in demographic_list:
                 db.commitOne(
                     r'INSERT INTO shoe_demographics (shoe_id, demographic_id) VALUES (%s, %s)',
@@ -293,8 +308,10 @@ async def delete_shoe(request: Request, shoe_id: int, user_perms: list[str] = De
 
     try:
 
-        db.commitOne(r'DELETE FROM shoe_categories WHERE shoe_id = %s', (shoe_id,))
-        db.commitOne(r'DELETE FROM shoe_demographics WHERE shoe_id = %s', (shoe_id,))
+        db.commitOne(
+            r'DELETE FROM shoe_categories WHERE shoe_id = %s', (shoe_id,))
+        db.commitOne(
+            r'DELETE FROM shoe_demographics WHERE shoe_id = %s', (shoe_id,))
 
         rowCount = db.commitOne(
             r'DELETE FROM shoes WHERE shoe_id = %s', (shoe_id,)).rowcount
@@ -345,7 +362,7 @@ async def get_suggestions(request: Request, user_perms: list[str] = Depends(user
     """Get all categories and demographics for autocomplete suggestions"""
     categories = db.fetchAll(r'SELECT * FROM categories')
     demographics = db.fetchAll(r'SELECT * FROM demographics')
-    
+
     return JSONResponse({
         "categories": categories,
         "demographics": demographics

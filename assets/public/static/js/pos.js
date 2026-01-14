@@ -2,6 +2,15 @@
 
     let cart = [];
     let allProducts = [];
+    let currentPage = 1;
+    const itemsPerPage = 12;
+    let totalProducts = 0;
+    let totalPages = 0;
+    let currentSearch = '';
+    let selectedBrands = new Set();
+    let selectedCategories = new Set();
+    let selectedDemographics = new Set();
+    let isLoading = false;
 
     const elements = {
         template: document.getElementById('product-card-template'),
@@ -11,6 +20,7 @@
         demographics_filter: document.getElementById('demographics-filter'),
         clear_filters: document.getElementById('clear-filters'),
         products_container: document.getElementById('products-container'),
+        pagination_container: document.getElementById('pagination-container'),
         product_form: document.getElementById(`product-form`),
         cart_container: document.getElementById('cart-container'),
         cart_empty: document.getElementById('cart-empty'),
@@ -25,10 +35,6 @@
         cash_received: document.getElementById('cash-received'),
         change_amount: document.getElementById('change-amount')
     };
-    let selectedBrands = new Set();
-    let selectedCategories = new Set();
-    let selectedDemographics = new Set();
-    let currentSearch = '';
 
     // Load brands
     fetch('/api/inventory/brands/suggestions')
@@ -105,7 +111,8 @@
     }
 
     function displayCart() {
-        elements.cart_items.innerHTML = '';
+        // Clear cart items container using replaceChildren()
+        elements.cart_items.replaceChildren();
 
         if (cart.length === 0) {
             elements.cart_empty.style.display = 'block';
@@ -221,34 +228,102 @@
     window.removeFromCart = removeFromCart;
     window.updateCartQuantity = updateCartQuantity;
 
-    function loadProducts() {
-        fetch('/api/inventory/variants/?limit=100')
+    function showLoadingSpinner() {
+        if (isLoading) return;
+        isLoading = true;
+
+        // Clear containers using replaceChildren()
+        elements.products_container.replaceChildren();
+        elements.pagination_container.replaceChildren();
+
+        // Create loading container in products area
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'col-12 text-center py-5';
+
+        // Create spinner
+        const spinnerDiv = document.createElement('div');
+        spinnerDiv.className = 'spinner-border text-primary';
+        spinnerDiv.setAttribute('role', 'status');
+
+        const spinnerSpan = document.createElement('span');
+        spinnerSpan.className = 'visually-hidden';
+        spinnerSpan.textContent = 'Loading...';
+        spinnerDiv.appendChild(spinnerSpan);
+
+        // Create loading text
+        const textDiv = document.createElement('div');
+        textDiv.className = 'mt-2 text-muted';
+        textDiv.textContent = 'Loading products...';
+
+        // Assemble and append to products container
+        loadingDiv.appendChild(spinnerDiv);
+        loadingDiv.appendChild(textDiv);
+        elements.products_container.appendChild(loadingDiv);
+    }
+
+    function hideLoadingSpinner() {
+        isLoading = false;
+
+        // Remove the loading spinner from document body
+        const spinner = document.querySelector('.position-fixed.bottom-0');
+        if (spinner) {
+            spinner.remove();
+        }
+    }
+
+    function loadProducts(page = 1) {
+
+        showLoadingSpinner();
+
+        fetch(`/api/inventory/shoes/all?page=${page}&limit=${itemsPerPage}`)
             .then(res => res.json())
             .then(data => {
+                hideLoadingSpinner();
+
                 if (data.result) {
-                    // Add categories and demographics to each product
-                    Promise.all(data.result.map(product =>
-                        fetch(`/api/inventory/shoes/${product.shoe_id}/all`)
-                            .then(res => res.json())
-                            .then(details => {
-                                product.categories = details.categories || [];
-                                product.demographics = details.demographics || [];
-                                return product;
-                            })
-                            .catch(err => {
-                                console.error('Error loading product details:', err);
-                                product.categories = [];
-                                product.demographics = [];
-                                return product;
-                            })
-                    )).then(products => {
-                        allProducts = products;
-                        displayProducts(allProducts);
-                        displayCart(); // Update cart display with product details
+                    // Process variants - they are now included in the API response
+                    window.scrollTo({
+                        "top": 0
                     });
+
+                    data.result.forEach(product => {
+                        // Ensure variants is an array
+                        if (!product.variants) {
+                            product.variants = [];
+                        }
+                    });
+
+                    allProducts = data.result;
+                    totalProducts = data.count || 0;
+                    totalPages = data.pages || 0;
+                    currentPage = page;
+
+                    displayProducts(allProducts);
+                    displayCart(); // Update cart display with product details
                 }
             })
-            .catch(err => console.error('Error loading products:', err));
+            .catch(err => {
+                hideLoadingSpinner();
+                console.error('Error loading products:', err);
+
+                // Clear containers using replaceChildren()
+                elements.products_container.replaceChildren();
+                elements.pagination_container.replaceChildren();
+
+                // Create error container
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'col-12 text-center py-4 text-danger';
+
+                const errorIcon = document.createElement('i');
+                errorIcon.className = 'fa-solid fa-exclamation-triangle fa-2x mb-2';
+
+                const errorText = document.createElement('div');
+                errorText.textContent = 'Error loading products. Please try again.';
+
+                errorDiv.appendChild(errorIcon);
+                errorDiv.appendChild(errorText);
+                elements.products_container.appendChild(errorDiv);
+            });
     }
 
     function populateFilter(items, container, type, selectedSet) {
@@ -283,52 +358,32 @@
     }
 
     function filterProducts() {
-        let filtered = allProducts;
-
-        // Filter by search
-        if (currentSearch) {
-            filtered = filtered.filter(product =>
-                product.shoe_name.toLowerCase().includes(currentSearch.toLowerCase()) ||
-                product.brand_name.toLowerCase().includes(currentSearch.toLowerCase())
-            );
-        }
-
-        // Filter by brands
-        if (selectedBrands.size > 0) {
-            filtered = filtered.filter(product => selectedBrands.has(product.brand_id));
-        }
-
-        // Filter by categories (AND logic - product must have ALL selected categories)
-        if (selectedCategories.size > 0) {
-            filtered = filtered.filter(product =>
-                product.categories &&
-                selectedCategories.size === product.categories.filter(cat => selectedCategories.has(cat.category_id)).length
-            );
-        }
-
-        // Filter by demographics (AND logic - product must have ALL selected demographics)
-        if (selectedDemographics.size > 0) {
-            filtered = filtered.filter(product =>
-                product.demographics &&
-                [...selectedDemographics].every(selectedId =>
-                    product.demographics.some(productDemo => productDemo.demographic_id === selectedId)
-                )
-            );
-        }
-
-        displayProducts(filtered);
+        // For now, with server-side pagination, filtering is disabled
+        // In a full implementation, this would send filter parameters to the API
+        // For now, just reset to page 1 when filters change
+        currentPage = 1;
+        loadProducts(1);
     }
 
     function displayProducts(products) {
-        elements.products_container.innerHTML = '';
+        // Clear containers using replaceChildren()
+        elements.products_container.replaceChildren();
+        elements.pagination_container.replaceChildren();
 
         if (products.length === 0) {
-            elements.products_container.innerHTML = '<div class="col-12 text-center py-4 text-muted">No products found</div>';
+            // Create no products message
+            const noProductsDiv = document.createElement('div');
+            noProductsDiv.className = 'col-12 text-center py-4 text-muted';
+            noProductsDiv.textContent = 'No products found';
+            elements.products_container.appendChild(noProductsDiv);
             return;
         }
 
+        // With server-side pagination, we display all products returned (which should be exactly itemsPerPage)
         products.forEach(product => {
 
+
+            if (!product.variants) return;
 
             const markup_price = parseFloat(product.shoe_price) * (1 + (parseInt(product.markup) / 100));
 
@@ -349,7 +404,8 @@
 
             // Categories
             const categoriesText = cardElement.querySelector('.categories-text');
-            categoriesText.innerHTML = '';
+            // Clear existing content
+            categoriesText.replaceChildren();
             if (product.categories && product.categories.length > 0) {
                 product.categories.forEach(cat => {
                     const badge = document.createElement('span');
@@ -373,7 +429,8 @@
 
             // Demographics
             const demographicsText = cardElement.querySelector('.demographics-text');
-            demographicsText.innerHTML = '';
+            // Clear existing content
+            demographicsText.replaceChildren();
             if (product.demographics && product.demographics.length > 0) {
                 product.demographics.forEach(demo => {
                     const badge = document.createElement('span');
@@ -445,6 +502,8 @@
 
             elements.products_container.appendChild(cardElement);
         });
+
+        renderPagination(totalPages);
     }
 
     function openModal(product) {
@@ -453,7 +512,7 @@
 
 
         const modal_elem = document.querySelector("#product-modal");
-        
+
         modal_elem.querySelector("#shoe-image").src = `/shoe?shoe_id=${product.shoe_id}`;
         modal_elem.querySelector("#shoe-name").textContent = product.shoe_name;
         modal_elem.querySelector("#shoe-brand").textContent = product.brand_name;
@@ -701,6 +760,88 @@
         filterProducts();
     });
 
+    // Pagination functions
+    function renderPagination(totalPages) {
+        const paginationNav = elements.pagination_container.closest('nav');
+
+        if (totalPages <= 1) {
+            // Hide pagination when there's only one page or no pages
+            if (paginationNav) {
+                paginationNav.style.display = 'none';
+            }
+            return;
+        }
+
+        // Show pagination when there are multiple pages
+        if (paginationNav) {
+            paginationNav.style.display = 'block';
+        }
+
+        elements.pagination_container.innerHTML = '';
+
+        const ul = elements.pagination_container;
+
+        // Previous button
+        const prevLi = document.createElement('li');
+        prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+        const prevLink = document.createElement('a');
+        prevLink.className = 'page-link';
+        prevLink.href = '#';
+        prevLink.textContent = 'Previous';
+        prevLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (currentPage > 1) {
+                goToPage(currentPage - 1);
+            }
+        });
+        prevLi.appendChild(prevLink);
+        ul.appendChild(prevLi);
+
+        // Page numbers
+        const maxVisiblePages = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+        if (endPage - startPage + 1 < maxVisiblePages) {
+            startPage = Math.max(1, endPage - maxVisiblePages + 1);
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            const li = document.createElement('li');
+            li.className = `page-item ${i === currentPage ? 'active' : ''}`;
+            const link = document.createElement('a');
+            link.className = 'page-link';
+            link.href = '#';
+            link.textContent = i;
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                goToPage(i);
+            });
+            li.appendChild(link);
+            ul.appendChild(li);
+        }
+
+        // Next button
+        const nextLi = document.createElement('li');
+        nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+        const nextLink = document.createElement('a');
+        nextLink.className = 'page-link';
+        nextLink.href = '#';
+        nextLink.textContent = 'Next';
+        nextLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (currentPage < totalPages) {
+                goToPage(currentPage + 1);
+            }
+        });
+        nextLi.appendChild(nextLink);
+        ul.appendChild(nextLi);
+    }
+
+    function goToPage(page) {
+        loadProducts(page);
+    }
+
     // Clear filters
     elements.clear_filters.addEventListener('click', () => {
         selectedBrands.clear();
@@ -714,7 +855,9 @@
         document.querySelectorAll('#categories-filter input[type="checkbox"]').forEach(cb => cb.checked = false);
         document.querySelectorAll('#demographics-filter input[type="checkbox"]').forEach(cb => cb.checked = false);
 
-        displayProducts(allProducts);
+        // Reload products from server
+        currentPage = 1;
+        loadProducts(1);
     });
 
     window.addEventListener('DOMContentLoaded', () => {
