@@ -72,27 +72,33 @@ async def list_shoes(request: Request,
         params.extend([query, f"%{query}%"])
 
     if brand_ids:
-        brand_list = [int(bid.strip()) for bid in brand_ids.split(',') if bid.strip()]
+        brand_list = [int(bid.strip())
+                      for bid in brand_ids.split(',') if bid.strip()]
         if brand_list:
             placeholders = ','.join(['%s'] * len(brand_list))
             where_conditions.append(f"s.brand_id IN ({placeholders})")
             params.extend(brand_list)
 
     if category_ids:
-        category_list = [int(cid.strip()) for cid in category_ids.split(',') if cid.strip()]
+        category_list = [int(cid.strip())
+                         for cid in category_ids.split(',') if cid.strip()]
         if category_list:
             placeholders = ','.join(['%s'] * len(category_list))
-            where_conditions.append(f"EXISTS (SELECT 1 FROM shoe_categories sc WHERE sc.shoe_id = s.shoe_id AND sc.category_id IN ({placeholders}))")
+            where_conditions.append(
+                f"EXISTS (SELECT 1 FROM shoe_categories sc WHERE sc.shoe_id = s.shoe_id AND sc.category_id IN ({placeholders}))")
             params.extend(category_list)
 
     if demographic_ids:
-        demographic_list = [int(did.strip()) for did in demographic_ids.split(',') if did.strip()]
+        demographic_list = [int(did.strip())
+                            for did in demographic_ids.split(',') if did.strip()]
         if demographic_list:
             for demo_id in demographic_list:
-                where_conditions.append(f"EXISTS (SELECT 1 FROM shoe_demographics sd WHERE sd.shoe_id = s.shoe_id AND sd.demographic_id = %s)")
+                where_conditions.append(
+                    f"EXISTS (SELECT 1 FROM shoe_demographics sd WHERE sd.shoe_id = s.shoe_id AND sd.demographic_id = %s)")
                 params.append(demo_id)
 
-    where_clause = " AND ".join(where_conditions) if where_conditions else "1=1"
+    where_clause = " AND ".join(
+        where_conditions) if where_conditions else "1=1"
 
     # Count query
     count_query = f"""
@@ -226,10 +232,12 @@ async def add_shoe(request: Request,
 
             # Resize while maintaining aspect ratio
             target_size = Settings.shoes.size
-            image.thumbnail((target_size, target_size), Image.Resampling.LANCZOS)
+            image.thumbnail((target_size, target_size),
+                            Image.Resampling.LANCZOS)
 
             # Create a square canvas with white background
-            square_image = Image.new('RGB', (target_size, target_size), (255, 255, 255))
+            square_image = Image.new(
+                'RGB', (target_size, target_size), (255, 255, 255))
 
             # Calculate position to center the image
             x = (target_size - image.width) // 2
@@ -241,7 +249,7 @@ async def add_shoe(request: Request,
             # Save image
             buffer = BytesIO()
             square_image.save(buffer, format="JPEG",
-                             quality=Settings.shoes.quality)
+                              quality=Settings.shoes.quality)
             buffer.seek(0)
 
             image_path = os.path.join(
@@ -272,6 +280,7 @@ async def add_shoe(request: Request,
 
 @shoes_router.post("/update", response_class=JSONResponse)
 async def edit_shoe(request: Request,
+                    file: UploadFile | None = File(None),
                     shoe_id: int = Form(),
                     shoe_name: str = Form(),
                     brand_id: int = Form(),
@@ -326,6 +335,53 @@ async def edit_shoe(request: Request,
                     r'INSERT INTO shoe_demographics (shoe_id, demographic_id) VALUES (%s, %s)',
                     (shoe_id, demo_id)
                 )
+
+        # Handle image upload (if provided)
+        if file is not None:
+            if not file.content_type or not file.content_type.startswith("image"):
+                return JSONResponse(
+                    {"success": False,
+                        "message": f"Uploaded file ({file.content_type}) is not an image."},
+                    status_code=415
+                )
+
+            # Create/update shoe directory
+            from ....Settings import Settings
+            shoe_dir = os.path.join(
+                Settings.shoes.path, f"shoe-{shoe_id:05d}")
+            os.makedirs(shoe_dir, exist_ok=True)
+
+            # Process image
+            image = Image.open(file.file)
+            if image.mode in ('RGBA', 'P'):
+                image = image.convert("RGB")
+
+            # Resize while maintaining aspect ratio
+            target_size = Settings.shoes.size
+            image.thumbnail((target_size, target_size),
+                            Image.Resampling.LANCZOS)
+
+            # Create a square canvas with white background
+            square_image = Image.new(
+                'RGB', (target_size, target_size), (255, 255, 255))
+
+            # Calculate position to center the image
+            x = (target_size - image.width) // 2
+            y = (target_size - image.height) // 2
+
+            # Paste the resized image onto the square canvas
+            square_image.paste(image, (x, y))
+
+            # Save image
+            buffer = BytesIO()
+            square_image.save(buffer, format="JPEG",
+                              quality=Settings.shoes.quality)
+            buffer.seek(0)
+
+            image_path = os.path.join(
+                shoe_dir, f"shoe-{shoe_id:05d}.jpeg")
+            with open(image_path, "wb") as f:
+                f.write(buffer.read())
 
         return {
             "success": True,
