@@ -8,19 +8,35 @@ from ..Settings import Settings
 
 
 class Database:
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
 
     def __init__(self):
-        self.connect()
+        if not hasattr(self, '_initialized'):
+            self._initialized = True
+            self.connect()
 
     def connect(self):
         Settings.reload()
 
-        self._db = mysql.connector.connect(
-            host=Settings.secrets.db_hostname,
-            user=Settings.secrets.db_username,
-            password=Settings.secrets.db_password,
-            database=Settings.secrets.db_database
-        )
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                self._db = mysql.connector.connect(
+                    host=Settings.secrets.db_hostname,
+                    user=Settings.secrets.db_username,
+                    password=Settings.secrets.db_password,
+                    database=Settings.secrets.db_database
+                )
+                break  # Connection successful
+            except mysql.connector.Error as e:
+                if attempt == max_retries - 1:
+                    raise  # Re-raise the exception after the last attempt
+                # Continue to the next retry attempt
 
     def fetchAll(self, statement: str, params: Sequence[MySQLConvertibleType] | Dict[str, MySQLConvertibleType] = ()) -> list[Dict[str, Any]]:
         return self.execute(statement, params).fetchall()  # type: ignore
