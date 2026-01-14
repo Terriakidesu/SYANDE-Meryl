@@ -26,8 +26,6 @@ def create_square_image(shoe_id: int, file: UploadFile):
         'RGB', (target_size, target_size), (255, 255, 255))
 
     # Calculate position to center the image
-    x = (target_size - image.width) // 2
-    y = (target_size - image.height) // 2
 
     aspect_ratio = image.width / image.height
     if aspect_ratio > 1:
@@ -38,6 +36,9 @@ def create_square_image(shoe_id: int, file: UploadFile):
         new_width = int(target_size * aspect_ratio)
 
     image = image.resize((new_width, new_height), Image.Resampling.LANCZOS)
+
+    x = (target_size - image.width) // 2
+    y = (target_size - image.height) // 2
 
     # Paste the resized image onto the square canvas
     square_image.paste(image, (x, y))
