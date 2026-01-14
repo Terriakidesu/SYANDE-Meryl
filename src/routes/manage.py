@@ -49,11 +49,16 @@ async def manage_shoes(request: Request, perms: list[str] = Depends(user_permiss
 @manage_router.get("/inventory/variants")
 async def manage_variants(request: Request, perms: list[str] = Depends(user_permissions)):
 
+    initial_query = request.query_params.get("query", "")
+    low_stock = request.query_params.get("low_stock", "")
+
     return templates.TemplateResponse(request, "manage/variants.html", {
         "user_id": request.session.get("user_id"),
         "username": request.session.get("username"),
         "page_title": "Variants",
         "user_permissions": perms,
+        "initial_query": initial_query,
+        "low_stock": low_stock,
         "navigation_inventory": await sidebar.generate_sidebar_data(request, "Inventory"),
         "navigation_sales": await sidebar.generate_sidebar_data(request, "Sales"),
         "navigation_management": await sidebar.generate_sidebar_data(request, "Management"),

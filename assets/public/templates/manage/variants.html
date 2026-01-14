@@ -63,19 +63,25 @@
         {% include "components/sidebar.html" with context %}
         <div class="col">
             <div class="p-4 d-flex flex-row justify-content-between align-items-center">
-                <form id="search-form" action="/api/inventory/variants/" method="GET"
-                    class="d-flex flex-row gap-5 flex-fill" style="max-width: 50rem;">
-                    <input type="hidden" name="page" id="page-input" value="1">
-                    <div
-                        class="search-bar p-2 rounded-pill border border-1 border-dark-subtle align-items-center flex-fill">
-                        <i class="fa-solid fa-magnifying-glass ps-2 pe-1"></i>
-                        <div class="vr"></div>
-                        <input type="search" name="query" id="search-input" placeholder="Search">
-                        <button type="submit" class="search-button rounded-pill p-1 px-3">
-                            Search
-                        </button>
-                    </div>
-                </form>
+                <div class="d-flex flex-row gap-3 align-items-center flex-fill" style="max-width: 50rem;">
+                    <button type="button" class="btn btn-outline-secondary {% if low_stock %}btn-warning{% endif %}" id="low-stock-toggle">
+                        Low Stock Only
+                    </button>
+                    <form id="search-form" action="/api/inventory/variants/" method="GET"
+                        class="d-flex flex-row gap-3 flex-fill">
+                        <input type="hidden" name="page" id="page-input" value="1">
+                        <input type="hidden" name="low_stock" id="low_stock_input" value="{{ low_stock }}">
+                        <div
+                            class="search-bar p-2 rounded-pill border border-1 border-dark-subtle align-items-center flex-fill">
+                            <i class="fa-solid fa-magnifying-glass ps-2 pe-1"></i>
+                            <div class="vr"></div>
+                            <input type="search" name="query" id="search-input" placeholder="Search">
+                            <button type="submit" class="search-button rounded-pill p-1 px-3">
+                                Search
+                            </button>
+                        </div>
+                    </form>
+                </div>
 
                 <button type="button" class="btn btn-primary" id="add-variant-btn" {% if "manage_variants" not in
                     user_permissions and "manage_inventory" not in user_permissions and "admin_all" not in
@@ -205,7 +211,40 @@
         </div>
     </div>
 
-    <script src="/static/js/variants.js" defer></script>
+    <script src="/static/js/variants.js"></script>
+
+    {% if initial_query %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('search-input').value = '{{ initial_query }}';
+            document.querySelector('.search-button').click();
+        });
+    </script>
+    {% endif %}
+
+    {% if low_stock %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('low_stock_input').value = '1';
+            document.querySelector('.search-button').click();
+        });
+    </script>
+    {% endif %}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const lowStockToggle = document.getElementById('low-stock-toggle');
+            const lowStockInput = document.getElementById('low_stock_input');
+
+            lowStockToggle.addEventListener('click', function() {
+                const isLowStock = lowStockInput.value === '1';
+                lowStockInput.value = isLowStock ? '' : '1';
+                lowStockToggle.classList.toggle('btn-warning', !isLowStock);
+                lowStockToggle.classList.toggle('btn-outline-secondary', isLowStock);
+                document.querySelector('.search-button').click();
+            });
+        });
+    </script>
 
 </body>
 

@@ -252,12 +252,12 @@
         async function loadLowStock() {
             try {
                 const response = await fetch('/api/inventory/variants/low-stock');
-                const data = await response.json();
+                const { data, total } = await response.json();
 
                 const lowStockList = document.getElementById('lowStockList');
                 lowStockList.innerHTML = ''; // Clear existing items
 
-                if (data.length === 0) {
+                if (total === 0) {
                     const noItems = document.createElement('div');
                     noItems.className = 'list-group-item text-muted';
                     noItems.textContent = 'No low stock items';
@@ -265,9 +265,14 @@
                     return;
                 }
 
-                data.forEach(item => {
-                    const listItem = document.createElement('div');
-                    listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+                const displayCount = Math.min(data.length, 5);
+                for (let i = 0; i < displayCount; i++) {
+                    const item = data[i];
+                    const listItem = document.createElement('a');
+                    listItem.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center';
+                    listItem.href = `/manage/inventory/variants?query=${item.shoe_name}`;
+                    listItem.style.textDecoration = 'none';
+                    listItem.style.color = 'inherit';
 
                     const itemText = document.createElement('div');
                     itemText.innerHTML = `<strong>${item.shoe_name}</strong><br><small>Size: ${item.us_size} (${item.eu_size})</small>`;
@@ -279,7 +284,16 @@
                     listItem.appendChild(itemText);
                     listItem.appendChild(badge);
                     lowStockList.appendChild(listItem);
-                });
+                }
+
+                if (total > 5) {
+                    const moreItems = document.createElement('a');
+                    moreItems.className = 'list-group-item list-group-item-action text-muted text-center';
+                    moreItems.href = `/manage/inventory/variants?low_stock=1`;
+                    moreItems.style.textDecoration = 'none';
+                    moreItems.innerHTML = `<small>+${total - 5} more</small>`;
+                    lowStockList.appendChild(moreItems);
+                }
             } catch (error) {
                 console.error('Error loading low stock:', error);
                 const lowStockList = document.getElementById('lowStockList');

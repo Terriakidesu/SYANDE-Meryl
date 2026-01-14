@@ -21,53 +21,56 @@ db = Database()
 async def list_variants(request: Request,
                         query: Annotated[Optional[str], Query()] = None,
                         page: Annotated[Optional[int], Query()] = 1,
-                        limit: Annotated[Optional[int], Query()] = 10):
+                        limit: Annotated[Optional[int], Query()] = 10,
+                        low_stock: Annotated[Optional[str], Query()] = None):
 
     # First, get the shoes for the current page
-    shoe_count = db.fetchOne(r'SELECT COUNT(*) as count FROM shoes')["count"]
+    base_query = """
+        SELECT s.*, b.brand_name
+        FROM shoes s
+        JOIN brands b ON b.brand_id = s.brand_id
+    """
+    count_query = "SELECT COUNT(*) as count FROM shoes s JOIN brands b ON b.brand_id = s.brand_id"
+    where_clauses = []
+    params = []
+
+    if low_stock == '1':
+        where_clauses.append("EXISTS (SELECT 1 FROM variants v WHERE v.shoe_id = s.shoe_id AND v.variant_stock <= 20)")
+    
+    if query:
+        where_clauses.append("(s.shoe_id = %s OR s.shoe_name LIKE %s OR b.brand_name LIKE %s)")
+        params.extend([query, f"%{query}%", f"%{query}%"])
+
+    if where_clauses:
+        where_sql = " WHERE " + " AND ".join(where_clauses)
+        base_query += where_sql
+        count_query += where_sql
+
+    shoe_count = db.fetchOne(count_query, params)["count"] if params else db.fetchOne(count_query)["count"]
     shoe_pages = math.ceil(shoe_count / limit)
     shoe_offset = (page - 1) * limit
 
-    if query:
-        shoes = db.fetchAll(
-            r"""
-            SELECT s.*, b.brand_name
-            FROM shoes s
-            JOIN brands b ON b.brand_id = s.brand_id
-            WHERE s.shoe_id = %s OR s.shoe_name LIKE %s OR b.brand_name LIKE %s
-            LIMIT %s OFFSET %s
-            """,
-            (query, f"%{query}%", f"%{query}%", limit, shoe_offset)
-        )
-    else:
-        shoes = db.fetchAll(
-            r"""
-            SELECT s.*, b.brand_name
-            FROM shoes s
-            JOIN brands b ON b.brand_id = s.brand_id
-            LIMIT %s OFFSET %s
-            """,
-            (limit, shoe_offset)
-        )
+    shoes = db.fetchAll(base_query + " LIMIT %s OFFSET %s", params + [limit, shoe_offset])
 
     # For each shoe, get its variants
     result = []
     for shoe in shoes:
         shoe_id = shoe["shoe_id"]
-        variants = db.fetchAll(
-            r"""
+        variant_query = """
             SELECT v.*, sz.us_size, sz.uk_size, sz.eu_size
             FROM variants v
             JOIN sizes sz ON sz.size_id = v.size_id
             WHERE v.shoe_id = %s
-            ORDER BY sz.us_size
-            """,
-            (shoe_id,)
-        )
+        """
+        params = [shoe_id]
+        if low_stock == '1':
+            variant_query += " AND v.variant_stock <= 20"
+        variant_query += " ORDER BY sz.us_size"
+        variants = db.fetchAll(variant_query, params)
         shoe["variants"] = variants
         shoe["created_at"] = shoe["created_at"].isoformat()
         shoe["first_sale_at"] = shoe["first_sale_at"].isoformat()
-        
+
         result.append(shoe)
 
     return JSONResponse({
@@ -206,9 +209,17 @@ async def low_stock_variants(request: Request, threshold: int = 20, user_perms: 
         Permissions.inventory.view_variants
     )
 
+    # Get total count
+    total = db.fetchOne(r"""
+        SELECT COUNT(*) as count
+        FROM variants v
+        WHERE v.variant_stock <= %s
+    """, (threshold,))["count"]
+
     result = db.fetchAll(r"""
         SELECT
             v.variant_id,
+            s.shoe_id,
             s.shoe_name,
             sz.us_size,
             sz.uk_size,
@@ -219,10 +230,10 @@ async def low_stock_variants(request: Request, threshold: int = 20, user_perms: 
         JOIN sizes sz ON v.size_id = sz.size_id
         WHERE v.variant_stock <= %s
         ORDER BY v.variant_stock ASC
-        LIMIT 10
+        LIMIT 20
     """, (threshold,))
 
-    return JSONResponse(result)
+    return JSONResponse({"data": result, "total": total})
 
 
 @variants_router.get("/{variant_id}", response_class=JSONResponse)

@@ -374,6 +374,11 @@
     }
 
     window.addEventListener("DOMContentLoaded", () => {
-        searchVariants();
+        // Only load initial data if no initial query or low_stock is set
+        const hasInitialQuery = document.getElementById('search-input').value.trim() !== '';
+        const hasLowStock = document.getElementById('low_stock_input').value === '1';
+        if (!hasInitialQuery && !hasLowStock) {
+            searchVariants();
+        }
     });
 })();
