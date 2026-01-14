@@ -402,6 +402,7 @@
     });
 
     function openEditModal(shoeId) {
+        clearImagePreview();
         fetch(`/api/inventory/shoes/${shoeId}/all`)
             .then(res => res.json())
             .then(data => {
