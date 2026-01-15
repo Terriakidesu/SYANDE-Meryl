@@ -383,13 +383,13 @@
                     badge.addEventListener('click', function () {
                         delete selectedRoles[roleId];
                         renderSelectedRoles();
-                        autoSaveUser(); // Auto-save when roles change
+                        // autoSaveUser(); // Auto-save when roles change
                     });
                     elements.user_roles_selected.appendChild(badge);
                 }
                 // Trigger auto-save when role is added (but not during init)
                 if (elements.user_id.value && !isInitializing) {
-                    autoSaveUser();
+                    // autoSaveUser();
                 }
             }
 
