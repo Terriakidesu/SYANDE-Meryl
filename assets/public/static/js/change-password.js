@@ -17,8 +17,7 @@ function validatePassword(password) {
         length: password.length >= 8,
         uppercase: /[A-Z]/.test(password),
         lowercase: /[a-z]/.test(password),
-        number: /\d/.test(password),
-        special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+        number: /\d/.test(password)
     };
 
     let allValid = true;
@@ -81,24 +80,22 @@ document.getElementById('password-form').addEventListener('submit', async functi
     const confirmPassword = document.getElementById('confirm-password').value;
 
     if (newPassword !== confirmPassword) {
-        showToast('New passwords do not match', 'danger');
+        showErrorToast('New passwords do not match');
         return;
     }
 
     try {
-        const response = await fetch('/api/users/change-password', {
+        const formData = new FormData(document.getElementById('password-form'));
+
+        const response = await fetch('/api/users/updatePassword', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                current_password: currentPassword,
-                new_password: newPassword
-            })
+            body: formData
         });
 
-        if (response.ok) {
-            showToast('Password changed successfully!', 'success');
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            showSuccessToast('Password changed successfully!');
             // Clear form
             document.getElementById('password-form').reset();
             // Reset validation states
@@ -110,30 +107,29 @@ document.getElementById('password-form').addEventListener('submit', async functi
             passwordMatchText.className = 'form-text';
             changePasswordBtn.disabled = true;
         } else {
-            const error = await response.json();
-            showToast('Error: ' + error.message, 'danger');
+            showErrorToast('Error: ' + result.message);
         }
     } catch (error) {
-        showToast('Network error occurred', 'danger');
+        showErrorToast('Network error occurred');
     }
 });
 
-function showToast(message, type = 'success') {
-    const toastEl = document.getElementById('password-toast');
-    const toastBody = document.getElementById('toast-message');
-    const toastHeader = toastEl.querySelector('.toast-header strong');
 
-    toastBody.textContent = message;
-    toastHeader.textContent = type === 'success' ? 'Success' : 'Error';
 
-    if (type === 'danger') {
-        toastHeader.className = 'me-auto text-danger';
-        toastEl.querySelector('.toast-header i').className = 'fa-solid fa-circle-exclamation text-danger me-2';
-    } else {
-        toastHeader.className = 'me-auto';
-        toastEl.querySelector('.toast-header i').className = 'fa-solid fa-circle-check text-success me-2';
-    }
+// Password visibility toggle
+document.querySelectorAll('.toggle-password').forEach(button => {
+    button.addEventListener('click', function(e) {
+        e.preventDefault();
+        const targetId = this.getAttribute('data-target');
+        const input = document.getElementById(targetId);
+        const icon = this.children[0];
 
-    const toast = new bootstrap.Toast(toastEl);
-    toast.show();
-}
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.setAttribute("data-icon", 'eye-slash');
+        } else {
+            input.type = 'password';
+            icon.setAttribute("data-icon", 'eye');
+        }
+    });
+});

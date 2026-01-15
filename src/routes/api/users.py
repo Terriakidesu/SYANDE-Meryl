@@ -262,12 +262,15 @@ async def update_user_password(request: Request, user_id: int = Form(), password
         if user_id == -1:
             # Use AccountManager for superadmin
             from ...helpers.account_manager import AccountManager
-            manager = AccountManager(db)
+            manager = AccountManager()
             manager.change_superadmin_password(old_password, password)
         else:
             # Regular user password update
             if result := db.fetchOne(r'SELECT password FROM users WHERE user_id = %s', (user_id,)):
                 password_hash: str = result['password']
+
+                if old_password and not utils.verify_password(old_password, password_hash):
+                    raise Exception("Old password is incorrect")
 
                 if utils.verify_password(password, password_hash):
                     raise Exception(

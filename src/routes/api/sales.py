@@ -113,7 +113,8 @@ async def add_sale(request: Request,
 
         return JSONResponse({
             "success": True,
-            "message": "Sale added successfully"
+            "message": "Sale added successfully",
+            "sale_id": sale_id
         }, status_code=201)
     except Exception as e:
         return JSONResponse({
