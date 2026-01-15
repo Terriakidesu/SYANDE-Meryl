@@ -44,3 +44,22 @@ def create_square_image(shoe_id: int, file: UploadFile):
     square_image.paste(image, (x, y))
 
     return square_image, shoe_dir
+
+
+def create_profile_image(user_id: int, file: UploadFile):
+
+    user_dir = os.path.join(
+        Settings.profiles.path, f"user-{user_id:05d}")
+
+    os.makedirs(user_dir, exist_ok=True)
+
+    # Process image
+    image = Image.open(file.file)
+    if image.mode in ('RGBA', 'P'):
+        image = image.convert("RGB")
+
+    # Resize to target size
+    target_size = Settings.profiles.size
+    image = image.resize((target_size, target_size), Image.Resampling.LANCZOS)
+
+    return image, user_dir

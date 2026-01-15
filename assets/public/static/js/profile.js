@@ -19,11 +19,12 @@ document.getElementById('profile-form').addEventListener('submit', async functio
 
     // Add profile picture if selected
     if (fileInput.files[0]) {
-        formData.append('profile_picture', fileInput.files[0]);
+        formData.append('file', fileInput.files[0]);
     }
 
     // Add form data
     formData.append("user_id", parseInt(document.getElementById("user_id").value))
+    formData.append('username', document.getElementById('username').value);
     formData.append('first_name', document.getElementById('first-name').value);
     formData.append('last_name', document.getElementById('last-name').value);
     formData.append('email', document.getElementById('email').value);
@@ -44,4 +45,3 @@ document.getElementById('profile-form').addEventListener('submit', async functio
         showErrorToast('Network error occurred');
     }
 });
-

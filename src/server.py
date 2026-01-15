@@ -92,7 +92,8 @@ async def favicon():
 @app.get("/profile")
 async def get_profile_picture(request: Request, user_id: int):
 
-    filename = f"user-{user_id:04d}"
+    filename = f"user-{user_id:05d}"
+
 
     profiles_path = Path("assets", "public", "profiles")
     profile_path = profiles_path.joinpath(filename)

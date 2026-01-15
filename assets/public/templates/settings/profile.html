@@ -112,7 +112,7 @@
                                     <div class="form-group">
                                         <label for="username" class="form-label">Username</label>
                                         <input type="text" class="form-control" id="username" name="username" required
-                                            {% if user_id==-1 %}disabled{% endif %}
+                                            {% if user_id==-1 %}readonly{% endif %}
                                             value="{% if user_id == -1 %}superadmin{% else %}{{ username }}{% endif %}">
                                     </div>
 

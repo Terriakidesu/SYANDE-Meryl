@@ -15,6 +15,7 @@ from ...helpers import Database
 from ...models.users import UserForm
 from ...Settings import Settings
 from ...utils import Permissions
+from ...utils.image import create_profile_image
 
 users_router = APIRouter(prefix="/users",
                          dependencies=[Depends(is_authenticated)])
@@ -146,7 +147,7 @@ async def add_user(request: Request,
 
 
 @users_router.post("/update", response_class=JSONResponse)
-async def update_user(request: Request, user_id: int = Form(), username: str = Form(), email: str = Form(), first_name: str = Form(default=""), last_name: str = Form(default=""), password: str = Form(default=""), role_ids: list[str] = Form(default=[]), user_perms: list[str] = Depends(user_permissions)):
+async def update_user(request: Request, file: Annotated[UploadFile | None, File()] = None, user_id: int = Form(), username: str = Form(), email: str = Form(), first_name: str = Form(default=""), last_name: str = Form(default=""), password: str = Form(default=""), role_ids: list[str] = Form(default=[]), user_perms: list[str] = Depends(user_permissions)):
 
     if user_id != request.session["user_id"]:
         utils.check_user_permissions(
@@ -159,14 +160,15 @@ async def update_user(request: Request, user_id: int = Form(), username: str = F
         if user_id < 0 and user_id != -1:
             raise DatabaseException("user_id cannot be negative")
 
-        if username.strip() == "":
+        if user_id != -1 and username.strip() == "":
             raise DatabaseException("username is empty.")
 
         # Check if username is already taken by another user
-        existing = db.fetchOne(
-            r'SELECT user_id FROM users WHERE username = %s AND user_id != %s', (username, user_id))
-        if existing:
-            raise DatabaseException("Username is already taken")
+        if username.strip() != "":
+            existing = db.fetchOne(
+                r'SELECT user_id FROM users WHERE username = %s AND user_id != %s', (username, user_id))
+            if existing:
+                raise DatabaseException("Username is already taken")
 
         # For superadmin (user_id = -1), don't update username
         if user_id == -1:
@@ -228,6 +230,23 @@ async def update_user(request: Request, user_id: int = Form(), username: str = F
             if not existing:
                 db.commitOne(
                     r'INSERT INTO user_roles (user_id, role_id) VALUES (%s, %s)', (user_id, role_id))
+
+        # Handle profile picture upload
+        if file is not None:
+            if not file.content_type.startswith("image"):  # type: ignore
+                raise DatabaseException(f"Uploaded file ({file.content_type}) is not an image.")
+
+            image, user_dir = create_profile_image(user_id, file)
+
+            download_profile_path = os.path.join(
+                user_dir, f"user-{user_id:05d}.jpeg")
+
+            buffer = BytesIO()
+            image.save(buffer, format="JPEG", quality=85)
+            buffer.seek(0)
+
+            with open(download_profile_path, "wb") as f:
+                f.write(buffer.read())
 
         return {
             "success": True,
