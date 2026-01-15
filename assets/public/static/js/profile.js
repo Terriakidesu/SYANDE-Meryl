@@ -42,6 +42,7 @@ document.getElementById('profile-form').addEventListener('submit', async functio
             showErrorToast('Error: ' + error.message);
         }
     } catch (error) {
-        showErrorToast('Network error occurred');
+
+        if (error) showErrorToast('Network error occurred');
     }
 });

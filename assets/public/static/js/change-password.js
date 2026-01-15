@@ -9,7 +9,6 @@ const requirements = {
     uppercase: { element: document.getElementById('req-uppercase'), icon: document.getElementById('icon-uppercase') },
     lowercase: { element: document.getElementById('req-lowercase'), icon: document.getElementById('icon-lowercase') },
     number: { element: document.getElementById('req-number'), icon: document.getElementById('icon-number') },
-    special: { element: document.getElementById('req-special'), icon: document.getElementById('icon-special') }
 };
 
 function validatePassword(password) {
@@ -100,8 +99,10 @@ document.getElementById('password-form').addEventListener('submit', async functi
             document.getElementById('password-form').reset();
             // Reset validation states
             for (const req of Object.values(requirements)) {
-                req.element.classList.remove('valid');
-                req.icon.className = 'fa-solid fa-circle';
+                if (req) {
+                    req.element.classList.remove('valid');
+                    req.icon.className = 'fa-solid fa-circle';
+                }
             }
             passwordMatchText.textContent = '';
             passwordMatchText.className = 'form-text';
@@ -110,6 +111,7 @@ document.getElementById('password-form').addEventListener('submit', async functi
             showErrorToast('Error: ' + result.message);
         }
     } catch (error) {
+        console.error(error)
         showErrorToast('Network error occurred');
     }
 });
@@ -118,7 +120,7 @@ document.getElementById('password-form').addEventListener('submit', async functi
 
 // Password visibility toggle
 document.querySelectorAll('.toggle-password').forEach(button => {
-    button.addEventListener('click', function(e) {
+    button.addEventListener('click', function (e) {
         e.preventDefault();
         const targetId = this.getAttribute('data-target');
         const input = document.getElementById(targetId);
