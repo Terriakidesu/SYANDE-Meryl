@@ -23,45 +23,25 @@ document.getElementById('profile-form').addEventListener('submit', async functio
     }
 
     // Add form data
+    formData.append("user_id", parseInt(document.getElementById("user_id").value))
     formData.append('first_name', document.getElementById('first-name').value);
     formData.append('last_name', document.getElementById('last-name').value);
     formData.append('email', document.getElementById('email').value);
-    formData.append('phone', document.getElementById('phone').value);
-    formData.append('address', document.getElementById('address').value);
 
     try {
-        const response = await fetch('/api/users/profile', {
-            method: 'PUT',
+        const response = await fetch('/api/users/update', {
+            method: 'POST',
             body: formData
         });
 
         if (response.ok) {
-            showToast('Profile updated successfully!');
+            showSuccessToast('Profile updated successfully!');
         } else {
             const error = await response.json();
-            showToast('Error: ' + error.message, 'danger');
+            showErrorToast('Error: ' + error.message);
         }
     } catch (error) {
-        showToast('Network error occurred', 'danger');
+        showErrorToast('Network error occurred');
     }
 });
 
-function showToast(message, type = 'success') {
-    const toastEl = document.getElementById('profile-toast');
-    const toastBody = document.getElementById('toast-message');
-    const toastHeader = toastEl.querySelector('.toast-header strong');
-
-    toastBody.textContent = message;
-    toastHeader.textContent = type === 'success' ? 'Success' : 'Error';
-
-    if (type === 'danger') {
-        toastHeader.className = 'me-auto text-danger';
-        toastEl.querySelector('.toast-header i').className = 'fa-solid fa-circle-exclamation text-danger me-2';
-    } else {
-        toastHeader.className = 'me-auto';
-        toastEl.querySelector('.toast-header i').className = 'fa-solid fa-circle-check text-success me-2';
-    }
-
-    const toast = new bootstrap.Toast(toastEl);
-    toast.show();
-}
